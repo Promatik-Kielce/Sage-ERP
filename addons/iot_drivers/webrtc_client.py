@@ -19,7 +19,7 @@ class WebRtcClient(Thread):
         super().__init__()
         self.connections: set[RTCDataChannel] = set()
         self.chunked_message_in_progress: dict[RTCDataChannel, str] = {}
-        self.event_loop = asyncio.get_event_loop_policy().get_event_loop()
+        self.event_loop = asyncio.new_event_loop()
 
     def offer(self, request: dict):
         return asyncio.run_coroutine_threadsafe(
@@ -79,6 +79,14 @@ class WebRtcClient(Thread):
                         'time': time.time(),
                         'status': 'success',
                     })
+                elif message_type == "restart_odoo":
+                    self.send({
+                        'owner': message['session_id'],
+                        'device_identifier': helpers.get_identifier(),
+                        'time': time.time(),
+                        'status': 'success',
+                    })
+                    await self.event_loop.run_in_executor(None, helpers.odoo_restart)
 
             @channel.on("close")
             def on_close():

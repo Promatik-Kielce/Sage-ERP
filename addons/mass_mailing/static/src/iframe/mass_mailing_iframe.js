@@ -4,6 +4,7 @@ import {
     onWillDestroy,
     onWillUpdateProps,
     status,
+    useComponent,
     useEffect,
     useRef,
     useState,
@@ -20,12 +21,35 @@ import { useThrottleForAnimation } from "@web/core/utils/timing";
 import { closestScrollableY } from "@web/core/utils/scrolling";
 import { _t } from "@web/core/l10n/translation";
 import { localization } from "@web/core/l10n/localization";
+import { isBrowserSafari } from "@web/core/browser/feature_detection";
 
 const IFRAME_VALUE_SELECTOR = ".o_mass_mailing_value";
 const MASS_MAILING_IFRAME_ASSETS = [
     "mass_mailing.assets_iframe_style",
     "mass_mailing.assets_inside_builder_iframe",
 ];
+
+/**
+ * The MassMailingIframe will use this modified overlay service that will guarantee:
+ * 1. Internal ordering of its different overlays
+ * 2. To not mess up with owl's reconciliation of foreach when adding/removing overlays
+ * This is a sub-optimal fix to the more general issue of owl displacing nodes that contain
+ * an iframe, in which the iframe effectively unloads.
+ */
+export function useOverlayServiceOffset() {
+    const comp = useComponent();
+    const originalOverlay = comp.env.services.overlay;
+    const subServices = Object.create(comp.env.services);
+    subServices.overlay = Object.create(originalOverlay);
+    subServices.overlay.add = (C, props, opts = {}) => {
+        opts = {
+            ...opts,
+            sequence: (opts.sequence ?? 50) + 1000,
+        };
+        return originalOverlay.add(C, props, opts);
+    };
+    useSubEnv({ services: subServices });
+}
 
 export class MassMailingIframe extends Component {
     static template = "mass_mailing.MassMailingIframe";
@@ -51,6 +75,7 @@ export class MassMailingIframe extends Component {
     };
 
     setup() {
+        useOverlayServiceOffset();
         this.overlayRef = useChildRef();
         this.iframeRef = useForwardRefToParent("iframeRef");
         this.sidebarRef = useRef("sidebarRef");
@@ -196,7 +221,12 @@ export class MassMailingIframe extends Component {
         );
     }
 
+    get isBrowserSafari() {
+        return isBrowserSafari();
+    }
+
     async setupIframe() {
+        this.iframeRef.el?.contentDocument.head.appendChild(this.renderHeadContent());
         this.bundleControls = await this.loadIframeAssets();
         if (status(this) === "destroyed") {
             return;
@@ -208,7 +238,6 @@ export class MassMailingIframe extends Component {
         } else {
             this.iframeRef.el.contentDocument.body.classList.add("bg-white");
         }
-        this.iframeRef.el.contentDocument.head.appendChild(this.renderHeadContent());
         this.iframeRef.el.contentDocument.body.appendChild(this.renderBodyContent());
         htmlResizeObserver.observe(
             this.iframeRef.el.contentDocument.body.querySelector(IFRAME_VALUE_SELECTOR)

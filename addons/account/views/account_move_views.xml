@@ -157,7 +157,7 @@
             <field name="model">account.move.line</field>
             <field eval="10" name="priority"/>
             <field name="arch" type="xml">
-                <list name="move_line_tree" string="Journal Items" decoration-info="parent_state == 'draft'" create="false" edit="true" expand="context.get('expand', False)" multi_edit="1" sample="1">
+                <list name="move_line_tree" string="Journal Items" decoration-info="parent_state == 'draft'" create="false" edit="true" expand="context.get('expand', False)" multi_edit="1">
                     <field name="move_id" column_invisible="True"/>
                     <field name="invoice_date" string="Invoice Date" optional="hide"/>
                     <field name="date" readonly="1"/>
@@ -179,8 +179,8 @@
                     <field name="tax_ids" widget="many2many_tax_tags" optional="hide" readonly="1"/>
                     <field name="amount_currency" string="In Currency" groups="base.group_multi_currency" optional="hide" readonly="1" invisible="is_same_currency"/>
                     <field name="currency_id" groups="base.group_multi_currency" optional="hide" string="Currency" readonly="1" invisible="is_same_currency"/>
-                    <field name="debit" sum="Total Debit" readonly="1"/>
-                    <field name="credit" sum="Total Credit" readonly="1"/>
+                    <field name="debit" sum="Total Debit" readonly="1" decoration-muted="debit == 0"/>
+                    <field name="credit" sum="Total Credit" readonly="1" decoration-muted="credit == 0"/>
                     <field name="tax_tag_ids" string="Tax Grids" options="{'no_create': True, 'no_create_edit': True}" domain="[('applicability', '=', 'taxes')]" widget="many2many_tags" optional="hide"/>
                     <field name="discount_date" string="Discount Date" optional="hide" />
                     <field name="discount_amount_currency" string="Discount Amount" optional="hide" />
@@ -202,6 +202,11 @@
                     <field name="deductible_amount" optional="hide"/>
                     <groupby name="partner_id">
                         <button name="edit" type="edit" icon="fa-edit" title="Edit"/>
+                    </groupby>
+                    <groupby name="move_id">
+                        <button name="action_post" type="object" string="Post" class="btn-primary" invisible="state != 'draft'" groups="account.group_account_user"/>
+                        <button name="set_moves_checked" type="object" string="Review" class="btn-primary" invisible="state != 'posted' or checked" groups="account.group_account_user"/>
+                        <button name="edit_move" type="edit" icon="fa-edit" string="Edit"/>
                     </groupby>
                 </list>
             </field>
@@ -1939,7 +1944,7 @@
             <field name="view_id" ref="view_out_invoice_tree"/>
             <field name="search_view_id" ref="view_account_invoice_filter"/>
             <field name="domain">[('move_type', 'in', ['out_invoice', 'out_refund', 'out_receipt'])]</field>
-            <field name="context">{'search_default_out_invoice': 1, 'default_move_type': 'out_invoice'}</field>
+            <field name="context">{'search_default_out_invoice': 1, 'search_default_out_receipt': 1, 'default_move_type': 'out_invoice'}</field>
             <field name="help" type="html">
               <p class="o_view_nocontent_smiling_face">
                 Create a customer invoice
@@ -1996,7 +2001,7 @@
             <field name="view_id" ref="view_in_invoice_bill_tree"/>
             <field name="search_view_id" ref="view_account_bill_filter"/>
             <field name="domain">[('move_type', 'in', ['in_invoice', 'in_refund', 'in_receipt'])]</field>
-            <field name="context">{'search_default_in_invoice': 1, 'default_move_type': 'in_invoice', 'display_account_trust': True}</field>
+            <field name="context">{'search_default_in_invoice': 1, 'search_default_in_receipt': 1, 'default_move_type': 'in_invoice', 'display_account_trust': True}</field>
             <field name="help" type="html">
                 <!-- An owl component should be displayed instead -->
                 <p class="o_view_nocontent_smiling_face">

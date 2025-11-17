@@ -1023,3 +1023,38 @@ test("show all participants on other user stops screen share", async () => {
     await streamerRemote.updateUpload("screen", null);
     await contains(".o-discuss-CallParticipantCard-avatar", { count: 2 });
 });
+
+test("discuss sidebar call participant shows appropriate status icon", async () => {
+    const pyEnv = await startServer();
+    const channelId = pyEnv["discuss.channel"].create({ name: "General" });
+    const bobMemberId = pyEnv["discuss.channel.member"].create({
+        channel_id: channelId,
+        partner_id: pyEnv["res.partner"].create({ name: "bob" }),
+    });
+    const env = await start();
+    const network = await makeMockRtcNetwork({ env, channelId });
+    const bobRemote = network.makeMockRemote(bobMemberId);
+    await openDiscuss(channelId);
+    await click("[title='Join Call']");
+    await bobRemote.updateConnectionState("connected");
+    await contains(".o-discuss-Call");
+    await click("button[title='Mute']");
+    await contains(
+        ".o-mail-DiscussSidebarCallParticipants:contains('Mitchell Admin') .fa-microphone-slash"
+    );
+    await click("button[title='Voice Settings']");
+    await click(".dropdown-menu button:contains('Deafen')");
+    await contains(".o-mail-DiscussSidebarCallParticipants:contains('Mitchell Admin') .fa-deaf");
+    await contains(
+        ".o-mail-DiscussSidebarCallParticipants:contains('Mitchell Admin') .fa-microphone-slash",
+        { count: 0 }
+    );
+    await click("button[title='Unmute']");
+    await contains(".o-mail-DiscussSidebarCallParticipants:contains('Mitchell Admin') .fa-deaf", {
+        count: 0,
+    });
+    await bobRemote.updateInfo({ is_muted: true });
+    await contains(".o-mail-DiscussSidebarCallParticipants:contains('bob') .fa-microphone-slash");
+    await bobRemote.updateInfo({ is_deaf: true });
+    await contains(".o-mail-DiscussSidebarCallParticipants:contains('bob') .fa-deaf");
+});

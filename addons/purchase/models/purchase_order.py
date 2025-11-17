@@ -268,7 +268,7 @@ class PurchaseOrder(models.Model):
                 company=order.company_id,
             )
             if order.currency_id != order.company_currency_id:
-                order.tax_totals['amount_total_cc'] = f"({formatLang(self.env, order.amount_total_cc, currency_obj=self.company_currency_id)})"
+                order.tax_totals['amount_total_cc'] = f"({formatLang(self.env, order.amount_total_cc, currency_obj=order.company_currency_id)})"
 
     @api.depends('company_id.account_fiscal_country_id', 'fiscal_position_id.country_id', 'fiscal_position_id.foreign_vat')
     def _compute_tax_country_id(self):
@@ -292,10 +292,13 @@ class PurchaseOrder(models.Model):
 
     @api.depends('partner_id.name', 'partner_id.purchase_warn_msg', 'order_line.purchase_line_warn_msg')
     def _compute_purchase_warning_text(self):
+        if not self.env.user.has_group('purchase.group_warning_purchase'):
+            self.purchase_warning_text = ''
+            return
         for order in self:
             warnings = OrderedSet()
             if partner_msg := order.partner_id.purchase_warn_msg:
-                warnings.add(order.partner_id.name + ' - ' + partner_msg)
+                warnings.add((order.partner_id.name or order.partner_id.display_name) + ' - ' + partner_msg)
             for line in order.order_line:
                 if product_msg := line.purchase_line_warn_msg:
                     warnings.add(line.product_id.display_name + ' - ' + product_msg)
@@ -618,6 +621,10 @@ class PurchaseOrder(models.Model):
         return True
 
     def button_cancel(self):
+        locked_purchase_orders = self.filtered(lambda po: po.locked)
+        if locked_purchase_orders:
+            raise UserError(self.env._("Unable to cancel purchase order(s): %s. You must first unlock them.", locked_purchase_orders.mapped('display_name')))
+
         purchase_orders_with_invoices = self.filtered(lambda po: any(i.state not in ('cancel', 'draft') for i in po.invoice_ids))
         if purchase_orders_with_invoices:
             raise UserError(_("Unable to cancel purchase order(s): %s. You must first cancel their related vendor bills.", purchase_orders_with_invoices.mapped('display_name')))

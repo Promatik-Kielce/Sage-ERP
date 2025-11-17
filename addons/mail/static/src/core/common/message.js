@@ -22,6 +22,7 @@ import {
     useEffect,
     useRef,
     useState,
+    useSubEnv,
 } from "@odoo/owl";
 
 import { ActionSwiper } from "@web/core/action_swiper/action_swiper";
@@ -129,10 +130,10 @@ export class Message extends Component {
         this.ui = useService("ui");
         this.openReactionMenu = this.openReactionMenu.bind(this);
         this.optionsDropdown = useDropdownState();
+        useSubEnv({ inMessage: true });
         useChildSubEnv({
             message: this.props.message,
             alignedRight: this.isAlignedRight,
-            inMessage: true,
         });
         onMounted(() => {
             if (this.shadowBody.el) {
@@ -440,15 +441,8 @@ export class Message extends Component {
         }
         const editedEl = bodyEl.querySelector(".o-mail-Message-edited");
         editedEl?.replaceChildren(renderToElement("mail.Message.edited"));
-        for (const linkEl of bodyEl.querySelectorAll(".o_channel_redirect")) {
-            const text = linkEl.textContent.substring(1); // remove '#' prefix
-            const icon = linkEl.classList.contains("o_channel_redirect_asThread")
-                ? "fa fa-comments-o"
-                : "fa fa-hashtag";
-            const iconEl = renderToElement("mail.Message.mentionedChannelIcon", { icon });
-            linkEl.replaceChildren(iconEl);
-            linkEl.insertAdjacentText("beforeend", ` ${text}`);
-        }
+        const channelLinks = bodyEl.querySelectorAll("a.o_channel_redirect");
+        this.store.handleValidChannelMention(Array.from(channelLinks));
         for (const el of bodyEl.querySelectorAll(".o_message_redirect")) {
             // only transform links targetting the same database
             if (el.getAttribute("href")?.startsWith(getOrigin())) {
