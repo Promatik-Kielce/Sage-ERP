@@ -5,7 +5,7 @@
         <field name="name">spreadsheet.dashboard.view.list</field>
         <field name="model">spreadsheet.dashboard</field>
         <field name="arch" type="xml">
-            <list create="false" editable="bottom">
+            <list editable="bottom">
                 <field name="sequence" widget="handle" groups="base.group_system"/>
                 <field name="name"/>
                 <field name="group_ids" widget="many2many_tags" required="1"/>
@@ -54,13 +54,18 @@
         <field name="model">spreadsheet.dashboard</field>
         <field name="arch" type="xml">
             <form>
-                <group>
-                    <field name="name"/>
-                    <field name="dashboard_group_id"/>
-                    <field name="company_ids" options="{'no_create': True}" widget="many2many_tags" groups="base.group_multi_company" placeholder="Visible to all"/>
-                    <field name="group_ids" widget="many2many_tags"/>
-                    <field name="spreadsheet_binary_data"/>
-                </group>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="dashboard_group_id"/>
+                        <field name="company_ids" options="{'no_create': True}" widget="many2many_tags" groups="base.group_multi_company" placeholder="Visible to all"/>
+                        <field name="group_ids" widget="many2many_tags"/>
+                        <field name="is_published"/>
+                    </group>
+                    <group>
+                        <field name="spreadsheet_binary_data" widget="binary_spreadsheet" filename="spreadsheet_file_name"/>
+                    </group>
+                </sheet>
             </form>
         </field>
     </record>

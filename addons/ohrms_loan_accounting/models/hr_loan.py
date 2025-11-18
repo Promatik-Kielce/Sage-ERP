@@ -38,15 +38,12 @@ class HrLoanAcc(models.Model):
                                           string="Treasury Account")
     journal_id = fields.Many2one('account.journal', string="Journal",
                                  help="Journal for the loan")
-    state = fields.Selection([
-        ('draft', 'Draft'),
-        ('waiting_approval_1', 'Submitted'),
-        ('waiting_approval_2', 'Waiting Approval'),
-        ('approve', 'Approved'),
-        ('refuse', 'Refused'),
-        ('cancel', 'Canceled'),
-    ], string="State", default='draft', track_visibility='onchange',
-        copy=False, help="State of the loan request")
+    state = fields.Selection(
+        selection_add=[
+            ('waiting_approval_2', 'Waiting Approval'),
+        ],
+        ondelete={'waiting_approval_2': 'set default'},
+        tracking=True)
 
     def action_approve(self):
         """This creates account move for request."""

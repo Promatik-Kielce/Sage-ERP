@@ -44,6 +44,19 @@ class SpreadsheetDashboard(models.Model):
         else:
             self.sudo().favorite_user_ids = [Command.link(current_user_id)]
 
+    def action_edit_dashboard(self):
+        """Open the dashboard in edit mode via form view."""
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Edit Dashboard'),
+            'res_model': 'spreadsheet.dashboard',
+            'res_id': self.id,
+            'view_mode': 'form',
+            'view_id': self.env.ref('spreadsheet_dashboard.spreadsheet_dashboard_view_form').id,
+            'target': 'current',
+        }
+
     def _get_serialized_readonly_dashboard(self):
         snapshot = json.loads(self.spreadsheet_data)
         user_locale = self.env['res.lang']._get_user_spreadsheet_locale()

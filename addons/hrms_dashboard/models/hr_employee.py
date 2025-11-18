@@ -169,7 +169,7 @@ class HrEmployee(models.Model):
         WHERE (hr_leave.date_from::DATE,hr_leave.date_to::DATE) 
         OVERLAPS ('%s', '%s') and
         state='validate'""" % (today, today)
-        cr = self._cr
+        cr = self.env.cr
         cr.execute(query)
         leaves_today = cr.fetchall()
         first_day = date.today().replace(day=1)
@@ -181,7 +181,7 @@ class HrEmployee(models.Model):
                 WHERE (hr_leave.date_from::DATE,hr_leave.date_to::DATE) 
                 OVERLAPS ('%s', '%s')
                 and  state='validate'""" % (first_day, last_day)
-        cr = self._cr
+        cr = self.env.cr
         cr.execute(query)
         leaves_this_month = cr.fetchall()
         leaves_alloc_req = self.env['hr.leave.allocation'].sudo().search_count(
@@ -240,7 +240,7 @@ class HrEmployee(models.Model):
     @api.model
     def get_upcoming(self):
         """It returns upcoming events, announcements and birthday"""
-        cr = self._cr
+        cr = self.env.cr
         uid = request.session.uid
         employee = self.env['hr.employee'].search([('user_id', '=', uid)],
                                                   limit=1)
@@ -280,7 +280,7 @@ class HrEmployee(models.Model):
     @api.model
     def get_dept_employee(self):
         """Retrieve the details of employees in each department."""
-        cr = self._cr
+        cr = self.env.cr
         cr.execute(""" SELECT e.department_id, d.name, COUNT(e.id)
     FROM hr_employee_public e
     JOIN hr_department d ON d.id = e.department_id
@@ -479,7 +479,7 @@ class HrEmployee(models.Model):
                 'name': 'Resign',
                 'values': []
             }]
-        cr = self._cr
+        cr = self.env.cr
         month_list = []
         join_trend = []
         resign_trend = []
@@ -554,15 +554,15 @@ class HrEmployee(models.Model):
         SELECT (date_trunc('month', CURRENT_DATE))::date - interval '1' 
         month * s.a AS month_start
         FROM generate_series(0,11,1) AS s(a);"""
-        self._cr.execute(sql)
-        month_start_list = self._cr.fetchall()
+        self.env.cr.execute(sql)
+        month_start_list = self.env.cr.fetchall()
         for month_date in month_start_list:
-            self._cr.execute("""select count(id), 
+            self.env.cr.execute("""select count(id), 
             to_char(date '%s', 'Month YYYY') as l_month from hr_employee
             where resign_date> date '%s' or resign_date is null and 
             joining_date < date '%s'
             """ % (month_date[0], month_date[0], month_date[0],))
-            month_emp = self._cr.fetchone()
+            month_emp = self.env.cr.fetchone()
             match_join = \
                 list(filter(
                     lambda d: d['l_month'] == month_emp[1].split(' ')[:1][

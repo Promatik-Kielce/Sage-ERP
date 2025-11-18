@@ -38,11 +38,9 @@ class HrEmployee(models.Model):
 
     def _compute_payslip_count(self):
         """Function for count Payslips"""
-        payslip_data = self.env['hr.payslip'].sudo().read_group(
+        payslip_data = self.env['hr.payslip'].sudo()._read_group(
             [('employee_id', 'in', self.ids)],
-            ['employee_id'], ['employee_id'])
-        result = dict(
-            (data['employee_id'][0], data['employee_id_count']) for data in
-            payslip_data)
+            ['employee_id'], ['__count'])
+        result = {employee.id: count for employee, count in payslip_data}
         for employee in self:
             employee.payslip_count = result.get(employee.id, 0)
