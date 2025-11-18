@@ -53,6 +53,102 @@ class AccountAnalyticLine(models.Model):
                         attendance_emp=line.attendance_id.employee_id.name,
                     ))
 
+    @api.constrains('date', 'attendance_id')
+    def _check_date_matches_attendance(self):
+        """Ensure timesheet date matches attendance date(s)
+
+        For same-day attendances, timesheet must be on that date.
+        For cross-day attendances (e.g., night shifts), timesheet can be on either date.
+        """
+        for line in self:
+            if line.attendance_id and line.date:
+                attendance = line.attendance_id
+
+                if not attendance.check_in:
+                    continue
+
+                # Get attendance date range
+                check_in_date = attendance.check_in.date()
+                check_out_date = attendance.check_out.date() if attendance.check_out else check_in_date
+
+                # Timesheet date must be within attendance date range (inclusive)
+                if line.date < check_in_date or line.date > check_out_date:
+                    # Build error message
+                    if check_in_date == check_out_date:
+                        raise ValidationError(_(
+                            "Timesheet date (%(timesheet_date)s) must match attendance date (%(attendance_date)s).\n\n"
+                            "This timesheet is linked to an attendance on %(attendance_date)s "
+                            "(%(check_in)s to %(check_out)s).\n\n"
+                            "Please change the timesheet date to %(attendance_date)s.",
+                            timesheet_date=line.date,
+                            attendance_date=check_in_date,
+                            check_in=attendance.check_in,
+                            check_out=attendance.check_out or _('ongoing'),
+                        ))
+                    else:
+                        raise ValidationError(_(
+                            "Timesheet date (%(timesheet_date)s) must be within attendance date range.\n\n"
+                            "This timesheet is linked to an attendance that spans multiple days:\n"
+                            "  Check-in: %(check_in)s (%(check_in_date)s)\n"
+                            "  Check-out: %(check_out)s (%(check_out_date)s)\n\n"
+                            "Timesheet date must be either %(check_in_date)s or %(check_out_date)s.",
+                            timesheet_date=line.date,
+                            check_in=attendance.check_in,
+                            check_out=attendance.check_out or _('ongoing'),
+                            check_in_date=check_in_date,
+                            check_out_date=check_out_date,
+                        ))
+
+    @api.onchange('date')
+    def _onchange_date_check_attendance(self):
+        """Provide immediate feedback when changing timesheet date"""
+        if self.attendance_id and self.date:
+            attendance = self.attendance_id
+
+            if not attendance.check_in:
+                return
+
+            # Get attendance date range
+            check_in_date = attendance.check_in.date()
+            check_out_date = attendance.check_out.date() if attendance.check_out else check_in_date
+
+            # Check if date is outside attendance date range
+            if self.date < check_in_date or self.date > check_out_date:
+                if check_in_date == check_out_date:
+                    return {
+                        'warning': {
+                            'title': _('Error: Invalid Date'),
+                            'message': _(
+                                'Timesheet date (%(timesheet_date)s) must match attendance date (%(attendance_date)s).\n\n'
+                                'This timesheet is linked to an attendance on %(attendance_date)s '
+                                '(%(check_in)s to %(check_out)s).\n\n'
+                                'Please change the timesheet date to %(attendance_date)s.',
+                                timesheet_date=self.date,
+                                attendance_date=check_in_date,
+                                check_in=attendance.check_in,
+                                check_out=attendance.check_out or _('ongoing'),
+                            )
+                        }
+                    }
+                else:
+                    return {
+                        'warning': {
+                            'title': _('Error: Invalid Date'),
+                            'message': _(
+                                'Timesheet date (%(timesheet_date)s) must be within attendance date range.\n\n'
+                                'This timesheet is linked to an attendance that spans multiple days:\n'
+                                '  Check-in: %(check_in)s (%(check_in_date)s)\n'
+                                '  Check-out: %(check_out)s (%(check_out_date)s)\n\n'
+                                'Timesheet date must be either %(check_in_date)s or %(check_out_date)s.',
+                                timesheet_date=self.date,
+                                check_in=attendance.check_in,
+                                check_out=attendance.check_out or _('ongoing'),
+                                check_in_date=check_in_date,
+                                check_out_date=check_out_date,
+                            )
+                        }
+                    }
+
     @api.onchange('unit_amount')
     def _onchange_unit_amount_check_attendance(self):
         """Provide immediate feedback when changing timesheet hours from attendance view"""
