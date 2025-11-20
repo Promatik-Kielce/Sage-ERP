@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="web_gantt.GanttController" owl="1">
+        <Layout className="'o_gantt_view h-100'" display="props.display">
+            <t t-set-slot="layout-buttons">
+                <t t-call="{{props.buttonTemplate}}" />
+            </t>
+            <t t-set-slot="layout-actions">
+                <!-- Additional actions can go here -->
+            </t>
+            <t t-component="props.Renderer" t-props="rendererProps" />
+        </Layout>
+    </t>
+
+    <t t-name="web_gantt.GanttController.Buttons" owl="1">
+        <div class="o_gantt_button_group btn-group" role="group">
+            <button
+                t-if="props.archInfo.canCreate"
+                type="button"
+                class="btn btn-primary o_gantt_button_create"
+                t-on-click="() => this.onTaskCreate()">
+                <i class="fa fa-plus" /> Create
+            </button>
+            <div class="btn-group" role="group">
+                <button
+                    type="button"
+                    class="btn btn-secondary dropdown-toggle o_gantt_button_scale"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false">
+                    <i class="fa fa-calendar" /> <t t-esc="state.scale.charAt(0).toUpperCase() + state.scale.slice(1)" />
+                </button>
+                <ul class="dropdown-menu">
+                    <li>
+                        <a class="dropdown-item"
+                           t-att-class="{ 'active': state.scale === 'day' }"
+                           href="#"
+                           t-on-click.prevent="() => this.onScaleChange('day')">
+                            Day
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item"
+                           t-att-class="{ 'active': state.scale === 'week' }"
+                           href="#"
+                           t-on-click.prevent="() => this.onScaleChange('week')">
+                            Week
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item"
+                           t-att-class="{ 'active': state.scale === 'month' }"
+                           href="#"
+                           t-on-click.prevent="() => this.onScaleChange('month')">
+                            Month
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item"
+                           t-att-class="{ 'active': state.scale === 'year' }"
+                           href="#"
+                           t-on-click.prevent="() => this.onScaleChange('year')">
+                            Year
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </t>
+
+</templates>

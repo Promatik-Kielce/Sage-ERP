@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="web_gantt.GanttRenderer" owl="1">
+        <div class="o_gantt_renderer h-100">
+            <t t-if="hasData">
+                <div class="o_gantt_container" t-ref="gantt" />
+            </t>
+            <t t-else="">
+                <div class="o_view_nocontent">
+                    <div class="o_nocontent_help">
+                        <p class="o_view_nocontent_smiling_face">
+                            <i class="fa fa-tasks fa-3x text-muted"/>
+                        </p>
+                        <p>
+                            No tasks to display
+                        </p>
+                        <t t-if="props.archInfo.canCreate">
+                            <p>
+                                Click the <strong>Create</strong> button to add your first task.
+                            </p>
+                        </t>
+                    </div>
+                </div>
+            </t>
+        </div>
+    </t>
+
+</templates>

@@ -1,0 +1,364 @@
+// Gantt View Styles - vis-timeline
+
+.o_gantt_view {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+
+    .o_gantt_renderer {
+        flex: 1 1 auto;
+        overflow: auto;
+        padding: 16px;
+
+        .o_gantt_container {
+            width: 100%;
+            height: 100%;
+            min-height: 500px;  // Increased for better visibility
+
+            // Override vis-timeline styles to match Odoo theme
+            .vis-timeline {
+                font-family: $o-we-font-family;
+                border: 1px solid #dee2e6;
+                border-radius: 4px;
+            }
+
+            // Time axis styling
+            .vis-time-axis {
+                .vis-text {
+                    color: #212529;
+                    font-size: 13px;
+                    font-weight: 600;
+                    padding: 8px 4px;
+                }
+
+                .vis-grid {
+                    &.vis-minor {
+                        border-color: #e9ecef;
+                        border-width: 1px;
+                    }
+
+                    &.vis-major {
+                        border-color: #adb5bd;
+                        border-width: 2px;
+                    }
+                }
+            }
+
+            // Group (employee) labels on the left
+            .vis-labelset {
+                min-width: 200px;  // Ensure employee names have enough space
+
+                .vis-label {
+                    background-color: #f8f9fa;
+                    border-bottom: 1px solid #dee2e6;
+                    border-right: 2px solid #adb5bd;
+                    color: #212529;
+                    font-size: 14px;
+                    font-weight: 600;
+                    padding: 12px 16px;
+                    line-height: 1.4;
+                    min-height: 50px;
+                    display: flex;
+                    align-items: center;
+
+                    &:hover {
+                        background-color: #e2e6ea;
+                    }
+
+                    // Status indicator circle
+                    .attendance-status-indicator {
+                        width: 12px;
+                        height: 12px;
+                        border-radius: 50%;
+                        display: inline-block;
+                        margin-right: 10px;
+                        flex-shrink: 0;
+                        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+
+                        &.checked-in {
+                            background-color: #28a745;
+                        }
+
+                        &.checked-out {
+                            background-color: #dc3545;
+                        }
+                    }
+                }
+            }
+
+            // Content area with timeline items
+            .vis-itemset {
+                background-color: #ffffff;
+
+                .vis-foreground {
+                    .vis-group {
+                        border-bottom: 1px solid #e9ecef;
+                        min-height: 50px;  // Match employee label height
+                    }
+                }
+            }
+
+            // Timeline items (attendance bars)
+            .vis-item {
+                background-color: #e9ecef;
+                border: 2px solid #adb5bd;
+                border-radius: 6px;
+                color: #212529;
+                font-size: 12px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                min-height: 32px;  // Make items taller and easier to click
+
+                &:hover {
+                    opacity: 0.9;
+                    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+                    transform: translateY(-1px);
+                }
+
+                &.vis-selected {
+                    box-shadow: 0 0 0 3px #007bff;
+                    z-index: 999;
+                }
+
+                .vis-item-content {
+                    padding: 6px 12px;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    line-height: 1.4;
+                }
+            }
+
+            // Today highlight
+            .vis-current-time {
+                background-color: #dc3545;
+                width: 2px;
+            }
+
+            .vis-custom-time {
+                background-color: #6c757d;
+                width: 2px;
+            }
+
+            // Grid background
+            .vis-background {
+                .vis-grid {
+                    &.vis-vertical {
+                        border-color: #e9ecef;
+
+                        &.vis-minor {
+                            border-style: dotted;
+                        }
+
+                        &.vis-major {
+                            border-style: solid;
+                        }
+                    }
+                }
+
+                // Weekend highlighting
+                .vis-time-axis .vis-grid.vis-saturday,
+                .vis-time-axis .vis-grid.vis-sunday {
+                    background-color: #f8f9fa;
+                }
+            }
+
+            // Color coding for attendance hours
+            // Red: ≤7.5 hours (short day)
+            .gantt-color-1 {
+                background-color: #dc3545 !important;
+                border-color: #bd2130 !important;
+                color: #ffffff !important;
+            }
+
+            // Gray: ~8 hours (normal day)
+            .gantt-color-0 {
+                background-color: #6c757d !important;
+                border-color: #545b62 !important;
+                color: #ffffff !important;
+            }
+
+            // Green: ≥8.5 hours (overtime)
+            .gantt-color-10 {
+                background-color: #28a745 !important;
+                border-color: #1e7e34 !important;
+                color: #ffffff !important;
+            }
+
+            // Additional color support (for other potential uses)
+            .gantt-color-2 {
+                background-color: #fd7e14 !important;
+                border-color: #e8590c !important;
+                color: #ffffff !important;
+            }
+
+            .gantt-color-3 {
+                background-color: #ffc107 !important;
+                border-color: #d39e00 !important;
+                color: #212529 !important;
+            }
+
+            .gantt-color-4 {
+                background-color: #007bff !important;
+                border-color: #0056b3 !important;
+                color: #ffffff !important;
+            }
+
+            .gantt-color-5 {
+                background-color: #6f42c1 !important;
+                border-color: #59339d !important;
+                color: #ffffff !important;
+            }
+
+            .gantt-color-6 {
+                background-color: #6610f2 !important;
+                border-color: #510bc4 !important;
+                color: #ffffff !important;
+            }
+
+            .gantt-color-7 {
+                background-color: #e83e8c !important;
+                border-color: #d91a72 !important;
+                color: #ffffff !important;
+            }
+
+            .gantt-color-8 {
+                background-color: #20c997 !important;
+                border-color: #199d76 !important;
+                color: #ffffff !important;
+            }
+
+            .gantt-color-9 {
+                background-color: #17a2b8 !important;
+                border-color: #117a8b !important;
+                color: #ffffff !important;
+            }
+
+            .gantt-color-11 {
+                background-color: #343a40 !important;
+                border-color: #1d2124 !important;
+                color: #ffffff !important;
+            }
+        }
+    }
+
+    // Tooltip styling
+    .vis-tooltip {
+        padding: 8px 12px;
+        background: #ffffff;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        color: #212529;
+        font-size: 12px;
+        line-height: 1.5;
+        max-width: 300px;
+        white-space: pre-line;
+        z-index: 1050;
+
+        strong {
+            font-weight: 600;
+        }
+    }
+
+    // Button group styling
+    .o_gantt_button_group {
+        .btn {
+            font-size: 13px;
+            padding: 4px 12px;
+
+            i {
+                margin-right: 4px;
+            }
+        }
+    }
+
+    // No content helper
+    .o_view_nocontent {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        padding: 32px;
+
+        .o_nocontent_help {
+            text-align: center;
+            max-width: 500px;
+
+            .o_view_nocontent_smiling_face {
+                margin-bottom: 16px;
+
+                i {
+                    font-size: 48px !important;
+                }
+            }
+
+            p {
+                font-size: 14px;
+                color: #6c757d;
+                margin-bottom: 8px;
+
+                &:first-of-type {
+                    font-size: 18px;
+                    font-weight: 600;
+                    color: #212529;
+                }
+            }
+        }
+    }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+    .o_gantt_view {
+        .o_gantt_renderer {
+            padding: 8px;
+
+            .o_gantt_container {
+                min-height: 300px;
+
+                .vis-timeline {
+                    font-size: 11px;
+                }
+
+                .vis-labelset .vis-label {
+                    font-size: 12px;
+                    padding: 6px 8px;
+                }
+
+                .vis-item {
+                    font-size: 10px;
+
+                    .vis-item-content {
+                        padding: 3px 6px;
+                    }
+                }
+            }
+        }
+
+        .o_gantt_button_group {
+            .btn {
+                font-size: 12px;
+                padding: 3px 8px;
+            }
+        }
+    }
+}
+
+// Print styles
+@media print {
+    .o_gantt_view {
+        .o_gantt_button_group {
+            display: none;
+        }
+
+        .o_gantt_renderer {
+            padding: 0;
+
+            .o_gantt_container {
+                border: 1px solid #000;
+            }
+        }
+    }
+}

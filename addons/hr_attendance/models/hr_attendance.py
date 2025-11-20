@@ -97,8 +97,15 @@ class HrAttendance(models.Model):
     def _compute_color(self):
         for attendance in self:
             if attendance.check_out:
-                attendance.color = 1 if attendance.worked_hours > 16 or attendance.out_mode == 'technical' else 0
+                # Color based on worked hours for gantt visualization
+                if attendance.worked_hours <= 7.5:
+                    attendance.color = 1  # Red - short day
+                elif attendance.worked_hours >= 8.5:
+                    attendance.color = 10  # Green - overtime
+                else:
+                    attendance.color = 0  # Gray - normal 8h day
             else:
+                # No check-out: red if old, green if still active
                 attendance.color = 1 if attendance.check_in < (datetime.today() - timedelta(days=1)) else 10
 
     @api.depends('overtime_hours')
