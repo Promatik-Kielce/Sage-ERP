@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Security Group: Employee Read All Attendances -->
+        <record id="group_hr_attendance_all_reader" model="res.groups">
+            <field name="name">Employee: Read All Attendances</field>
+            <field name="comment">
+                This group allows employees to view all attendance records
+                across the entire organization in read-only mode.
+                Promotes workplace transparency.
+            </field>
+        </record>
+
+        <!-- Add the group to all internal users -->
+        <record id="base.group_user" model="res.groups">
+            <field name="implied_ids" eval="[(4, ref('group_hr_attendance_all_reader'))]"/>
+        </record>
+
+        <!-- Record Rule: Allow reading all attendance records -->
+        <record id="hr_attendance_employee_all_read_rule" model="ir.rule">
+            <field name="name">Employee: Read All Attendances</field>
+            <field name="model_id" ref="hr_attendance.model_hr_attendance"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('group_hr_attendance_all_reader'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- Ensure multi-company rule still applies -->
+        <!-- The global multi-company rule from hr_attendance will automatically apply -->
+
+    </data>
+</odoo>

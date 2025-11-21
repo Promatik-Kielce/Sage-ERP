@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Inherit List View - Make Read-Only for Employees -->
+        <record id="view_attendance_tree_employee_readonly" model="ir.ui.view">
+            <field name="name">hr.attendance.tree.employee.readonly</field>
+            <field name="model">hr.attendance</field>
+            <field name="inherit_id" ref="hr_attendance.view_attendance_tree"/>
+            <field name="arch" type="xml">
+                <xpath expr="//list" position="attributes">
+                    <attribute name="edit">false</attribute>
+                    <attribute name="create">false</attribute>
+                    <attribute name="delete">false</attribute>
+                </xpath>
+                <!-- Remove action buttons for employees -->
+                <xpath expr="//button[@name='action_refuse_overtime']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <xpath expr="//button[@name='action_approve_overtime']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- Inherit Gantt View - Ensure Read-Only for Employees -->
+        <record id="hr_attendance_view_gantt_employee_readonly" model="ir.ui.view">
+            <field name="name">hr.attendance.gantt.employee.readonly</field>
+            <field name="model">hr.attendance</field>
+            <field name="inherit_id" ref="hr_attendance.hr_attendance_view_gantt"/>
+            <field name="arch" type="xml">
+                <xpath expr="//gantt" position="attributes">
+                    <attribute name="edit">false</attribute>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- Window Action for Employee Attendance View -->
+        <record id="hr_attendance_action_employee_all" model="ir.actions.act_window">
+            <field name="name">All Attendances</field>
+            <field name="res_model">hr.attendance</field>
+            <field name="view_mode">list,gantt,form</field>
+            <field name="domain">[]</field>
+            <field name="context">{}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No attendance records found
+                </p>
+                <p>
+                    This view shows all employee attendance records across the organization.
+                    You have read-only access to promote workplace transparency.
+                </p>
+            </field>
+        </record>
+
+        <!-- Root Menu: Attendances (Employee View) - Standalone top-level menu -->
+        <menuitem
+            id="menu_hr_attendance_employee_root"
+            name="Attendances"
+            sequence="206"
+            groups="base.group_user"
+            web_icon="hr_attendance_employee_access,static/description/icon.png"/>
+
+        <!-- Submenu: All Attendances (accessible to all employees) -->
+        <menuitem
+            id="menu_hr_attendance_employee_all"
+            name="All Attendances"
+            parent="menu_hr_attendance_employee_root"
+            action="hr_attendance_action_employee_all"
+            sequence="10"
+            groups="base.group_user"/>
+
+    </data>
+</odoo>

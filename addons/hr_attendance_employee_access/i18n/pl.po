@@ -1,0 +1,82 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# * hr_attendance_employee_access
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-11-21 12:00:00\n"
+"PO-Revision-Date: 2025-11-21 12:00:00\n"
+"Language: pl\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+
+#. module: hr_attendance_employee_access
+#: model:ir.actions.act_window,name:hr_attendance_employee_access.hr_attendance_action_employee_all
+#: model:ir.ui.menu,name:hr_attendance_employee_access.menu_hr_attendance_employee_all
+msgid "All Attendances"
+msgstr "Wszystkie obecności"
+
+#. module: hr_attendance_employee_access
+#: model:ir.ui.menu,name:hr_attendance_employee_access.menu_hr_attendance_employee_root
+msgid "Attendances"
+msgstr "Obecności"
+
+#. module: hr_attendance_employee_access
+#: model:res.groups,name:hr_attendance_employee_access.group_hr_attendance_all_reader
+#: model:ir.rule,name:hr_attendance_employee_access.hr_attendance_employee_all_read_rule
+msgid "Employee: Read All Attendances"
+msgstr "Pracownik: Odczyt wszystkich obecności"
+
+#. module: hr_attendance_employee_access
+#: model:res.groups,comment:hr_attendance_employee_access.group_hr_attendance_all_reader
+msgid ""
+"This group allows employees to view all attendance records\n"
+"across the entire organization in read-only mode.\n"
+"Promotes workplace transparency."
+msgstr ""
+"Ta grupa pozwala pracownikom przeglądać wszystkie rekordy obecności\n"
+"w całej organizacji w trybie tylko do odczytu.\n"
+"Promuje przejrzystość w miejscu pracy."
+
+#. module: hr_attendance_employee_access
+#: model:ir.actions.act_window,help:hr_attendance_employee_access.hr_attendance_action_employee_all
+msgid ""
+"<p class=\"o_view_nocontent_smiling_face\">\n"
+"                    No attendance records found\n"
+"                </p>\n"
+"                <p>\n"
+"                    This view shows all employee attendance records across the organization.\n"
+"                    You have read-only access to promote workplace transparency.\n"
+"                </p>"
+msgstr ""
+"<p class=\"o_view_nocontent_smiling_face\">\n"
+"                    Nie znaleziono rekordów obecności\n"
+"                </p>\n"
+"                <p>\n"
+"                    Ten widok pokazuje wszystkie rekordy obecności pracowników w organizacji.\n"
+"                    Masz dostęp tylko do odczytu, aby promować przejrzystość w miejscu pracy.\n"
+"                </p>"
+
+#. module: hr_attendance_employee_access
+#: model:ir.ui.view,name:hr_attendance_employee_access.view_attendance_tree_employee_readonly
+msgid "hr.attendance.tree.employee.readonly"
+msgstr "hr.attendance.tree.employee.readonly"
+
+#. module: hr_attendance_employee_access
+#: model:ir.ui.view,name:hr_attendance_employee_access.hr_attendance_view_gantt_employee_readonly
+msgid "hr.attendance.gantt.employee.readonly"
+msgstr "hr.attendance.gantt.employee.readonly"
+
+#. module: hr_attendance_employee_access
+#: model:ir.model.access,name:hr_attendance_employee_access.access_hr_attendance_employee_all_reader
+msgid "hr.attendance employee all reader"
+msgstr "hr.attendance pracownik odczyt wszystkich"
+
+#. module: hr_attendance_employee_access
+#: model:ir.model.access,name:hr_attendance_employee_access.access_hr_employee_employee_all_reader
+msgid "hr.employee employee reader"
+msgstr "hr.employee pracownik odczyt"
