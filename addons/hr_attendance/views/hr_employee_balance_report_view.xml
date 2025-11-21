@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- All Employees Hours Balance Report List View -->
+    <record id="hr_employee_balance_report_view_list" model="ir.ui.view">
+        <field name="name">hr.employee.balance.report.list</field>
+        <field name="model">hr.employee</field>
+        <field name="arch" type="xml">
+            <list string="Employees Hours Balance" create="false" edit="false">
+                <field name="name"/>
+                <field name="department_id"/>
+                <field name="job_id" optional="show"/>
+                <field name="attendance_manager_id" optional="hide"/>
+                <field name="hours_today" widget="float_time" optional="show"/>
+                <field name="hours_last_month" widget="float_time" optional="show"/>
+                <field name="hours_last_month_overtime" widget="float_time" optional="show"
+                       decoration-success="hours_last_month_overtime &gt; 0"
+                       decoration-danger="hours_last_month_overtime &lt; 0"/>
+                <field name="total_overtime" widget="float_time" optional="show"
+                       decoration-success="total_overtime &gt; 0"
+                       decoration-danger="total_overtime &lt; 0"/>
+                <field name="hours_balance" widget="float_time"
+                       decoration-success="hours_balance &gt; 0"
+                       decoration-danger="hours_balance &lt; 0"
+                       decoration-bf="1"/>
+                <field name="last_check_in" optional="show"/>
+                <field name="attendance_state" optional="show" widget="badge"
+                       decoration-success="attendance_state == 'checked_in'"
+                       decoration-warning="attendance_state == 'checked_out'"/>
+                <button name="action_view_hours_balance_detail"
+                        string="View Details"
+                        type="object"
+                        icon="fa-list"
+                        class="btn btn-sm btn-secondary"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- All Employees Hours Balance Report Graph View -->
+    <record id="hr_employee_balance_report_view_graph" model="ir.ui.view">
+        <field name="name">hr.employee.balance.report.graph</field>
+        <field name="model">hr.employee</field>
+        <field name="arch" type="xml">
+            <graph string="Employees Hours Balance" type="bar">
+                <field name="name"/>
+                <field name="hours_balance" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- All Employees Hours Balance Report Pivot View -->
+    <record id="hr_employee_balance_report_view_pivot" model="ir.ui.view">
+        <field name="name">hr.employee.balance.report.pivot</field>
+        <field name="model">hr.employee</field>
+        <field name="arch" type="xml">
+            <pivot string="Employees Hours Balance Analysis">
+                <field name="department_id" type="row"/>
+                <field name="hours_balance" type="measure"/>
+                <field name="hours_last_month" type="measure"/>
+                <field name="total_overtime" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- All Employees Hours Balance Action -->
+    <record id="hr_employee_balance_report_action" model="ir.actions.act_window">
+        <field name="name">Hours Balance Report</field>
+        <field name="res_model">hr.employee</field>
+        <field name="view_mode">list,graph,pivot</field>
+        <field name="domain">[('active', '=', True)]</field>
+        <field name="context">{
+            'search_default_group_by_department': 1,
+        }</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No employees found
+            </p>
+            <p>
+                This report shows the hours balance for all employees.
+                <br/>
+                Positive values indicate extra hours worked, negative values indicate hours owed.
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu Item: Hours Balance Report -->
+    <menuitem id="menu_hr_employee_balance_report"
+              name="Hours Balance Report"
+              parent="hr_attendance.menu_hr_attendance_reporting"
+              action="hr_employee_balance_report_action"
+              sequence="20"
+              groups="hr_attendance.group_hr_attendance_officer"/>
+
+</odoo>
