@@ -37,11 +37,18 @@ class HrLeave(models.Model):
     def _get_deductible_employee_overtime(self, employees):
         # return dict {employee: number of hours}
         diff_by_employee = defaultdict(lambda: 0)
+
+        # Determine which overtime statuses to include
+        # If auto-approve is enabled, include 'to_approve' status as well since it will be approved automatically
+        overtime_statuses = ['approved']
+        if employees and employees[0].company_id.attendance_overtime_validation == 'no_validation':
+            overtime_statuses.append('to_approve')
+
         for employee, hours in self.env['hr.attendance.overtime.line'].sudo()._read_group(
             domain=[
                 ('compensable_as_leave', '=', True),
                 ('employee_id', 'in', employees.ids),
-                ('status', '=', 'approved'),
+                ('status', 'in', overtime_statuses),
             ],
             groupby=['employee_id'],
             aggregates=['manual_duration:sum'],

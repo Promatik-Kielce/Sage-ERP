@@ -42,6 +42,24 @@
                         </span>
                     </div>
                 </button>
+                <button name="action_view_hours_balance_detail"
+                        class="oe_stat_button"
+                        icon="fa-balance-scale"
+                        type="object"
+                        groups="hr_attendance.group_hr_attendance_officer"
+                        help="Cumulative hours balance"
+                        invisible="not display_extra_hours">
+                    <div class="o_field_widget o_stat_info">
+                        <span class="o_stat_value">
+                            <field name="hours_balance" widget="float_time"
+                                   decoration-success="hours_balance &gt; 0"
+                                   decoration-danger="hours_balance &lt; 0"/>
+                        </span>
+                        <span class="o_stat_text">
+                            Hours Balance
+                        </span>
+                    </div>
+                </button>
             </button>
             <xpath expr="//group[@name='managers']" position="inside">
                 <field name="attendance_manager_id" string="Attendance" widget="many2one_avatar_user" groups="hr_attendance.group_hr_attendance_user"/>

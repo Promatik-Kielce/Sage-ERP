@@ -22,6 +22,7 @@ export class ActivityMenu extends Component {
         this.dialog = useService("dialog");
         this.orm = useService("orm");
         this.notification = useService("notification");
+        this.action = useService("action");
         this.employee = false;
         this.state = useState({
             checkedIn: false,
@@ -81,6 +82,12 @@ export class ActivityMenu extends Component {
             this.isFirstAttendance = this.employee.hours_previously_today === 0;
             this.state.isDisplayed = this.employee.display_systray
 
+            // Hours balance
+            this.hoursBalance = this.employee.hours_balance || 0;
+            this.hoursBalanceFormatted = this.date_formatter(Math.abs(this.hoursBalance));
+            this.hoursBalancePositive = this.hoursBalance >= 0;
+            this.displayExtraHours = this.employee.display_extra_hours;
+
             // Check if employee exceeded 8 hours and show notification
             if (this.employee.exceeded_eight_hours && !this._hasAcknowledgedToday()) {
                 this._showEightHourNotification();
@@ -119,19 +126,18 @@ export class ActivityMenu extends Component {
         console.log("[AttendanceMenu] 8-hour notification triggered!");
         console.log("[AttendanceMenu] Dialog service available:", !!this.dialog);
 
+        // Mark as acknowledged immediately when dialog is displayed
+        this._markAsAcknowledged();
+        console.log("[AttendanceMenu] 8-hour notification marked as acknowledged");
+
         // Use setTimeout to ensure component is fully mounted
         setTimeout(() => {
             try {
                 this.dialog.add(AlertDialog, {
-                    title: _t("⏰ 8 Hours Reached"),
-                    body: _t("You have worked 8 hours today.\nConsider taking a break or checking out."),
+                    title: _t("⏰ Przepracowano 8 godzin"),
+                    body: _t("Przepracowałeś dzisiaj 8 godzin.\nRozważ zrobienie przerwy lub wylogowanie się."),
                     confirmLabel: _t("OK"),
                     confirmClass: "btn-primary",
-                    confirm: () => {
-                        // Mark as acknowledged when user clicks OK
-                        this._markAsAcknowledged();
-                        console.log("[AttendanceMenu] User acknowledged 8-hour notification");
-                    },
                 });
                 console.log("[AttendanceMenu] Dialog added successfully");
             } catch (error) {
@@ -141,8 +147,8 @@ export class ActivityMenu extends Component {
 
         // Show browser notification if permission granted
         if ("Notification" in window && Notification.permission === "granted") {
-            new Notification(_t("8 Hours Reached"), {
-                body: _t("You have worked 8 hours today. Consider taking a break or checking out."),
+            new Notification(_t("Przepracowano 8 godzin"), {
+                body: _t("Przepracowałeś dzisiaj 8 godzin. Rozważ zrobienie przerwy lub wylogowanie się."),
                 icon: "/web/static/img/favicon.ico",
                 tag: "attendance-8hours",
             });
@@ -175,6 +181,13 @@ export class ActivityMenu extends Component {
             this.employee = await rpc("/hr_attendance/systray_check_in_out")
             this._searchReadEmployeeFill();
         }
+    }
+
+    async viewBalanceDetail() {
+        this.dropdown.close();
+        // Open the balance detail view
+        const action = await this.orm.call("hr.employee", "action_view_hours_balance_detail", [this.employee.id]);
+        await this.action.doAction(action);
     }
 }
 

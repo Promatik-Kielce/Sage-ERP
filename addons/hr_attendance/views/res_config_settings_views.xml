@@ -71,7 +71,8 @@
                         <setting title="Display Extra Hours." string="Display Extra Hours" company_dependent="1" help="Display Extra Hours in Kiosk mode and on User profile.">
                             <field name="hr_attendance_display_overtime"/>
                         </setting>
-                        <setting title="Extra Hours Validation" string="Extra Hours Validation" company_dependent="1" help="Can be converted as Time Off (cfr Time Off configuration).">
+                        <setting title="Extra Hours Validation" string="Extra Hours Validation" company_dependent="1"
+                                 help="Automatically Approved: Extra hours are immediately available for Hours Balance and Time Off requests. Approved by Manager: Extra hours require manager approval before being counted.">
                             <field name="attendance_overtime_validation" widget="radio"/>
                         </setting>
                     </block>

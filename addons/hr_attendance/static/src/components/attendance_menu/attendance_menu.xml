@@ -27,10 +27,27 @@
                                 <small class="text-muted">Total today</small>
                                 <h2 t-esc="this.hoursToday" class="mb-0 fs-2"/>
                             </div>
+
                             <button t-on-click="() => this.signInOut()" class="flex-basis-100 mt-3" t-attf-class="btn btn-{{ this.state.checkedIn ? 'warning' : 'success' }}">
                                 <span t-if="!this.state.checkedIn">Check in</span>
                                 <span t-else="">Check out</span>
                                 <i t-attf-class="fa fa-sign-{{ this.state.checkedIn ? 'out' : 'in' }} ms-1"/>
+                            </button>
+                        </div>
+
+                        <!-- Hours Balance Display - Always visible when enabled -->
+                        <div t-if="this.displayExtraHours" class="att_container p-3 bg-100 rounded">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <small class="text-muted">Hours Balance</small>
+                                <h5 class="mb-0" t-attf-class="text-{{ this.hoursBalancePositive ? 'success' : 'danger' }}">
+                                    <t t-if="this.hoursBalancePositive">+</t>
+                                    <t t-else="">-</t>
+                                    <t t-esc="this.hoursBalanceFormatted"/>
+                                </h5>
+                            </div>
+                            <button t-on-click="() => this.viewBalanceDetail()" class="btn btn-link btn-sm w-100 p-0 text-start">
+                                <i class="fa fa-list me-1"/>
+                                View detailed breakdown
                             </button>
                         </div>
                     </div>

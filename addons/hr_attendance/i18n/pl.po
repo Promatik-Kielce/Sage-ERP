@@ -2525,3 +2525,241 @@ msgstr "z opcjonalnym kodem PIN"
 
 #~ msgid "Wrong PIN"
 #~ msgstr "Nieprawidłowy PIN"
+
+#. module: hr_attendance
+#: model:ir.model.fields,field_description:hr_attendance.field_hr_employee__hours_balance
+msgid "Hours Balance"
+msgstr "Bilans godzin"
+
+#. module: hr_attendance
+#: model:ir.model.fields,field_description:hr_attendance.field_hr_employee__hours_balance_start_date
+msgid "Balance Start Date"
+msgstr "Data początku bilansu"
+
+#. module: hr_attendance
+#: model:ir.model.fields,help:hr_attendance.field_hr_employee__hours_balance
+msgid "Cumulative hours balance (overtime minus undertime). Positive means extra hours worked, negative means hours owed."
+msgstr "Skumulowany bilans godzin (nadgodziny minus niedobór). Wartość dodatnia oznacza przepracowane nadgodziny, ujemna oznacza brakujące godziny."
+
+#. module: hr_attendance
+#: model:ir.model.fields,help:hr_attendance.field_hr_employee__hours_balance_start_date
+msgid "Date from which to start calculating hours balance. Defaults to employee creation or 1 year ago."
+msgstr "Data, od której rozpocząć obliczanie bilansu godzin. Domyślnie data utworzenia pracownika lub rok wstecz."
+
+#. module: hr_attendance
+#: model:ir.model.fields,field_description:hr_attendance.field_hr_employee_hours_balance_line__employee_id
+msgid "Employee"
+msgstr "Pracownik"
+
+#. module: hr_attendance
+#: model:ir.model.fields,field_description:hr_attendance.field_hr_employee_hours_balance_line__date
+msgid "Date"
+msgstr "Data"
+
+#. module: hr_attendance
+#: model:ir.model.fields,field_description:hr_attendance.field_hr_employee_hours_balance_line__day_of_week
+msgid "Day"
+msgstr "Dzień"
+
+#. module: hr_attendance
+#: model:ir.model.fields,field_description:hr_attendance.field_hr_employee_hours_balance_line__worked_hours
+msgid "Worked Hours"
+msgstr "Przepracowane godziny"
+
+#. module: hr_attendance
+#: model:ir.model.fields,field_description:hr_attendance.field_hr_employee_hours_balance_line__expected_hours
+msgid "Expected Hours"
+msgstr "Oczekiwane godziny"
+
+#. module: hr_attendance
+#: model:ir.model.fields,field_description:hr_attendance.field_hr_employee_hours_balance_line__is_weekend
+msgid "Weekend"
+msgstr "Weekend"
+
+#. module: hr_attendance
+#: model:ir.model.fields,field_description:hr_attendance.field_hr_employee_hours_balance_line__is_public_holiday
+msgid "Public Holiday"
+msgstr "Święto państwowe"
+
+#. module: hr_attendance
+#: model:ir.model.fields,field_description:hr_attendance.field_hr_employee_hours_balance_line__has_approved_leave
+msgid "Has Leave"
+msgstr "Ma urlop"
+
+#. module: hr_attendance
+#: model:ir.model.fields,field_description:hr_attendance.field_hr_employee_hours_balance_line__leave_name
+msgid "Leave Type"
+msgstr "Typ urlopu"
+
+#. module: hr_attendance
+#: model:ir.model.fields,field_description:hr_attendance.field_hr_employee_hours_balance_line__balance_delta
+msgid "Daily +/-"
+msgstr "Dzienny +/-"
+
+#. module: hr_attendance
+#: model:ir.model.fields,help:hr_attendance.field_hr_employee_hours_balance_line__balance_delta
+msgid "Change in balance for this day"
+msgstr "Zmiana bilansu w tym dniu"
+
+#. module: hr_attendance
+#: model:ir.model.fields,field_description:hr_attendance.field_hr_employee_hours_balance_line__balance_cumulative
+msgid "Total Balance"
+msgstr "Bilans całkowity"
+
+#. module: hr_attendance
+#: model:ir.model.fields,help:hr_attendance.field_hr_employee_hours_balance_line__balance_cumulative
+msgid "Running total balance up to this date"
+msgstr "Bieżący bilans całkowity do tej daty"
+
+#. module: hr_attendance
+#: model:ir.model.fields,field_description:hr_attendance.field_hr_employee_hours_balance_line__notes
+msgid "Calculation Notes"
+msgstr "Notatki kalkulacji"
+
+#. module: hr_attendance
+#: model:ir.model.fields,field_description:hr_attendance.field_hr_employee_hours_balance_line__attendance_count
+msgid "# Attendances"
+msgstr "Liczba obecności"
+
+#. module: hr_attendance
+#: model:ir.ui.view,arch_db:hr_attendance.view_hr_employee_hours_balance_line_list
+msgid "Hours Balance Detail"
+msgstr "Szczegóły bilansu godzin"
+
+#. module: hr_attendance
+#: model:ir.ui.view,arch_db:hr_attendance.view_hr_employee_hours_balance_line_graph
+msgid "Hours Balance Over Time"
+msgstr "Bilans godzin w czasie"
+
+#. module: hr_attendance
+#: model:ir.ui.view,arch_db:hr_attendance.view_hr_employee_hours_balance_line_pivot
+msgid "Hours Balance Analysis"
+msgstr "Analiza bilansu godzin"
+
+#. module: hr_attendance
+#: model:ir.ui.view,arch_db:hr_attendance.view_hr_employee_hours_balance_line_search
+msgid "Hours Balance Search"
+msgstr "Wyszukiwanie bilansu godzin"
+
+#. module: hr_attendance
+#: model:ir.ui.view,arch_db:hr_attendance.view_hr_employee_balance_report_list
+#: model:ir.actions.act_window,name:hr_attendance.action_hr_employee_balance_report
+#: model:ir.ui.menu,name:hr_attendance.menu_hr_employee_balance_report
+msgid "Hours Balance Report"
+msgstr "Raport bilansu godzin"
+
+#. module: hr_attendance
+#: model:ir.ui.view,arch_db:hr_attendance.view_hr_employee_balance_report_list
+msgid "Employees Hours Balance"
+msgstr "Bilans godzin pracowników"
+
+#. module: hr_attendance
+#: model:ir.ui.view,arch_db:hr_attendance.view_hr_employee_balance_report_list
+msgid "View Details"
+msgstr "Pokaż szczegóły"
+
+#. module: hr_attendance
+#: model:ir.ui.view,arch_db:hr_attendance.view_hr_employee_balance_report_graph
+msgid "Employees Hours Balance"
+msgstr "Bilans godzin pracowników"
+
+#. module: hr_attendance
+#: model:ir.ui.view,arch_db:hr_attendance.view_hr_employee_balance_report_pivot
+msgid "Employees Hours Balance Analysis"
+msgstr "Analiza bilansu godzin pracowników"
+
+#. module: hr_attendance
+#. odoo-python
+#: code:addons/hr_attendance/models/hr_employee_hours_balance.py:0
+msgid "Public holiday - no hours counted"
+msgstr "Święto państwowe - brak zaliczanych godzin"
+
+#. module: hr_attendance
+#. odoo-python
+#: code:addons/hr_attendance/models/hr_employee_hours_balance.py:0
+#, python-format
+msgid "Approved leave: %s"
+msgstr "Zatwierdzony urlop: %s"
+
+#. module: hr_attendance
+#. odoo-python
+#: code:addons/hr_attendance/models/hr_employee_hours_balance.py:0
+#, python-format
+msgid "Weekend work: +%s hours bonus"
+msgstr "Praca w weekend: +%s godz. premii"
+
+#. module: hr_attendance
+#. odoo-python
+#: code:addons/hr_attendance/models/hr_employee_hours_balance.py:0
+msgid "Weekend - no work expected"
+msgstr "Weekend - brak oczekiwanej pracy"
+
+#. module: hr_attendance
+#. odoo-python
+#: code:addons/hr_attendance/models/hr_employee_hours_balance.py:0
+#, python-format
+msgid "Absent: -%s hours (no attendance recorded)"
+msgstr "Nieobecny: -%s godz. (brak zarejestrowanej obecności)"
+
+#. module: hr_attendance
+#. odoo-python
+#: code:addons/hr_attendance/models/hr_employee_hours_balance.py:0
+#, python-format
+msgid "Absent: -%s hours (absence detected by system)"
+msgstr "Nieobecny: -%s godz. (nieobecność wykryta przez system)"
+
+#. module: hr_attendance
+#. odoo-python
+#: code:addons/hr_attendance/models/hr_employee_hours_balance.py:0
+#, python-format
+msgid "Worked %sh, expected %sh: +%sh overtime"
+msgstr "Przepracowano %sg, oczekiwano %sg: +%sg nadgodzin"
+
+#. module: hr_attendance
+#. odoo-python
+#: code:addons/hr_attendance/models/hr_employee_hours_balance.py:0
+#, python-format
+msgid "Worked %sh, expected %sh: -%sh undertime"
+msgstr "Przepracowano %sg, oczekiwano %sg: -%sg niedoboru"
+
+#. module: hr_attendance
+#. odoo-python
+#: code:addons/hr_attendance/models/hr_employee.py:0
+#, python-format
+msgid "Hours Balance Detail: %s"
+msgstr "Szczegóły bilansu godzin: %s"
+
+#. module: hr_attendance
+#: model_terms:ir.ui.view,arch_db:hr_attendance.hr_attendance_menu_template
+msgid "Hours Balance"
+msgstr "Bilans godzin"
+
+#. module: hr_attendance
+#: model_terms:ir.ui.view,arch_db:hr_attendance.hr_attendance_menu_template
+msgid "View detailed breakdown"
+msgstr "Zobacz szczegółowy raport"
+
+#. module: hr_attendance
+#: model_terms:ir.ui.view,arch_db:hr_attendance.hr_attendance_menu_template
+msgid "Before"
+msgstr "Przed"
+
+#. module: hr_attendance
+#: model_terms:ir.ui.view,arch_db:hr_attendance.hr_attendance_menu_template
+msgid "Since"
+msgstr "Od"
+
+#. module: hr_attendance
+#: model_terms:ir.ui.view,arch_db:hr_attendance.hr_attendance_menu_template
+msgid "Total today"
+msgstr "Suma dzisiaj"
+
+#. module: hr_attendance
+#: model_terms:ir.ui.view,arch_db:hr_attendance.hr_attendance_menu_template
+msgid "Check in"
+msgstr "Wejście"
+
+#. module: hr_attendance
+#: model_terms:ir.ui.view,arch_db:hr_attendance.hr_attendance_menu_template
+msgid "Check out"
+msgstr "Wyjście"

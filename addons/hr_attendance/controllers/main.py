@@ -29,6 +29,8 @@ class HrAttendance(http.Controller):
                 'display_systray': employee.company_id.attendance_from_systray,
                 'device_tracking_enabled': employee.company_id.attendance_device_tracking,
                 'exceeded_eight_hours': employee.hours_today >= 8.0 and employee.attendance_state == 'checked_in',
+                'hours_balance': float_round(employee.hours_balance, precision_digits=2),
+                'display_extra_hours': employee.display_extra_hours,
             }
         return response
 
