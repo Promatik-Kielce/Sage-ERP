@@ -629,13 +629,13 @@ msgstr "Check Out"
 #. odoo-javascript
 #: code:addons/hr_attendance/static/src/components/attendance_menu/attendance_menu.xml:0
 msgid "Check in"
-msgstr "Check in"
+msgstr "Wejście"
 
 #. module: hr_attendance
 #. odoo-javascript
 #: code:addons/hr_attendance/static/src/components/attendance_menu/attendance_menu.xml:0
 msgid "Check out"
-msgstr "Check out"
+msgstr "Wyjście"
 
 #. module: hr_attendance
 #: model:ir.model.fields.selection,name:hr_attendance.selection__hr_employee__attendance_state__checked_in
@@ -2153,6 +2153,12 @@ msgid "Total today"
 msgstr "Suma dzisiaj"
 
 #. module: hr_attendance
+#. odoo-javascript
+#: code:addons/hr_attendance/static/src/components/attendance_menu/attendance_menu.xml:0
+msgid "View detailed breakdown"
+msgstr "Zobacz szczegółowy raport"
+
+#. module: hr_attendance
 #: model:ir.actions.server,name:hr_attendance.action_try_kiosk
 msgid "Try kiosk"
 msgstr "Wypróbuj kiosk"
@@ -2671,8 +2677,29 @@ msgstr "Analiza bilansu godzin pracowników"
 #. module: hr_attendance
 #. odoo-python
 #: code:addons/hr_attendance/models/hr_employee_hours_balance.py:0
-msgid "Public holiday - no hours counted"
-msgstr "Święto państwowe - brak zaliczanych godzin"
+#, python-format
+msgid "Public holiday work: +%s hours bonus"
+msgstr "Praca w święto: +%s godz. premii"
+
+#. module: hr_attendance
+#. odoo-python
+#: code:addons/hr_attendance/models/hr_employee_hours_balance.py:0
+msgid "Public holiday - no work expected"
+msgstr "Święto państwowe - brak oczekiwanej pracy"
+
+#. module: hr_attendance
+#. odoo-python
+#: code:addons/hr_attendance/models/hr_employee_hours_balance.py:0
+#, python-format
+msgid "Worked on leave (%s): +%s hours bonus"
+msgstr "Praca na urlopie (%s): +%s godz. premii"
+
+#. module: hr_attendance
+#. odoo-python
+#: code:addons/hr_attendance/models/hr_employee_hours_balance.py:0
+#, python-format
+msgid "On approved leave: %s"
+msgstr "Na zatwierdzonym urlopie: %s"
 
 #. module: hr_attendance
 #. odoo-python

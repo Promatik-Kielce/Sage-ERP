@@ -137,11 +137,12 @@ class HrEmployeeHoursBalanceLine(models.Model):
             # Note: calendar.leaves dates are stored without timezone in DB
             datetime_start_naive = datetime_start_utc.replace(tzinfo=None)
             datetime_end_naive = datetime_end_utc.replace(tzinfo=None)
+            # Check for public holidays (global calendar leaves only, not individual employee leaves)
             public_holiday = self.env['resource.calendar.leaves'].search([
                 ('calendar_id', '=', calendar.id),
                 ('date_from', '<=', datetime_end_naive),
                 ('date_to', '>=', datetime_start_naive),
-                '|', ('resource_id', '=', False), ('resource_id', '=', employee.resource_id.id)
+                ('resource_id', '=', False)  # Only global public holidays, not individual leaves
             ], limit=1)
             is_public_holiday = bool(public_holiday)
 
@@ -173,13 +174,19 @@ class HrEmployeeHoursBalanceLine(models.Model):
 
             # Calculate balance delta based on rules
             if is_public_holiday:
-                # Public holidays: no penalty, no bonus
-                balance_delta = 0.0
-                notes = _('Public holiday - no hours counted')
+                # Public holidays: worked hours count as bonus
+                balance_delta = worked_hours
+                if worked_hours > 0:
+                    notes = _('Public holiday work: +%s hours bonus') % round(worked_hours, 2)
+                else:
+                    notes = _('Public holiday - no work expected')
             elif has_approved_leave:
-                # Approved leave: no penalty, no bonus
-                balance_delta = 0.0
-                notes = _('Approved leave: %s') % leave_name
+                # Approved leave: worked hours count as bonus
+                balance_delta = worked_hours
+                if worked_hours > 0:
+                    notes = _('Worked on leave (%s): +%s hours bonus') % (leave_name, round(worked_hours, 2))
+                else:
+                    notes = _('On approved leave: %s') % leave_name
             elif is_weekend:
                 # Weekend: all worked hours are bonus
                 balance_delta = worked_hours

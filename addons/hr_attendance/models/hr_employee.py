@@ -367,11 +367,12 @@ class HrEmployee(models.Model):
                 datetime_start_naive = datetime_start_utc.replace(tzinfo=None)
                 datetime_end_naive = datetime_end_utc.replace(tzinfo=None)
 
+                # Check for public holidays (global calendar leaves only, not individual employee leaves)
                 public_holiday = self.env['resource.calendar.leaves'].search([
                     ('calendar_id', '=', calendar.id),
                     ('date_from', '<=', datetime_end_naive),
                     ('date_to', '>=', datetime_start_naive),
-                    '|', ('resource_id', '=', False), ('resource_id', '=', employee.resource_id.id)
+                    ('resource_id', '=', False)  # Only global public holidays, not individual leaves
                 ], limit=1)
                 is_public_holiday = bool(public_holiday)
 
@@ -396,14 +397,12 @@ class HrEmployee(models.Model):
                 worked_hours = worked_by_date.get(current_date, 0.0)
 
                 # Calculate balance delta
-                if is_public_holiday or has_approved_leave:
-                    # No penalty, no bonus
-                    balance_delta = 0.0
-                elif is_weekend:
-                    # All worked hours are bonus
+                if is_public_holiday or has_approved_leave or is_weekend:
+                    # Public holidays, approved leaves, and weekends: all worked hours count as bonus
+                    # If no work, no penalty (balance_delta = 0)
                     balance_delta = worked_hours
                 else:
-                    # Weekday: difference between worked and expected
+                    # Regular weekday: difference between worked and expected
                     balance_delta = worked_hours - expected_hours
 
                 balance += balance_delta

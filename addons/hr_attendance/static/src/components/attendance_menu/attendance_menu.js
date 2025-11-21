@@ -185,8 +185,8 @@ export class ActivityMenu extends Component {
 
     async viewBalanceDetail() {
         this.dropdown.close();
-        // Open the balance detail view
-        const action = await this.orm.call("hr.employee", "action_view_hours_balance_detail", [this.employee.id]);
+        // Open the balance detail view - note the double brackets for recordset IDs
+        const action = await this.orm.call("hr.employee", "action_view_hours_balance_detail", [[this.employee.id]]);
         await this.action.doAction(action);
     }
 }
