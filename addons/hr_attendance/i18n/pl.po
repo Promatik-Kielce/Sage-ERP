@@ -2628,6 +2628,46 @@ msgid "# Attendances"
 msgstr "Liczba obecności"
 
 #. module: hr_attendance
+#: model:ir.model.fields,field_description:hr_attendance.field_hr_employee_hours_balance_line__balance_delta_positive
+msgid "Daily + (Surplus)"
+msgstr "Dzienny + (Nadwyżka)"
+
+#. module: hr_attendance
+#: model:ir.model.fields,field_description:hr_attendance.field_hr_employee_hours_balance_line__balance_delta_negative
+msgid "Daily - (Deficit)"
+msgstr "Dzienny - (Niedobór)"
+
+#. module: hr_attendance
+#: model:ir.model.fields,field_description:hr_attendance.field_hr_employee_hours_balance_line__balance_cumulative_positive
+msgid "Balance + (Surplus)"
+msgstr "Bilans + (Nadwyżka)"
+
+#. module: hr_attendance
+#: model:ir.model.fields,field_description:hr_attendance.field_hr_employee_hours_balance_line__balance_cumulative_negative
+msgid "Balance - (Deficit)"
+msgstr "Bilans - (Niedobór)"
+
+#. module: hr_attendance
+#: model:ir.ui.view,arch_db:hr_attendance.hr_employee_hours_balance_line_view_graph_daily
+msgid "Daily Balance (+/-)"
+msgstr "Dzienny bilans (+/-)"
+
+#. module: hr_attendance
+#: model:ir.ui.view,arch_db:hr_attendance.hr_employee_hours_balance_line_view_graph_daily
+msgid "Surplus (+)"
+msgstr "Nadwyżka (+)"
+
+#. module: hr_attendance
+#: model:ir.ui.view,arch_db:hr_attendance.hr_employee_hours_balance_line_view_graph_daily
+msgid "Deficit (-)"
+msgstr "Niedobór (-)"
+
+#. module: hr_attendance
+#: model:ir.ui.view,arch_db:hr_attendance.hr_employee_hours_balance_line_view_graph_cumulative
+msgid "Balance Trend Over Time"
+msgstr "Trend bilansu w czasie"
+
+#. module: hr_attendance
 #: model:ir.ui.view,arch_db:hr_attendance.view_hr_employee_hours_balance_line_list
 msgid "Hours Balance Detail"
 msgstr "Szczegóły bilansu godzin"

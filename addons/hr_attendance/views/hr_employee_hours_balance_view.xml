@@ -28,20 +28,47 @@
         </field>
     </record>
 
-    <!-- Employee Hours Balance Line Graph View -->
-    <record id="hr_employee_hours_balance_line_view_graph" model="ir.ui.view">
-        <field name="name">hr.employee.hours.balance.line.graph</field>
+    <!-- Graph View 1: Daily Balance Delta (Bar Chart) - Default -->
+    <record id="hr_employee_hours_balance_line_view_graph_daily" model="ir.ui.view">
+        <field name="name">hr.employee.hours.balance.line.graph.daily</field>
         <field name="model">hr.employee.hours.balance.line</field>
+        <field name="priority">10</field>
         <field name="arch" type="xml">
-            <graph string="Hours Balance Over Time" type="line">
-                <field name="date"/>
-                <field name="balance_cumulative" type="measure"/>
+            <graph string="Daily Balance (+/-)" type="bar" stacked="False">
+                <field name="date" interval="day"/>
                 <field name="balance_delta" type="measure"/>
             </graph>
         </field>
     </record>
 
-    <!-- Employee Hours Balance Line Pivot View -->
+    <!-- Graph View 2: Cumulative Balance Trend (Line Chart) -->
+    <record id="hr_employee_hours_balance_line_view_graph_cumulative" model="ir.ui.view">
+        <field name="name">hr.employee.hours.balance.line.graph.cumulative</field>
+        <field name="model">hr.employee.hours.balance.line</field>
+        <field name="priority">20</field>
+        <field name="arch" type="xml">
+            <graph string="Balance Trend Over Time" type="line">
+                <field name="date" interval="day"/>
+                <field name="balance_cumulative" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Graph View 3: Worked vs Expected Hours (Grouped Bar Chart) -->
+    <record id="hr_employee_hours_balance_line_view_graph_comparison" model="ir.ui.view">
+        <field name="name">hr.employee.hours.balance.line.graph.comparison</field>
+        <field name="model">hr.employee.hours.balance.line</field>
+        <field name="priority">30</field>
+        <field name="arch" type="xml">
+            <graph string="Worked vs Expected Hours" type="bar">
+                <field name="date" interval="day"/>
+                <field name="worked_hours" type="measure"/>
+                <field name="expected_hours" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Employee Hours Balance Line Pivot View (Keep for reference but not in detail action) -->
     <record id="hr_employee_hours_balance_line_view_pivot" model="ir.ui.view">
         <field name="name">hr.employee.hours.balance.line.pivot</field>
         <field name="model">hr.employee.hours.balance.line</field>

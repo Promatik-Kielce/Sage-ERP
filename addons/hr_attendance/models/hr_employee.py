@@ -440,8 +440,9 @@ class HrEmployee(models.Model):
             'type': 'ir.actions.act_window',
             'name': _('Hours Balance Detail: %s') % self.name,
             'res_model': 'hr.employee.hours.balance.line',
-            'views': [[False, 'list'], [False, 'graph'], [False, 'pivot']],
-            'view_mode': 'list,graph,pivot',
+            'views': [[False, 'list'], [False, 'graph']],
+            'view_mode': 'list,graph',
+            'target': 'current',
             'domain': [
                 ('employee_id', '=', self.id),
                 ('date', '>=', start_date),
@@ -449,5 +450,11 @@ class HrEmployee(models.Model):
             ],
             'context': {
                 'default_employee_id': self.id,
+                'create': False,  # Disable create button
+                'edit': False,    # Disable edit
+                'delete': False,  # Disable delete
+            },
+            'flags': {
+                'mode': 'readonly',  # Read-only mode
             },
         }

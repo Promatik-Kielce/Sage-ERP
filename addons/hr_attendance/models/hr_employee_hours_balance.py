@@ -33,6 +33,12 @@ class HrEmployeeHoursBalanceLine(models.Model):
     notes = fields.Text(string='Calculation Notes')
     attendance_count = fields.Integer(string='# Attendances')
 
+    # Split fields for chart coloring
+    balance_delta_positive = fields.Float(string='Daily + (Surplus)', compute='_compute_split_values', store=False, group_operator='sum')
+    balance_delta_negative = fields.Float(string='Daily - (Deficit)', compute='_compute_split_values', store=False, group_operator='sum')
+    balance_cumulative_positive = fields.Float(string='Balance + (Surplus)', compute='_compute_split_values', store=False, group_operator='sum')
+    balance_cumulative_negative = fields.Float(string='Balance - (Deficit)', compute='_compute_split_values', store=False, group_operator='sum')
+
     @api.depends('date')
     def _compute_day_details(self):
         """Compute day of week name"""
@@ -41,6 +47,26 @@ class HrEmployeeHoursBalanceLine(models.Model):
                 line.day_of_week = format_date(self.env, line.date, date_format='EEE')  # Mon, Tue, etc.
             else:
                 line.day_of_week = ''
+
+    @api.depends('balance_delta', 'balance_cumulative')
+    def _compute_split_values(self):
+        """Split positive and negative values for chart coloring"""
+        for line in self:
+            # Split daily balance
+            if line.balance_delta >= 0:
+                line.balance_delta_positive = line.balance_delta
+                line.balance_delta_negative = 0.0
+            else:
+                line.balance_delta_positive = 0.0
+                line.balance_delta_negative = abs(line.balance_delta)  # Store as positive for display
+
+            # Split cumulative balance
+            if line.balance_cumulative >= 0:
+                line.balance_cumulative_positive = line.balance_cumulative
+                line.balance_cumulative_negative = 0.0
+            else:
+                line.balance_cumulative_positive = 0.0
+                line.balance_cumulative_negative = abs(line.balance_cumulative)  # Store as positive for display
 
     @api.model
     def _get_balance_lines_for_employee(self, employee, start_date=None, end_date=None):
@@ -330,3 +356,180 @@ class HrEmployeeHoursBalanceLine(models.Model):
             'length': length,
             'records': records,
         }
+
+    @api.model
+    def _read_group(self, domain, groupby=(), aggregates=(), having=(), offset=0, limit=None, order=None):
+        """
+        Override _read_group to support graph and pivot views.
+        Since this is a compute-only model, we need to generate data and perform grouping in Python.
+        Returns list of tuples (group_values..., aggregate_values..., count)
+        """
+        # First, get all records using search_read
+        all_records = self.search_read(domain=domain)
+
+        if not all_records:
+            return []
+
+        # Compute split values for each record (needed for chart coloring)
+        for record in all_records:
+            # Split daily balance
+            balance_delta = record.get('balance_delta', 0.0) or 0.0
+            if balance_delta >= 0:
+                record['balance_delta_positive'] = balance_delta
+                record['balance_delta_negative'] = 0.0
+            else:
+                record['balance_delta_positive'] = 0.0
+                record['balance_delta_negative'] = abs(balance_delta)
+
+            # Split cumulative balance
+            balance_cumulative = record.get('balance_cumulative', 0.0) or 0.0
+            if balance_cumulative >= 0:
+                record['balance_cumulative_positive'] = balance_cumulative
+                record['balance_cumulative_negative'] = 0.0
+            else:
+                record['balance_cumulative_positive'] = 0.0
+                record['balance_cumulative_negative'] = abs(balance_cumulative)
+
+        # Parse aggregate fields
+        aggregate_fields = []
+        for agg_spec in aggregates:
+            parts = agg_spec.split(':')
+            fname = parts[0]
+            func = parts[1] if len(parts) > 1 else 'sum'
+            aggregate_fields.append((fname, func, agg_spec))
+
+        # If no groupby, perform simple aggregation
+        if not groupby:
+            row = []
+
+            # Calculate aggregates - only what was requested
+            for fname, func, agg_spec in aggregate_fields:
+                if fname == '__count' or fname == '*':
+                    row.append(len(all_records))
+                elif all_records and fname in all_records[0]:
+                    values = [rec.get(fname, 0) or 0 for rec in all_records]
+                    if func == 'sum':
+                        row.append(sum(values))
+                    elif func == 'avg':
+                        row.append(sum(values) / len(values) if values else 0)
+                    elif func == 'max':
+                        row.append(max(values) if values else 0)
+                    elif func == 'min':
+                        row.append(min(values) if values else 0)
+                    elif func == 'count':
+                        row.append(len(values))
+                    else:
+                        row.append(sum(values))  # default to sum
+                else:
+                    row.append(0)
+
+            # Only add count if not already in aggregates
+            has_count = any(fname in ('__count', '*') for fname, _, _ in aggregate_fields)
+            if not has_count:
+                row.append(len(all_records))
+
+            return [tuple(row)]
+
+        # Group records by the groupby fields
+        from collections import defaultdict
+        groups = defaultdict(list)
+
+        for record in all_records:
+            # Build group key
+            key_parts = []
+            for gb_field in groupby:
+                field_name = gb_field.split(':')[0]
+                if field_name in record:
+                    value = record[field_name]
+                    # Handle Many2one fields - they come as [id, name]
+                    if isinstance(value, (list, tuple)) and len(value) == 2:
+                        key_parts.append(value)  # Keep as tuple for display
+                    else:
+                        key_parts.append(value)
+                else:
+                    key_parts.append(False)
+
+            key = tuple(key_parts)
+            groups[key].append(record)
+
+        # Build result for each group - return as tuples
+        results = []
+        for group_key, group_records in groups.items():
+            row = []
+
+            # Add groupby values
+            for value in group_key:
+                row.append(value)
+
+            # Calculate aggregates for this group - only what was requested
+            for fname, func, agg_spec in aggregate_fields:
+                if fname == '__count' or fname == '*':
+                    row.append(len(group_records))
+                elif group_records and fname in group_records[0]:
+                    values = [rec.get(fname, 0) or 0 for rec in group_records]
+                    if func == 'sum':
+                        row.append(sum(values))
+                    elif func == 'avg':
+                        row.append(sum(values) / len(values) if values else 0)
+                    elif func == 'max':
+                        row.append(max(values) if values else 0)
+                    elif func == 'min':
+                        row.append(min(values) if values else 0)
+                    elif func == 'count':
+                        row.append(len(values))
+                    else:
+                        row.append(sum(values))
+                else:
+                    row.append(0)
+
+            # Only add count if not already in aggregates
+            has_count = any(fname in ('__count', '*') for fname, _, _ in aggregate_fields)
+            if not has_count:
+                row.append(len(group_records))
+
+            results.append(tuple(row))
+
+        # Apply ordering if specified
+        if order:
+            order_fields = []
+            for order_spec in order.split(','):
+                parts = order_spec.strip().split()
+                field = parts[0]
+                direction = parts[1] if len(parts) > 1 else 'asc'
+                # Find index of this field in groupby
+                try:
+                    idx = [gb.split(':')[0] for gb in groupby].index(field)
+                    order_fields.append((idx, direction == 'desc'))
+                except ValueError:
+                    pass  # Field not in groupby
+
+            for idx, reverse in reversed(order_fields):
+                results.sort(key=lambda x: x[idx] if x[idx] is not False else '', reverse=reverse)
+
+        # Apply limit and offset
+        if offset:
+            results = results[offset:]
+        if limit:
+            results = results[:limit]
+
+        return results
+
+    @api.model
+    def _read_grouping_sets(self, domain, grouping_sets=(), aggregates=(), order=None):
+        """
+        Override _read_grouping_sets to support pivot views.
+        This method is used by pivot views for multiple grouping levels.
+        """
+        # For compute-only models, we'll use _read_group for each grouping set
+        all_results = []
+
+        for groupby in grouping_sets:
+            results = self._read_group(
+                domain=domain,
+                groupby=groupby,
+                aggregates=aggregates,
+                order=order
+            )
+            all_results.extend(results)
+
+        return all_results

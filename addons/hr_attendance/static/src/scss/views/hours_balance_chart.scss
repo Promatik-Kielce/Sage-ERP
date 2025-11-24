@@ -1,0 +1,39 @@
+/* Hours Balance Chart Styling */
+
+/* Color positive values (Surplus) in green */
+.o_graph_renderer .o_graph_canvas_container .o_graph_canvas {
+    /* Chart.js colors for balance charts */
+    .o_field_balance_delta_positive,
+    .o_field_balance_cumulative_positive {
+        stroke: #28a745 !important;  /* Bootstrap success green */
+        fill: #28a745 !important;
+    }
+
+    /* Color negative values (Deficit) in red */
+    .o_field_balance_delta_negative,
+    .o_field_balance_cumulative_negative {
+        stroke: #dc3545 !important;  /* Bootstrap danger red */
+        fill: #dc3545 !important;
+    }
+}
+
+/* Override Chart.js default color scheme for balance charts */
+.o_hr_attendance_balance_chart {
+    /* First series (positive) - Green */
+    .o-color-1,
+    [data-series-index="0"] {
+        background-color: #28a745 !important;
+        border-color: #28a745 !important;
+        fill: #28a745 !important;
+        stroke: #28a745 !important;
+    }
+
+    /* Second series (negative) - Red */
+    .o-color-2,
+    [data-series-index="1"] {
+        background-color: #dc3545 !important;
+        border-color: #dc3545 !important;
+        fill: #dc3545 !important;
+        stroke: #dc3545 !important;
+    }
+}
