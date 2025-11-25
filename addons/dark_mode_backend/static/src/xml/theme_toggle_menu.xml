@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="dark_mode_backend.ThemeToggleMenu">
+        <DropdownItem onSelected="() => this.toggleTheme()" class="o_theme_toggle_menu">
+            <i t-if="isDarkMode" class="fa fa-sun-o me-2"/>
+            <i t-else="" class="fa fa-moon-o me-2"/>
+            <t t-if="isDarkMode">Switch to Light Mode</t>
+            <t t-else="">Switch to Dark Mode</t>
+        </DropdownItem>
+    </t>
+</templates>

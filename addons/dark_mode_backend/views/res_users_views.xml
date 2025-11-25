@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Add theme preference to user preferences form -->
+    <record id="view_users_form_theme_preference" model="ir.ui.view">
+        <field name="name">res.users.form.theme.preference</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='preferences']//group[@name='other_preferences']" position="inside">
+                <field name="theme_preference" widget="radio" string="Theme Preference"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Add theme preference to user preferences form (simple view for current user) -->
+    <record id="view_users_form_simple_modif_theme" model="ir.ui.view">
+        <field name="name">res.users.preferences.form.theme</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_form_simple_modif"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='other_preferences']" position="inside">
+                <field name="theme_preference" widget="radio" string="Theme Preference" class="o_light_label"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
