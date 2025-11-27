@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Sequence for automatic project number generation -->
+        <record id="sequence_project_number" model="ir.sequence">
+            <field name="name">Project Number Sequence</field>
+            <field name="code">project.project.number</field>
+            <field name="prefix">PRJ-</field>
+            <field name="padding">4</field>
+            <field name="number_increment">1</field>
+            <field name="company_id" eval="False"/>
+            <field name="use_date_range" eval="False"/>
+        </record>
+    </data>
+</odoo>

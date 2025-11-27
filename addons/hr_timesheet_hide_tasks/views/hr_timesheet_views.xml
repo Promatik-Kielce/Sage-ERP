@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ========================================== -->
+    <!-- TIMESHEET FORM: Hide task_id Field -->
+    <!-- ========================================== -->
+
+    <record id="hr_timesheet_line_form_hide_task" model="ir.ui.view">
+        <field name="name">account.analytic.line.form.hide.task</field>
+        <field name="model">account.analytic.line</field>
+        <field name="inherit_id" ref="hr_timesheet.hr_timesheet_line_form"/>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <!-- Hide task_id field in form view -->
+            <xpath expr="//field[@name='task_id']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ========================================== -->
+    <!-- TIMESHEET LIST: Hide task_id Column -->
+    <!-- ========================================== -->
+
+    <record id="hr_timesheet_line_tree_hide_task" model="ir.ui.view">
+        <field name="name">account.analytic.line.tree.hide.task</field>
+        <field name="model">account.analytic.line</field>
+        <field name="inherit_id" ref="hr_timesheet.hr_timesheet_line_tree"/>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <!-- Hide task_id column in list view -->
+            <xpath expr="//field[@name='task_id']" position="attributes">
+                <attribute name="column_invisible">1</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ========================================== -->
+    <!-- TIMESHEET SEARCH: Hide task Groupby/Filter -->
+    <!-- ========================================== -->
+
+    <record id="hr_timesheet_line_search_hide_task" model="ir.ui.view">
+        <field name="name">account.analytic.line.search.hide.task</field>
+        <field name="model">account.analytic.line</field>
+        <field name="inherit_id" ref="hr_timesheet.hr_timesheet_line_search"/>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <!-- Hide "Group by Task" filter -->
+            <xpath expr="//filter[@name='groupby_task']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <!-- Hide task_id search field -->
+            <xpath expr="//field[@name='task_id']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>

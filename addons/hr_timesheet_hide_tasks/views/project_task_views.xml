@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ========================================== -->
+    <!-- FORM VIEW: Hide Timesheets Tab & Sections -->
+    <!-- ========================================== -->
+
+    <record id="view_task_form_hide_timesheets_tab" model="ir.ui.view">
+        <field name="name">project.task.form.hide.timesheets.tab</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="hr_timesheet.view_task_form2_inherited"/>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <!-- Hide the entire Timesheets tab -->
+            <xpath expr="//page[@name='page_timesheets']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <!-- Hide allocated hours container in header -->
+            <xpath expr="//div[@id='allocated_hours_container']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <!-- Hide allocated hours label -->
+            <xpath expr="//label[@for='allocated_hours']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <!-- Hide project hours group (effective/remaining hours) -->
+            <xpath expr="//group[@name='project_hours']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <!-- Hide subtask timesheet button -->
+            <xpath expr="//button[@name='action_view_subtask_timesheet']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ========================================== -->
+    <!-- LIST VIEW: Hide Timesheet Columns -->
+    <!-- ========================================== -->
+
+    <record id="view_task_tree_hide_timesheet_columns" model="ir.ui.view">
+        <field name="name">project.task.list.hide.timesheet.columns</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="hr_timesheet.view_task_tree2_inherited"/>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <!-- Hide allocated hours column -->
+            <xpath expr="//field[@name='allocated_hours']" position="attributes">
+                <attribute name="column_invisible">1</attribute>
+            </xpath>
+
+            <!-- Hide effective hours column -->
+            <xpath expr="//field[@name='effective_hours']" position="attributes">
+                <attribute name="column_invisible">1</attribute>
+            </xpath>
+
+            <!-- Hide subtask effective hours column -->
+            <xpath expr="//field[@name='subtask_effective_hours']" position="attributes">
+                <attribute name="column_invisible">1</attribute>
+            </xpath>
+
+            <!-- Hide total hours spent column -->
+            <xpath expr="//field[@name='total_hours_spent']" position="attributes">
+                <attribute name="column_invisible">1</attribute>
+            </xpath>
+
+            <!-- Hide remaining hours column -->
+            <xpath expr="//field[@name='remaining_hours']" position="attributes">
+                <attribute name="column_invisible">1</attribute>
+            </xpath>
+
+            <!-- Hide progress column -->
+            <xpath expr="//field[@name='progress']" position="attributes">
+                <attribute name="column_invisible">1</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ========================================== -->
+    <!-- KANBAN VIEW: Hide Timesheet Progress Badge -->
+    <!-- ========================================== -->
+
+    <record id="view_task_kanban_hide_timesheet_badge" model="ir.ui.view">
+        <field name="name">project.task.kanban.hide.timesheet.badge</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="hr_timesheet.view_task_kanban_inherited_progress"/>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <!-- Hide allocated hours badge in kanban cards -->
+            <xpath expr="//t[@name='allocated_hours']" position="attributes">
+                <attribute name="t-if">False</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ========================================== -->
+    <!-- SEARCH VIEW: Hide Timesheet Filters -->
+    <!-- ========================================== -->
+
+    <record id="view_task_search_hide_timesheet_filters" model="ir.ui.view">
+        <field name="name">project.task.search.hide.timesheet.filters</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="hr_timesheet.project_task_view_search"/>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <!-- Hide "Timesheets 80%" filter -->
+            <xpath expr="//filter[@name='timesheet_80']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <!-- Hide "Timesheets >100%" filter -->
+            <xpath expr="//filter[@name='timesheet_exceeded']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

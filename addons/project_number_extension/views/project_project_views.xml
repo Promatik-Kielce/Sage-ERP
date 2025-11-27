@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Form View - Add project_number field in title section before name -->
+    <record id="project_project_form_view_inherit_number" model="ir.ui.view">
+        <field name="name">project.project.form.inherit.number</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.edit_project"/>
+        <field name="arch" type="xml">
+            <!-- Add in title section -->
+            <xpath expr="//field[@name='name']" position="before">
+                <field name="project_number"
+                       placeholder="np. PRJ-001"
+                       class="oe_inline"
+                       style="width: 200px; margin-right: 10px;"/>
+            </xpath>
+            <!-- Also add as first field in the form group for visibility -->
+            <xpath expr="//group/group/field[@name='label_tasks']" position="before">
+                <field name="project_number"
+                       string="Numer Projektu"
+                       placeholder="np. PRJ-001"
+                       required="1"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Simplified Form View - Add project_number field -->
+    <record id="project_project_form_view_simplified_inherit_number" model="ir.ui.view">
+        <field name="name">project.project.form.simplified.inherit.number</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.project_project_view_form_simplified"/>
+        <field name="arch" type="xml">
+            <xpath expr="//label[@for='name']" position="before">
+                <label for="project_number" string="Numer Projektu"/>
+                <h2>
+                    <field name="project_number"
+                           placeholder="np. PRJ-001"
+                           required="1"
+                           class="o_project_number"/>
+                </h2>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- List View - Add optional column -->
+    <record id="project_project_list_view_inherit_number" model="ir.ui.view">
+        <field name="name">project.project.list.inherit.number</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.view_project"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="project_number" optional="show"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Search View - Add searchable field -->
+    <record id="project_project_search_view_inherit_number" model="ir.ui.view">
+        <field name="name">project.project.search.inherit.number</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.view_project_project_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="project_number" string="Project Number"
+                       filter_domain="['|', ('project_number', 'ilike', self), ('name', 'ilike', self)]"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

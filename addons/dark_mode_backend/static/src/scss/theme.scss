@@ -72,6 +72,7 @@ $primary-darkmode-light: #112222 !default;
 body.o_dark_mode {
 	// Apply styles to body itself
 	font-family: 'Poppins', sans-serif !important;
+	background: #1f202b !important;
 	background-color: #1f202b !important;
 	color: #e9f0f2 !important;
 
@@ -4417,9 +4418,9 @@ body.o_dark_mode {
 		.contact,
 		.address {
 			border-color: #181821 !important;
-
+            background: cornflowerblue !important;
 			i {
-				color: cornflowerblue !important;
+				color: floralwhite !important;
 			}
 		}
 	}
@@ -4428,6 +4429,14 @@ body.o_dark_mode {
 		background-color: #181821 !important;
 		color: #e9f0f2 !important;
 	}
+
+    .stat-widget-one .stat-text {
+        font-size: 13px !important;
+    }
+
+    .stat-head {
+        color: white !important;
+    }
 
 	// Fix oh-card widgets (expenses, leaves, attendance, projects)
 	.oh-card,
@@ -4558,6 +4567,34 @@ body.o_dark_mode {
 	.o_graph_view > .o_content > .o_renderer .o_graph_canvas_container canvas {
 		background-color: #262A36 !important;
 	}
+
+    body.o_dark_mode .o_content .o_expense_container {
+	    background: cornflowerblue !important;
+    }
+
+    th.o_list_controller,
+    th.o_list_record_selector {
+        background: #262a36 !important;
+    }
+
+    .o_spreadsheet_dashboard_action .o_renderer .o-spreadsheet .o-grid {
+        background-color: #262A36 !important;
+    }
+
+    .o-scrollbar {
+        position: absolute;
+        overflow: auto;
+        z-index: 15;
+        background-color: #262A36 !important;
+    }
+
+    .user_leaves th, .projects th {
+	    background-color: #262A36 !important;
+    }
+
+    .stat-widget-one .stat-digit {
+	    color: #fff !important;
+    }
 
 	/* Dark Mode Status Bar - Universal Odoo CSS */
 }

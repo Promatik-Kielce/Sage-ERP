@@ -8,8 +8,8 @@ class ResUsers(models.Model):
 
     theme_preference = fields.Selection([
         ('light', 'Light Mode'),
-        ('dark', 'Dark Mode'),
-    ], string='Theme Preference', default='dark',
+        ('dark', 'Dark Mode (Beta)'),
+    ], string='Theme Preference', default='light',
        help='Choose your preferred theme for the Odoo interface')
 
     @api.model

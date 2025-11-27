@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ========================================== -->
+    <!-- MENU: Hide "By Task" Reporting Menu -->
+    <!-- ========================================== -->
+
+    <!-- Deactivate the "Timesheets / Reporting / By Task" menu item -->
+    <record id="hr_timesheet.timesheet_menu_report_timesheet_by_task" model="ir.ui.menu">
+        <field name="active" eval="False"/>
+    </record>
+</odoo>
