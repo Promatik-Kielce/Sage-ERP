@@ -18,18 +18,13 @@ Your organization uses **attendance-based timesheets exclusively**. Employees ch
 - ✓ All timesheet columns in task lists (allocated, effective, remaining, progress)
 - ✓ Timesheet progress badges in kanban view
 - ✓ "Timesheets 80%" and ">100%" search filters
-- ✓ Timesheet measures in graph/pivot analysis
 
 **Timesheet Views:**
 - ✓ task_id field in timesheet forms/lists
 - ✓ "Group by Task" filter
-- ✓ Task grouping in graph/pivot views
 
 **Menus:**
 - ✓ "Timesheets / Reporting / By Task" menu item
-
-**Field Visibility:**
-- ✓ All timesheet-related fields restricted to "Technical Features" group
 
 ## What This Module Does NOT Do
 
@@ -41,9 +36,10 @@ Your organization uses **attendance-based timesheets exclusively**. Employees ch
 ## Technical Implementation
 
 Uses Odoo's standard extension mechanisms:
-- **View Inheritance**: XPath expressions to hide UI elements
-- **Field Groups**: Restricts field visibility to `base.group_no_one`
+- **View Inheritance**: XPath expressions to hide UI elements without affecting field access
 - **Menu Deactivation**: Sets `active=False` on task reporting menu
+
+Fields remain accessible and compute normally - only the UI is hidden. This prevents view parser errors and maintains full compatibility with existing workflows.
 
 ## Installation
 
