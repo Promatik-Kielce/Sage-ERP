@@ -108,7 +108,8 @@ dropbox==11.36.2  # Dropbox integration for auto_database_backup
 maxminddb==2.2.0 ; python_version < '3.12'  # MaxMind DB reader for geolocation
 maxminddb==2.6.2 ; python_version >= '3.12'
 netifaces==0.11.0  # Network interface info for IoT drivers
-nextcloud-api==0.1.2  # Nextcloud integration for auto_database_backup
+nextcloud-api-wrapper==0.2.3  # Nextcloud integration for auto_database_backup
+nextcloud-client==2.2.0       # Python client for Nextcloud DAV/WebDAV
 odfpy==1.4.1  # OpenDocument format support for base_import
 packaging==21.3 ; python_version < '3.12'  # Version parsing and comparison
 packaging==24.0 ; python_version >= '3.12'
