@@ -9,14 +9,14 @@ class HrEmployee(models.Model):
     last_project_id = fields.Many2one(
         'project.project',
         string='Last Project',
-        domain="[('allow_timesheets', '=', True)]",
+        domain="[('allow_timesheets', '=', True), ('is_internal_project', '=', False)]",
         help="Last project this employee worked on. Used as default for next check-in."
     )
 
     default_project_id = fields.Many2one(
         'project.project',
         string='Default Project',
-        domain="[('allow_timesheets', '=', True)]",
+        domain="[('allow_timesheets', '=', True), ('is_internal_project', '=', False)]",
         help="Default project for this employee if no last project is set"
     )
 

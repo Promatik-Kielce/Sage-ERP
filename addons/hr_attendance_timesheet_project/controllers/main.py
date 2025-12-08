@@ -120,6 +120,7 @@ class HrAttendanceTimesheetProject(http.Controller):
         projects = request.env['project.project'].sudo().search([
             ('allow_timesheets', '=', True),
             ('active', '=', True),
+            ('is_internal_project', '=', False),
         ])
 
         project_list = [{

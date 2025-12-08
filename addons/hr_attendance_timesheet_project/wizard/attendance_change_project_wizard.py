@@ -23,7 +23,7 @@ class AttendanceChangeProjectWizard(models.TransientModel):
         'project.project',
         string='New Project',
         required=True,
-        domain="[('allow_timesheets', '=', True)]",
+        domain="[('allow_timesheets', '=', True), ('is_internal_project', '=', False)]",
     )
     employee_id = fields.Many2one(
         'hr.employee',
