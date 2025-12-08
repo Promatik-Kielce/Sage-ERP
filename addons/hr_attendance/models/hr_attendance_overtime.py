@@ -57,6 +57,11 @@ class HrAttendanceOvertimeLine(models.Model):
         'CHECK (time_stop > time_start)',
         'Starting time should be before end time.',
     )
+    _sql_constraints = [
+        ('unique_employee_date',
+         'UNIQUE(employee_id, date)',
+         'Only one overtime line per employee per date is allowed!'),
+    ]
 
     @api.depends('employee_id')
     def _compute_status(self):

@@ -109,12 +109,11 @@ maxminddb==2.2.0 ; python_version < '3.12'  # MaxMind DB reader for geolocation
 maxminddb==2.6.2 ; python_version >= '3.12'
 netifaces==0.11.0  # Network interface info for IoT drivers
 nextcloud-api-wrapper==0.2.3  # Nextcloud integration for auto_database_backup
-nextcloud-client==2.2.0       # Python client for Nextcloud DAV/WebDAV
+pyncclient==0.7               # Python client library for Nextcloud (module: nextcloud_client)
 odfpy==1.4.1  # OpenDocument format support for base_import
 packaging==21.3 ; python_version < '3.12'  # Version parsing and comparison
 packaging==24.0 ; python_version >= '3.12'
-pandas==1.5.3 ; python_version < '3.12'  # Data analysis for hrms_dashboard
-pandas==2.2.1 ; python_version >= '3.12'
+pandas==2.2.3 ; python_version >= '3.12'
 paramiko==2.12.0 ; python_version < '3.12'  # SSH/SFTP for auto_database_backup
 paramiko==3.4.0 ; python_version >= '3.12'
 pdfminer.six==20221105 ; python_version < '3.12'  # PDF text extraction for attachment_indexation

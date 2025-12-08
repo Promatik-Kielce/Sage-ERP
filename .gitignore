@@ -24,6 +24,8 @@ odoo/filestore
 odoo/addons/base/maintenance
 # windows installation config file
 /odoo.conf
+# debian config file (contains passwords)
+debian/odoo.conf
 
 # generated for windows installer?
 install/win32/*.bat
