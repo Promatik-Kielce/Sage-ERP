@@ -38,9 +38,10 @@ export class KioskActionChoice extends Component {
 
         const searchLower = this.state.searchTerm.toLowerCase().trim();
         return this.state.projects.filter(project => {
+            const projectNumberMatch = project.project_number && project.project_number.toLowerCase().includes(searchLower);
             const projectNameMatch = project.name.toLowerCase().includes(searchLower);
             const partnerNameMatch = project.partner_name && project.partner_name.toLowerCase().includes(searchLower);
-            return projectNameMatch || partnerNameMatch;
+            return projectNumberMatch || projectNameMatch || partnerNameMatch;
         });
     }
 

@@ -28,7 +28,7 @@ class HrAttendanceTimesheetProject(http.Controller):
             current_project_name = None
             if current_attendance and not current_attendance.check_out and current_attendance.active_timesheet_id:
                 if current_attendance.active_timesheet_id.project_id:
-                    current_project_name = current_attendance.active_timesheet_id.project_id.name
+                    current_project_name = current_attendance.active_timesheet_id.project_id.display_name
 
             response = {
                 'id': employee.id,
@@ -92,7 +92,7 @@ class HrAttendanceTimesheetProject(http.Controller):
             attendance_id = current_attendance.id
             # Get project from active timesheet
             if current_attendance.active_timesheet_id and current_attendance.active_timesheet_id.project_id:
-                current_project_name = current_attendance.active_timesheet_id.project_id.name
+                current_project_name = current_attendance.active_timesheet_id.project_id.display_name
 
         result = {
             'employee_id': employee.id,
@@ -125,6 +125,7 @@ class HrAttendanceTimesheetProject(http.Controller):
 
         project_list = [{
             'id': project.id,
+            'project_number': project.project_number,
             'name': project.name,
             'partner_name': project.partner_id.name if project.partner_id else '',
         } for project in projects]
@@ -151,10 +152,10 @@ class HrAttendanceTimesheetProject(http.Controller):
         try:
             # Call the change_project_to method from our module
             attendance.change_project_to(project_id)
-            _logger.info("[Kiosk] Project changed successfully to %s", project.name)
+            _logger.info("[Kiosk] Project changed successfully to %s", project.display_name)
             return {
                 'success': True,
-                'project_name': project.name,
+                'project_name': project.display_name,
             }
         except Exception as e:
             _logger.error("[Kiosk] Error changing project: %s", str(e), exc_info=True)

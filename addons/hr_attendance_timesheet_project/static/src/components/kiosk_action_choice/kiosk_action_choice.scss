@@ -267,11 +267,34 @@
                         margin-bottom: 0.5rem;
                     }
 
-                    span {
-                        text-align: center;
-                        font-size: 1.1rem;
-                        font-weight: 600;
-                        word-break: break-word;
+                    .project-info {
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        gap: 0.25rem;
+                        width: 100%;
+
+                        .project-number {
+                            font-weight: 600;
+                            font-size: 1rem;
+                            color: #333;
+                            text-align: center;
+                            word-break: break-word;
+                        }
+
+                        .project-name {
+                            font-size: 0.875rem;
+                            color: #666;
+                            text-align: center;
+                            word-break: break-word;
+                        }
+                    }
+
+                    &.selected .project-info {
+                        .project-number,
+                        .project-name {
+                            color: white;
+                        }
                     }
                 }
             }
