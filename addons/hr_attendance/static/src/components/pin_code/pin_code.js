@@ -1,5 +1,4 @@
-import { Component, onWillStart, useState, onWillDestroy } from "@odoo/owl";
-import { browser } from "@web/core/browser/browser";
+import { Component, useState } from "@odoo/owl";
 
 export class KioskPinCode extends Component {
     static template = "hr_attendance.KioskPinConfirm";
@@ -21,35 +20,31 @@ export class KioskPinCode extends Component {
         });
         this.lockPad = false;
         this.checkedIn = this.props.employeeData.attendance_state === 'checked_in';
+    }
 
-        const onKeyDown = async (ev) => {
-            const allowedKeys = [...Array(10).keys()].reduce((acc, value) => { // { from '0': '0' ... to '9': '9' }
-                acc[value] = value;
-                return acc;
-            }, {
-                'Delete': 'C',
-                'Enter': 'OK',
-                'Backspace': null,
-            });
-            const key = ev.key;
+    async onPinInputKeyDown(ev) {
+        const allowedKeys = [...Array(10).keys()].reduce((acc, value) => { // { from '0': '0' ... to '9': '9' }
+            acc[value] = value;
+            return acc;
+        }, {
+            'Delete': 'C',
+            'Enter': 'OK',
+            'Backspace': null,
+        });
+        const key = ev.key;
 
-            if (!Object.keys(allowedKeys).includes(key)) {
-                return;
-            }
-
-            ev.preventDefault();
-            ev.stopPropagation();
-
-            if (allowedKeys[key] !== null) {
-                await this.onClickPadButton(allowedKeys[key]);
-            }
-            else {
-                this.state.codePin = this.state.codePin.substring(0, this.state.codePin.length - 1);
-            }
+        if (!Object.keys(allowedKeys).includes(key)) {
+            return;
         }
-        browser.addEventListener('keydown', onKeyDown);
-        onWillStart(() => browser.addEventListener('keydown', onKeyDown))
-        onWillDestroy(() => browser.removeEventListener('keydown', onKeyDown));
+
+        ev.preventDefault();
+        ev.stopPropagation();
+
+        if (allowedKeys[key] !== null) {
+            await this.onClickPadButton(allowedKeys[key]);
+        } else {
+            this.state.codePin = this.state.codePin.substring(0, this.state.codePin.length - 1);
+        }
     }
 
     async onClickPadButton(value) {

@@ -312,13 +312,75 @@ class HrAttendance(models.Model):
         date_end = date_end + relativedelta(days=6 - date_end.weekday())
         return date_start, date_end
 
+    def _get_affected_dates_for_overtime(self):
+        """
+        Returns set of dates that need overtime recalculation.
+        For daily-only rules: just the affected date(s)
+        For weekly rules: entire week (required for cumulative calculations)
+
+        This optimization reduces scope from 7 days to 1 day when only daily rules are used.
+        """
+        if not self:
+            return set()
+
+        affected_dates = set()
+        Rule = self.env['hr.attendance.overtime.rule']
+
+        # Build initial employee_dates mapping for version lookup
+        employee_dates = {employee: [] for employee in self.employee_id}
+        for attendance in self:
+            if attendance.date:
+                employee_dates[attendance.employee_id].extend(
+                    {attendance.date, *Rule._get_period_keys(attendance.date).values()}
+                )
+
+        # Get version map to access rulesets
+        version_map = self.env['hr.version'].sudo()._get_versions_by_employee_and_date(employee_dates)
+
+        # For each attendance, determine if we need the full week or just the date
+        for attendance in self:
+            if not attendance.date:
+                continue
+
+            date = attendance.date
+            employee = attendance.employee_id
+
+            # Get the version (and thus ruleset) for this employee on this date
+            version = version_map.get(employee, {}).get(date)
+            if not version or not version.ruleset_id:
+                # No ruleset: only process this specific date
+                affected_dates.add(date)
+                continue
+
+            # Check if the ruleset has any weekly quantity rules
+            ruleset = version.ruleset_id
+            has_weekly_rules = any(
+                rule.base_off == 'quantity' and rule.quantity_period == 'week'
+                for rule in ruleset.rule_ids
+            )
+
+            if has_weekly_rules:
+                # Must process entire week for weekly cumulative calculations
+                date_start = date - relativedelta(days=date.weekday())
+                for i in range(7):
+                    affected_dates.add(date_start + relativedelta(days=i))
+            else:
+                # Only daily rules: process just this date
+                affected_dates.add(date)
+
+        return affected_dates
+
     def _get_overtimes_to_update_domain(self):
         if not self:
             return Domain.FALSE
-        date_start, date_end = self._get_week_date_range()
+
+        affected_dates = self._get_affected_dates_for_overtime()
+
+        if not affected_dates:
+            return Domain.FALSE
+
         return [
-            ('date', '>=', date_start),
-            ('date', '<=', date_end),
+            ('date', 'in', list(affected_dates)),
             ('employee_id', 'in', self.employee_id.ids)
         ]
 

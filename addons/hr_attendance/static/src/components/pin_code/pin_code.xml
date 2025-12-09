@@ -20,7 +20,11 @@
                         <div class="row">
                             <div class="col-md-8 offset-md-2 o_hr_attendance_pin_pad">
                                 <div class="row g-0 my-2" >
-                                    <input t-att-value="state.codePin" class="o_hr_attendance_PINbox py-0 border-0 bg-white text-center fs-3" type="password" disabled="true"/>
+                                    <input t-att-value="state.codePin"
+                                           class="o_hr_attendance_PINbox py-0 border-0 bg-white text-center fs-3"
+                                           type="password"
+                                           readonly="readonly"
+                                           t-on-keydown="onPinInputKeyDown"/>
                                 </div>
                                 <div class="row g-2">
                                     <div class="col-4" t-foreach="padButtons" t-as="btn" t-key="btn[0]">
