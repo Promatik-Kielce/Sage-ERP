@@ -53,3 +53,7 @@ package.json
 /man/
 /share/
 /src/
+
+# Local Odoo config with passwords
+debian/odoo.conf
+odoo.conf
