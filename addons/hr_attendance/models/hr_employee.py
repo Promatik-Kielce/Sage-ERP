@@ -306,8 +306,8 @@ class HrEmployee(models.Model):
                     employee.hours_balance = 0.0
                     continue
 
-            # End date is today
-            end_date = datetime.now().date()
+            # End date is yesterday (exclude current day since work isn't finished)
+            end_date = datetime.now().date() - timedelta(days=1)
 
             # Get timezone
             tz = pytz.timezone(employee.tz or 'UTC')
@@ -417,9 +417,9 @@ class HrEmployee(models.Model):
         """
         self.ensure_one()
 
-        # Determine date range (from balance start or first attendance to today)
+        # Determine date range (from balance start or first attendance to yesterday)
         from datetime import datetime, timedelta
-        end_date = datetime.now().date()
+        end_date = datetime.now().date() - timedelta(days=1)
 
         if self.hours_balance_start_date:
             start_date = self.hours_balance_start_date

@@ -99,7 +99,8 @@ class HrEmployeeHoursBalanceLine(models.Model):
                     start_date = datetime.now().date()
 
         if not end_date:
-            end_date = datetime.now().date()
+            # Exclude current day since work isn't finished yet
+            end_date = datetime.now().date() - timedelta(days=1)
 
         # Get employee timezone
         tz = pytz.timezone(employee.tz or 'UTC')
