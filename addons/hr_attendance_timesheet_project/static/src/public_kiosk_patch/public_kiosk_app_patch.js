@@ -135,6 +135,10 @@ patch(kioskAttendanceApp.prototype, {
         console.log("[ProjectPatch] Showing action choice dialog for employee:", employeeId);
         const self = this;
 
+        // Mark that dialog is open and clear inactivity timer
+        this.dialogOpen = true;
+        this._clearInactivityTimer();
+
         return new Promise((resolve) => {
             try {
                 this.dialogService.add(
@@ -143,6 +147,7 @@ patch(kioskAttendanceApp.prototype, {
                         employeeId: employeeId,
                         attendanceId: attendanceId,
                         currentProjectName: currentProjectName,
+                        inactivityTimeout: this.inactivityTimeout,
                         onCheckOut: async () => {
                             console.log("[ProjectPatch] Check out button clicked");
                             // Perform check-out
@@ -202,6 +207,11 @@ patch(kioskAttendanceApp.prototype, {
                     {
                         onClose: () => {
                             console.log("[ProjectPatch] Dialog closed");
+                            // Mark dialog as closed and restart timer if needed
+                            self.dialogOpen = false;
+                            if (self.state.active_display !== 'main') {
+                                self._startInactivityTimer();
+                            }
                             resolve();
                         }
                     }
@@ -209,6 +219,8 @@ patch(kioskAttendanceApp.prototype, {
             } catch (error) {
                 console.error("[ProjectPatch] Error showing dialog:", error);
                 self.displayNotification(_t("An error occurred"));
+                // Ensure dialog state is reset on error
+                self.dialogOpen = false;
                 resolve();
             }
         });

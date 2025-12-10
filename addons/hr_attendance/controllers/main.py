@@ -177,6 +177,7 @@ class HrAttendance(http.Controller):
                         'from_trial_mode': from_trial_mode,
                         'barcode_source': company.attendance_barcode_source,
                         'device_tracking_enabled': company.attendance_device_tracking,
+                        'inactivity_timeout': company.attendance_kiosk_inactivity_timeout * 1000,
                         'lang': py_to_js_locale(company.partner_id.lang or company.env.lang),
                         'server_version_info': version_info.get('server_version_info'),
                     },

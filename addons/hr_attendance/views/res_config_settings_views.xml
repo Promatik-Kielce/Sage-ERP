@@ -39,6 +39,9 @@
                         <setting string="Display Time" company_dependent="1" help="Choose how long the greeting message will be displayed.">
                             <field name="attendance_kiosk_delay" required="1" class="text-center" style="width: 10%; min-width: 4rem;"/><span> seconds</span>
                         </setting>
+                        <setting string="Inactivity Timeout" company_dependent="1" help="Automatically return to badge scan screen after this period of inactivity.">
+                            <field name="attendance_kiosk_inactivity_timeout" required="1" class="text-center" style="width: 10%; min-width: 4rem;"/><span> seconds</span>
+                        </setting>
                         <setting title="Set PIN codes in the employee detail form (in HR Settings tab)." invisible="attendance_kiosk_mode == 'barcode'" help="Use PIN codes (defined on the Employee's profile) to check-in.">
                             <field name="attendance_kiosk_use_pin"/>
                         </setting>

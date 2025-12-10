@@ -1,6 +1,6 @@
 /** @odoo-module **/
 
-import { Component, useState } from "@odoo/owl";
+import { Component, useState, onMounted, onWillUnmount } from "@odoo/owl";
 import { Dialog } from "@web/core/dialog/dialog";
 import { rpc } from "@web/core/network/rpc";
 
@@ -11,6 +11,7 @@ export class KioskActionChoice extends Component {
         employeeId: Number,
         attendanceId: Number,
         currentProjectName: { type: String, optional: true },
+        inactivityTimeout: { type: Number, optional: true },
         onCheckOut: Function,
         onProjectChanged: Function,
         onCancel: { type: Function, optional: true },
@@ -29,6 +30,20 @@ export class KioskActionChoice extends Component {
         });
 
         console.log("[KioskActionChoice] Component setup with props:", this.props);
+
+        // Inactivity timeout management
+        this.inactivityTimer = null;
+        this.inactivityTimeout = this.props.inactivityTimeout || 60000;
+
+        onMounted(() => {
+            this._setupActivityListeners();
+            this._startInactivityTimer();
+        });
+
+        onWillUnmount(() => {
+            this._cleanupActivityListeners();
+            this._clearInactivityTimer();
+        });
     }
 
     get filteredProjects() {
@@ -165,5 +180,49 @@ export class KioskActionChoice extends Component {
 
     clearSearch() {
         this.state.searchTerm = '';
+    }
+
+    _setupActivityListeners() {
+        this._handleActivity = this._handleActivity.bind(this);
+        document.addEventListener('mousemove', this._handleActivity, { passive: true });
+        document.addEventListener('mousedown', this._handleActivity, { passive: true });
+        document.addEventListener('keydown', this._handleActivity, { passive: true });
+        document.addEventListener('touchstart', this._handleActivity, { passive: true });
+        document.addEventListener('click', this._handleActivity, { passive: true });
+    }
+
+    _cleanupActivityListeners() {
+        if (this._handleActivity) {
+            document.removeEventListener('mousemove', this._handleActivity);
+            document.removeEventListener('mousedown', this._handleActivity);
+            document.removeEventListener('keydown', this._handleActivity);
+            document.removeEventListener('touchstart', this._handleActivity);
+            document.removeEventListener('click', this._handleActivity);
+        }
+    }
+
+    _handleActivity() {
+        this._resetInactivityTimer();
+    }
+
+    _startInactivityTimer() {
+        this._clearInactivityTimer();
+        this.inactivityTimer = setTimeout(() => {
+            console.log('[KioskActionChoice] Inactivity timeout, auto-cancelling');
+            if (!this.state.closing) {
+                this.onClickCancel();
+            }
+        }, this.inactivityTimeout);
+    }
+
+    _clearInactivityTimer() {
+        if (this.inactivityTimer) {
+            clearTimeout(this.inactivityTimer);
+            this.inactivityTimer = null;
+        }
+    }
+
+    _resetInactivityTimer() {
+        this._startInactivityTimer();
     }
 }

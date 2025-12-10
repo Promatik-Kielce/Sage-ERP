@@ -1,4 +1,4 @@
-import { App, whenReady, Component, useState } from "@odoo/owl";
+import { App, whenReady, Component, useState, onMounted, onWillUnmount } from "@odoo/owl";
 import { CardLayout } from "@hr_attendance/components/card_layout/card_layout";
 import { KioskManualSelection } from "@hr_attendance/components/manual_selection/manual_selection";
 import { makeEnv, startServices } from "@web/env";
@@ -28,6 +28,7 @@ class kioskAttendanceApp extends Component{
         barcodeSource: { type: String },
         fromTrialMode: { type: Boolean },
         deviceTrackingEnabled: { type: Boolean },
+        inactivityTimeout: { type: Number, optional: true },
     };
     static components = {
         KioskBarcodeScanner,
@@ -52,6 +53,12 @@ class kioskAttendanceApp extends Component{
             displayDemoMessage: browser.localStorage.getItem("hr_attendance.ShowDemoMessage") !== "false",
         });
         this.lockScanner = false;
+
+        // Inactivity timeout management
+        this.inactivityTimer = null;
+        this.inactivityTimeout = this.props.inactivityTimeout || 60000;
+        this.dialogOpen = false;
+
         if (this.props.kioskMode === 'settings' || this.props.fromTrialMode){
             this.manualKioskMode = false;
             useBus(this.barcode.bus, "barcode_scanned", (ev) => this.onBarcodeScanned(ev.detail.barcode));
@@ -64,14 +71,38 @@ class kioskAttendanceApp extends Component{
             this.manualKioskMode = true;
             this.state.active_display = "manual";
         }
+
+        // Setup activity listeners and start timer if not on main screen
+        onMounted(() => {
+            this._setupActivityListeners();
+            if (this.state.active_display !== 'main') {
+                this._startInactivityTimer();
+            }
+        });
+
+        // Cleanup on unmount
+        onWillUnmount(() => {
+            this._cleanupActivityListeners();
+            this._clearInactivityTimer();
+        });
     }
 
     switchDisplay(screen) {
         const displays = ["main", "greet", "manual", "pin", "settings"];
         if (displays.includes(screen)) {
             this.state.active_display = screen;
+
+            // Manage inactivity timer based on screen
+            if (screen === 'main') {
+                // On main screen, clear timer
+                this._clearInactivityTimer();
+            } else {
+                // On other screens, start/reset timer
+                this._startInactivityTimer();
+            }
         } else {
             this.state.active_display = "main";
+            this._clearInactivityTimer();
         }
     }
 
@@ -212,6 +243,88 @@ class kioskAttendanceApp extends Component{
         browser.localStorage.setItem("hr_attendance.ShowDemoMessage", "false");
         return;
     }
+
+    /**
+     * Setup event listeners for user activity detection
+     */
+    _setupActivityListeners() {
+        // Bind handlers to this instance
+        this._handleActivity = this._handleActivity.bind(this);
+
+        // Listen for mouse movement, clicks, and keyboard input
+        document.addEventListener('mousemove', this._handleActivity, { passive: true });
+        document.addEventListener('mousedown', this._handleActivity, { passive: true });
+        document.addEventListener('keydown', this._handleActivity, { passive: true });
+        document.addEventListener('touchstart', this._handleActivity, { passive: true });
+        document.addEventListener('click', this._handleActivity, { passive: true });
+    }
+
+    /**
+     * Cleanup event listeners
+     */
+    _cleanupActivityListeners() {
+        if (this._handleActivity) {
+            document.removeEventListener('mousemove', this._handleActivity);
+            document.removeEventListener('mousedown', this._handleActivity);
+            document.removeEventListener('keydown', this._handleActivity);
+            document.removeEventListener('touchstart', this._handleActivity);
+            document.removeEventListener('click', this._handleActivity);
+        }
+    }
+
+    /**
+     * Handle user activity - reset inactivity timer
+     */
+    _handleActivity() {
+        // Only reset timer if we're on a screen that should timeout
+        if (this.state.active_display !== 'main') {
+            this._resetInactivityTimer();
+        }
+    }
+
+    /**
+     * Start the inactivity timer
+     */
+    _startInactivityTimer() {
+        // Don't start timer on main screen
+        if (this.state.active_display === 'main') {
+            return;
+        }
+
+        this._clearInactivityTimer();
+
+        this.inactivityTimer = setTimeout(() => {
+            console.log('[Kiosk] Inactivity timeout reached, returning to main screen');
+            this._handleInactivityTimeout();
+        }, this.inactivityTimeout);
+    }
+
+    /**
+     * Clear the inactivity timer
+     */
+    _clearInactivityTimer() {
+        if (this.inactivityTimer) {
+            clearTimeout(this.inactivityTimer);
+            this.inactivityTimer = null;
+        }
+    }
+
+    /**
+     * Reset the inactivity timer (called on activity)
+     */
+    _resetInactivityTimer() {
+        if (this.state.active_display !== 'main' && !this.dialogOpen) {
+            this._startInactivityTimer();
+        }
+    }
+
+    /**
+     * Handle inactivity timeout - return to appropriate screen
+     */
+    _handleInactivityTimeout() {
+        this._clearInactivityTimer();
+        this.kioskReturn();
+    }
 }
 
 export async function createPublicKioskAttendance(document, kiosk_backend_info) {
@@ -232,6 +345,7 @@ export async function createPublicKioskAttendance(document, kiosk_backend_info) 
                 barcodeSource: kiosk_backend_info.barcode_source,
                 fromTrialMode: kiosk_backend_info.from_trial_mode,
                 deviceTrackingEnabled: kiosk_backend_info.device_tracking_enabled,
+                inactivityTimeout: kiosk_backend_info.inactivity_timeout,
             },
         dev: env.debug,
         translateFn: appTranslateFn,

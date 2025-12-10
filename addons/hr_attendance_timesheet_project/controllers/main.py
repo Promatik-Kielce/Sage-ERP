@@ -41,6 +41,7 @@ class HrAttendanceTimesheetProject(http.Controller):
                 'attendance_state': employee.attendance_state,
                 'total_overtime': float_round(employee.total_overtime, precision_digits=2),
                 'kiosk_delay': employee.company_id.attendance_kiosk_delay * 1000,
+                'inactivity_timeout': employee.company_id.attendance_kiosk_inactivity_timeout * 1000,
                 'attendance': {
                     'check_in': employee.last_attendance_id.check_in,
                     'check_out': employee.last_attendance_id.check_out

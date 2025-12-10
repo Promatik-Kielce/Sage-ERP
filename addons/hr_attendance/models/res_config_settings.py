@@ -14,6 +14,10 @@ class ResConfigSettings(models.TransientModel):
     attendance_kiosk_mode = fields.Selection(related='company_id.attendance_kiosk_mode', readonly=False)
     attendance_barcode_source = fields.Selection(related='company_id.attendance_barcode_source', readonly=False)
     attendance_kiosk_delay = fields.Integer(related='company_id.attendance_kiosk_delay', readonly=False)
+    attendance_kiosk_inactivity_timeout = fields.Integer(
+        related='company_id.attendance_kiosk_inactivity_timeout',
+        readonly=False
+    )
     attendance_kiosk_url = fields.Char(related='company_id.attendance_kiosk_url')
     attendance_kiosk_use_pin = fields.Boolean(related='company_id.attendance_kiosk_use_pin', readonly=False)
     attendance_from_systray = fields.Boolean(related="company_id.attendance_from_systray", readonly=False)
