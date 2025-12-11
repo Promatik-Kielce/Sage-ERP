@@ -72,13 +72,14 @@ class HrAttendance(models.Model):
 
     def write(self, vals):
         """Override write to handle check-out, timesheet closing, and validation"""
-        # Store old values for validation
+        # Store old values for validation and adjustment
         old_values = {}
         if 'check_in' in vals or 'check_out' in vals:
             for attendance in self:
                 old_values[attendance.id] = {
                     'check_in': attendance.check_in,
                     'check_out': attendance.check_out,
+                    'worked_hours': attendance.worked_hours,
                 }
 
         # If timesheet_ids are being modified via One2many commands, skip individual
@@ -96,6 +97,21 @@ class HrAttendance(models.Model):
                     attendance._close_active_timesheet()
                 # Auto-fill any gaps after closing timesheets
                 attendance._auto_fill_timesheet_gaps()
+
+        # Auto-adjust timesheets when manually editing check_in/check_out times
+        if ('check_in' in vals or 'check_out' in vals) and old_values:
+            for attendance in self:
+                old_val = old_values.get(attendance.id, {})
+                # Only adjust if attendance was already checked out (manual edit scenario)
+                if old_val.get('check_out') and attendance.timesheet_ids:
+                    old_worked_hours = old_val.get('worked_hours', 0.0)
+                    new_worked_hours = attendance.worked_hours
+                    # Only adjust if there's a significant change
+                    if abs(new_worked_hours - old_worked_hours) > 0.01:
+                        attendance._adjust_timesheets_to_worked_hours(
+                            old_hours=old_worked_hours,
+                            new_hours=new_worked_hours
+                        )
 
         # Validate manual edits to check_in/check_out times
         if ('check_in' in vals or 'check_out' in vals) and old_values:
@@ -303,6 +319,84 @@ class HrAttendance(models.Model):
                     'sticky': False,
                 }
             }
+
+    def _reduce_timesheet_hours(self, timesheets, hours_to_remove):
+        """Remove hours from timesheets using LIFO (most recent first).
+        Delete timesheets that reach 0 hours.
+
+        :param timesheets: Recordset of timesheets sorted by create_date DESC
+        :param hours_to_remove: Total hours to remove
+        """
+        remaining_to_remove = hours_to_remove
+        timesheets_to_delete = self.env['account.analytic.line']
+
+        for timesheet in timesheets:
+            if remaining_to_remove <= 0.01:
+                break
+
+            current_hours = timesheet.unit_amount
+
+            if current_hours <= remaining_to_remove:
+                # Delete this entire timesheet
+                timesheets_to_delete |= timesheet
+                remaining_to_remove -= current_hours
+            else:
+                # Reduce this timesheet and we're done
+                new_hours = current_hours - remaining_to_remove
+                timesheet.write({'unit_amount': new_hours})
+                remaining_to_remove = 0
+
+        # Delete timesheets that were fully consumed
+        if timesheets_to_delete:
+            timesheets_to_delete.unlink()
+
+    def _increase_timesheet_hours(self, timesheets, hours_to_add):
+        """Add hours to the most recent timesheet.
+
+        :param timesheets: Recordset of timesheets sorted by create_date DESC
+        :param hours_to_add: Total hours to add
+        """
+        if not timesheets:
+            return
+
+        # Add to the most recent (first in sorted list)
+        most_recent = timesheets[0]
+        new_hours = most_recent.unit_amount + hours_to_add
+        most_recent.write({'unit_amount': new_hours})
+
+    def _adjust_timesheets_to_worked_hours(self, old_hours, new_hours):
+        """Adjust timesheets when attendance worked_hours changes.
+
+        Strategy:
+        - Reduction: Remove hours from most recent timesheets first (LIFO)
+        - Increase: Add hours to most recent timesheet
+        - Skip active_timesheet_id (employee still checked in)
+
+        :param old_hours: Original worked hours before correction
+        :param new_hours: New worked hours after correction
+        """
+        self.ensure_one()
+
+        # Get all closed timesheets (exclude active_timesheet_id)
+        timesheets = self.timesheet_ids.filtered(
+            lambda t: t.id != self.active_timesheet_id.id
+        ).sorted(key=lambda t: t.create_date, reverse=True)  # Most recent first
+
+        if not timesheets:
+            return  # No timesheets to adjust
+
+        # Calculate adjustment needed
+        adjustment = new_hours - old_hours
+
+        if abs(adjustment) < 0.01:
+            return  # No significant change
+
+        if adjustment < 0:
+            # REDUCTION: Remove hours from most recent first
+            self._reduce_timesheet_hours(timesheets, abs(adjustment))
+        else:
+            # INCREASE: Add hours to most recent timesheet
+            self._increase_timesheet_hours(timesheets, adjustment)
 
     def _validate_timesheet_hours_on_edit(self):
         """Validate timesheet hours when manually editing attendance times
