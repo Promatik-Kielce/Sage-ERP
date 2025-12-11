@@ -93,10 +93,13 @@ class HrAttendance(models.Model):
         # If check_out is being set, close active timesheets and handle gaps
         if 'check_out' in vals and vals['check_out']:
             for attendance in self:
-                if attendance.active_timesheet_id:
-                    attendance._close_active_timesheet()
-                # Auto-fill any gaps after closing timesheets
-                attendance._auto_fill_timesheet_gaps()
+                old_val = old_values.get(attendance.id, {})
+                # Only fill gaps on INITIAL checkout (not manual edits)
+                if not old_val.get('check_out'):
+                    if attendance.active_timesheet_id:
+                        attendance._close_active_timesheet()
+                    # Auto-fill any gaps after closing timesheets
+                    attendance._auto_fill_timesheet_gaps()
 
         # Auto-adjust timesheets when manually editing check_in/check_out times
         if ('check_in' in vals or 'check_out' in vals) and old_values:
