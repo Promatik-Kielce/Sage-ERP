@@ -41,19 +41,19 @@ class WebManifest(http.Controller):
         return shortcuts
 
     def _get_webmanifest(self):
-        web_app_name = request.env['ir.config_parameter'].sudo().get_param('web.web_app_name', 'Odoo')
+        web_app_name = request.env['ir.config_parameter'].sudo().get_param('web.web_app_name', 'Sage ERP')
         manifest = {
             'name': web_app_name,
             'scope': '/odoo',
             'start_url': '/odoo',
             'display': 'standalone',
-            'background_color': '#714B67',
-            'theme_color': '#714B67',
+            'background_color': '#1B2D70',
+            'theme_color': '#1B2D70',
             'prefer_related_applications': False,
         }
         icon_sizes = ['192x192', '512x512']
         manifest['icons'] = [{
-            'src': '/web/static/img/odoo-icon-%s.png' % size,
+            'src': '/web/static/img/sage-icon-%s.png' % size,
             'sizes': size,
             'type': 'image/png',
         } for size in icon_sizes]
@@ -89,13 +89,13 @@ class WebManifest(http.Controller):
             return body
 
     def _icon_path(self):
-        return 'web/static/img/odoo-icon-192x192.png'
+        return 'web/static/img/sage-icon-192x192.png'
 
     @http.route('/odoo/offline', type='http', auth='public', methods=['GET'], readonly=True)
     def offline(self):
         """ Returns the offline page delivered by the service worker """
         return request.render('web.webclient_offline', {
-            'odoo_icon': base64.b64encode(file_open(self._icon_path(), 'rb').read())
+            'sage_icon': base64.b64encode(file_open(self._icon_path(), 'rb').read())
         })
 
     @http.route('/scoped_app', type='http', auth='public', methods=['GET'])
@@ -105,7 +105,7 @@ class WebManifest(http.Controller):
         path = f"/{unquote(path)}"
         scoped_app_values = {
             'app_id': app_id,
-            'apple_touch_icon': '/web/static/img/odoo-icon-ios.png',
+            'apple_touch_icon': '/web/static/img/sage-icon-ios.png',
             'app_name': app_name,
             'path': path,
             'safe_manifest_url': "/web/manifest.scoped_app_manifest?" + urlencode({
@@ -154,8 +154,8 @@ class WebManifest(http.Controller):
             'scope': path,
             'start_url': path,
             'display': 'standalone',
-            'background_color': '#714B67',
-            'theme_color': '#714B67',
+            'background_color': '#1B2D70',
+            'theme_color': '#1B2D70',
             'prefer_related_applications': False,
             'shortcuts': self._get_scoped_app_shortcuts(app_id)
         }
