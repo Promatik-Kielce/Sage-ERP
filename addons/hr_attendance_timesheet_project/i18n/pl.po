@@ -1,0 +1,552 @@
+# Translation of Sage ERP Server.
+# This file contains the translation of the following modules:
+# 	* hr_attendance_timesheet_project
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Sage ERP Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-12-16 10:44+0000\n"
+"PO-Revision-Date: 2025-12-16 10:44+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: pl\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : (n%10>=2 && n%10<=4 && (n%100<12 || n%100>14)) ? 1 : 2);\n"
+
+#. module: hr_attendance_timesheet_project
+#: model_terms:ir.ui.view,arch_db:hr_attendance_timesheet_project.view_attendance_change_project_wizard_form
+msgid ""
+"<strong>Change Project:</strong> Select a new project above and click \"Change Project\" to continue working on a different project.\n"
+"                        Current timesheet will be closed and a new one will be started."
+msgstr ""
+"<strong>Zmień projekt:</strong> Wybierz powyżej nowy projekt i kliknij „Zmień projekt”, aby kontynuować pracę nad innym projektem.\n"
+"                        Bieżąca karta pracy zostanie zamknięta, a nowa zostanie rozpoczęta."
+
+#. module: hr_attendance_timesheet_project
+#: model_terms:ir.ui.view,arch_db:hr_attendance_timesheet_project.view_attendance_change_project_wizard_form
+msgid ""
+"<strong>Check Out:</strong> Click \"Check Out\" to end your work day. All "
+"timesheets will be closed."
+msgstr ""
+"<strong>Zakończ pracę:</strong> Kliknij „Zakończ pracę”, aby zakończyć dzień pracy. Wszystkie karty pracy zostaną zamknięte."
+
+#. module: hr_attendance_timesheet_project
+#: model:ir.model.fields,field_description:hr_attendance_timesheet_project.field_hr_attendance__active_timesheet_id
+msgid "Active Timesheet"
+msgstr "Aktywna karta pracy"
+
+#. module: hr_attendance_timesheet_project
+#. odoo-python
+#: code:addons/hr_attendance_timesheet_project/models/hr_attendance.py:0
+msgid "Added %.2f hours to \"%s\" project for untracked time."
+msgstr "Dodano %.2f godz. do projektu „%s” za nieewidencjonowany czas."
+
+#. module: hr_attendance_timesheet_project
+#. odoo-javascript
+#: code:addons/hr_attendance_timesheet_project/static/src/public_kiosk_patch/public_kiosk_app_patch.js:0
+msgid "An error occurred"
+msgstr "Wystąpił błąd"
+
+#. module: hr_attendance_timesheet_project
+#: model:ir.model,name:hr_attendance_timesheet_project.model_account_analytic_line
+msgid "Analytic Line"
+msgstr "Pozycja analityczna"
+
+#. module: hr_attendance_timesheet_project
+#: model_terms:ir.ui.view,arch_db:hr_attendance_timesheet_project.view_attendance_change_project_wizard_form
+msgid "Are you sure you want to check out and end your work day?"
+msgstr "Czy na pewno chcesz się wymeldować i zakończyć dzień pracy?"
+
+#. module: hr_attendance_timesheet_project
+#: model:ir.model,name:hr_attendance_timesheet_project.model_hr_attendance
+#: model:ir.model.fields,field_description:hr_attendance_timesheet_project.field_account_analytic_line__attendance_id
+#: model:ir.model.fields,field_description:hr_attendance_timesheet_project.field_attendance_change_project_wizard__attendance_id
+msgid "Attendance"
+msgstr "Obecność"
+
+#. module: hr_attendance_timesheet_project
+#. odoo-python
+#: code:addons/hr_attendance_timesheet_project/controllers/main.py:0
+msgid "Attendance not found or already checked out"
+msgstr "Nie znaleziono obecności lub już dokonano wymeldowania"
+
+#. module: hr_attendance_timesheet_project
+#. odoo-python
+#: code:addons/hr_attendance_timesheet_project/models/hr_attendance.py:0
+msgid "Auto-filled unassigned time"
+msgstr "Automatycznie uzupełniono nieprzypisany czas"
+
+#. module: hr_attendance_timesheet_project
+#. odoo-javascript
+#: code:addons/hr_attendance_timesheet_project/static/src/components/kiosk_action_choice/kiosk_action_choice.xml:0
+msgid "Back"
+msgstr "Wstecz"
+
+#. module: hr_attendance_timesheet_project
+#. odoo-javascript
+#: code:addons/hr_attendance_timesheet_project/static/src/components/kiosk_action_choice/kiosk_action_choice.xml:0
+#: model_terms:ir.ui.view,arch_db:hr_attendance_timesheet_project.view_attendance_change_project_wizard_form
+msgid "Cancel"
+msgstr "Anuluj"
+
+#. module: hr_attendance_timesheet_project
+#. odoo-python
+#: code:addons/hr_attendance_timesheet_project/models/hr_attendance.py:0
+msgid "Cannot change project after check-out."
+msgstr "Nie można zmienić projektu po wymeldowaniu."
+
+#. module: hr_attendance_timesheet_project
+#. odoo-python
+#: code:addons/hr_attendance_timesheet_project/models/hr_attendance.py:0
+msgid ""
+"Cannot save attendance changes: Total timesheet hours (%(timesheet)s h) exceed the new worked hours (%(worked)s h) by more than %(tolerance)s minutes.\n"
+"\n"
+"Current timesheets total: %(timesheet)s h\n"
+"New worked hours: %(worked)s h\n"
+"Maximum allowed: %(max)s h (with tolerance)\n"
+"Excess: %(excess)s h (%(excess_min)s min)\n"
+"\n"
+"To fix this, you must first reduce or delete timesheet entries before changing attendance times."
+msgstr ""
+"Nie można zapisać zmian obecności: łączna liczba godzin w kartach pracy (%(timesheet)s h) przekracza nowe przepracowane godziny (%(worked)s h) o więcej niż %(tolerance)s minut.\n"
+"\n"
+"Aktualna suma kart pracy: %(timesheet)s h\n"
+"Nowe przepracowane godziny: %(worked)s h\n"
+"Maksymalnie dozwolone: %(max)s h (z tolerancją)\n"
+"Nadwyżka: %(excess)s h (%(excess_min)s min)\n"
+"\n"
+"Aby to naprawić, najpierw zmniejsz lub usuń wpisy kart pracy przed zmianą godzin obecności."
+
+#. module: hr_attendance_timesheet_project
+#. odoo-javascript
+#. odoo-python
+#: code:addons/hr_attendance_timesheet_project/models/hr_attendance.py:0
+#: code:addons/hr_attendance_timesheet_project/static/src/components/kiosk_action_choice/kiosk_action_choice.xml:0
+#: model:ir.actions.act_window,name:hr_attendance_timesheet_project.action_attendance_change_project_wizard
+#: model_terms:ir.ui.view,arch_db:hr_attendance_timesheet_project.view_attendance_change_project_wizard_form
+#: model_terms:ir.ui.view,arch_db:hr_attendance_timesheet_project.view_hr_attendance_form_inherit
+msgid "Change Project"
+msgstr "Zmień projekt"
+
+#. module: hr_attendance_timesheet_project
+#: model:ir.model,name:hr_attendance_timesheet_project.model_attendance_change_project_wizard
+msgid "Change Project During Work"
+msgstr "Zmiana projektu w trakcie pracy"
+
+#. module: hr_attendance_timesheet_project
+#: model_terms:ir.ui.view,arch_db:hr_attendance_timesheet_project.view_attendance_change_project_wizard_form
+msgid "Change Project or Check Out"
+msgstr "Zmień projekt lub wymelduj się"
+
+#. module: hr_attendance_timesheet_project
+#. odoo-javascript
+#: code:addons/hr_attendance_timesheet_project/static/src/components/kiosk_action_choice/kiosk_action_choice.xml:0
+#: model_terms:ir.ui.view,arch_db:hr_attendance_timesheet_project.view_attendance_change_project_wizard_form
+msgid "Check Out"
+msgstr "Wymelduj się"
+
+#. module: hr_attendance_timesheet_project
+#. odoo-javascript
+#: code:addons/hr_attendance_timesheet_project/static/src/public_kiosk_patch/public_kiosk_app_patch.js:0
+msgid "Check-out failed"
+msgstr "Wymeldowanie nie powiodło się"
+
+#. module: hr_attendance_timesheet_project
+#. odoo-javascript
+#: code:addons/hr_attendance_timesheet_project/static/src/components/kiosk_action_choice/kiosk_action_choice.xml:0
+msgid "Continue working on different project"
+msgstr "Kontynuuj pracę nad innym projektem"
+
+#. module: hr_attendance_timesheet_project
+#: model:ir.model.fields,field_description:hr_attendance_timesheet_project.field_attendance_change_project_wizard__create_uid
+msgid "Created by"
+msgstr "Utworzone przez"
+
+#. module: hr_attendance_timesheet_project
+#: model:ir.model.fields,field_description:hr_attendance_timesheet_project.field_attendance_change_project_wizard__create_date
+msgid "Created on"
+msgstr "Utworzono"
+
+#. module: hr_attendance_timesheet_project
+#: model:ir.model.fields,field_description:hr_attendance_timesheet_project.field_attendance_change_project_wizard__current_project_id
+#: model:ir.model.fields,field_description:hr_attendance_timesheet_project.field_hr_attendance__current_project_id
+msgid "Current Project"
+msgstr "Bieżący projekt"
+
+#. module: hr_attendance_timesheet_project
+#: model:ir.model.fields,help:hr_attendance_timesheet_project.field_hr_attendance__active_timesheet_id
+msgid "Currently active timesheet entry (not yet closed)"
+msgstr "Aktualnie aktywny wpis karty pracy (jeszcze niezamknięty)"
+
+#. module: hr_attendance_timesheet_project
+#. odoo-javascript
+#: code:addons/hr_attendance_timesheet_project/static/src/components/kiosk_action_choice/kiosk_action_choice.xml:0
+msgid "Currently working on:"
+msgstr "Aktualnie pracujesz nad:"
+
+#. module: hr_attendance_timesheet_project
+#: model:ir.model.fields,field_description:hr_attendance_timesheet_project.field_hr_employee__default_project_id
+msgid "Default Project"
+msgstr "Domyślny projekt"
+
+#. module: hr_attendance_timesheet_project
+#: model:ir.model.fields,help:hr_attendance_timesheet_project.field_hr_employee__default_project_id
+msgid "Default project for this employee if no last project is set"
+msgstr "Domyślny projekt dla tego pracownika, jeśli nie ustawiono ostatniego projektu"
+
+#. module: hr_attendance_timesheet_project
+#: model:ir.model.fields,help:hr_attendance_timesheet_project.field_hr_attendance__timesheet_hours_diff
+msgid ""
+"Difference between timesheet hours and worked hours (positive = excess, "
+"negative = missing)"
+msgstr ""
+"Różnica między godzinami kart pracy a przepracowanymi godzinami (dodatnia = nadwyżka, ujemna = brak)"
+
+#. module: hr_attendance_timesheet_project
+#: model:ir.model.fields,field_description:hr_attendance_timesheet_project.field_account_analytic_line__display_name
+#: model:ir.model.fields,field_description:hr_attendance_timesheet_project.field_attendance_change_project_wizard__display_name
+#: model:ir.model.fields,field_description:hr_attendance_timesheet_project.field_hr_attendance__display_name
+#: model:ir.model.fields,field_description:hr_attendance_timesheet_project.field_hr_employee__display_name
+msgid "Display Name"
+msgstr "Nazwa wyświetlana"
+
+#. module: hr_attendance_timesheet_project
+#: model:ir.model,name:hr_attendance_timesheet_project.model_hr_employee
+#: model:ir.model.fields,field_description:hr_attendance_timesheet_project.field_attendance_change_project_wizard__employee_id
+msgid "Employee"
+msgstr "Pracownik"
+
+#. module: hr_attendance_timesheet_project
+#. odoo-javascript
+#: code:addons/hr_attendance_timesheet_project/static/src/components/kiosk_action_choice/kiosk_action_choice.xml:0
+msgid "End work for today"
+msgstr "Zakończ pracę na dziś"
+
+#. module: hr_attendance_timesheet_project
+#. odoo-python
+#: code:addons/hr_attendance_timesheet_project/models/account_analytic_line.py:0
+msgid "Error: Cannot exceed attendance hours"
+msgstr "Błąd: Nie można przekroczyć godzin obecności"
+
+#. module: hr_attendance_timesheet_project
+#. odoo-python
+#: code:addons/hr_attendance_timesheet_project/models/account_analytic_line.py:0
+msgid "Error: Invalid Date"
+msgstr "Błąd: Nieprawidłowa data"
+
+#. module: hr_attendance_timesheet_project
+#. odoo-javascript
+#: code:addons/hr_attendance_timesheet_project/static/src/public_kiosk_patch/public_kiosk_app_patch.js:0
+msgid "Failed to load employee info"
+msgstr "Nie udało się wczytać informacji o pracowniku"
+
+#. module: hr_attendance_timesheet_project
+#: model_terms:ir.ui.view,arch_db:hr_attendance_timesheet_project.view_hr_attendance_form_inherit
+msgid "Hour Summary"
+msgstr "Podsumowanie godzin"
+
+#. module: hr_attendance_timesheet_project
+#: model_terms:ir.ui.view,arch_db:hr_attendance_timesheet_project.view_timesheet_tree_attendance
+msgid "Hours"
+msgstr "Godziny"
+
+#. module: hr_attendance_timesheet_project
+#: model:ir.model.fields,field_description:hr_attendance_timesheet_project.field_hr_attendance__timesheet_hours_diff
+msgid "Hours Difference"
+msgstr "Różnica godzin"
+
+#. module: hr_attendance_timesheet_project
+#: model:ir.model.fields,field_description:hr_attendance_timesheet_project.field_account_analytic_line__id
+#: model:ir.model.fields,field_description:hr_attendance_timesheet_project.field_attendance_change_project_wizard__id
+#: model:ir.model.fields,field_description:hr_attendance_timesheet_project.field_hr_attendance__id
+#: model:ir.model.fields,field_description:hr_attendance_timesheet_project.field_hr_employee__id
+msgid "ID"
+msgstr "ID"
+
+#. module: hr_attendance_timesheet_project
+#: model:project.project,name:hr_attendance_timesheet_project.project_koszty_stale
+msgid "Koszty Stałe"
+msgstr "Koszty Stałe"
+
+#. module: hr_attendance_timesheet_project
+#: model:ir.model.fields,field_description:hr_attendance_timesheet_project.field_hr_employee__last_project_id
+msgid "Last Project"
+msgstr "Ostatni projekt"
+
+#. module: hr_attendance_timesheet_project
+#: model:ir.model.fields,field_description:hr_attendance_timesheet_project.field_attendance_change_project_wizard__write_uid
+msgid "Last Updated by"
+msgstr "Ostatnio aktualizowane przez"
+
+#. module: hr_attendance_timesheet_project
+#: model:ir.model.fields,field_description:hr_attendance_timesheet_project.field_attendance_change_project_wizard__write_date
+msgid "Last Updated on"
+msgstr "Ostatnia aktualizacja"
+
+#. module: hr_attendance_timesheet_project
+#: model:ir.model.fields,help:hr_attendance_timesheet_project.field_hr_employee__last_project_id
+msgid ""
+"Last project this employee worked on. Used as default for next check-in."
+msgstr ""
+"Ostatni projekt, nad którym pracował ten pracownik. Używany jako domyślny przy następnym zameldowaniu."
+
+#. module: hr_attendance_timesheet_project
+#: model:ir.model.fields,help:hr_attendance_timesheet_project.field_account_analytic_line__attendance_id
+msgid "Link to the attendance record that generated this timesheet entry"
+msgstr "Odnośnik do rekordu obecności, który wygenerował ten wpis karty pracy"
+
+#. module: hr_attendance_timesheet_project
+#. odoo-javascript
+#: code:addons/hr_attendance_timesheet_project/static/src/components/kiosk_action_choice/kiosk_action_choice.xml:0
+msgid "Loading projects..."
+msgstr "Wczytywanie projektów..."
+
+#. module: hr_attendance_timesheet_project
+#. odoo-python
+#: code:addons/hr_attendance_timesheet_project/models/hr_attendance.py:0
+msgid ""
+"Missing %.2f hours of timesheets, but no default project found to auto-fill."
+msgstr ""
+"Brakuje %.2f godz. w kartach pracy, ale nie znaleziono domyślnego projektu do automatycznego uzupełnienia."
+
+#. module: hr_attendance_timesheet_project
+#: model:ir.model.fields,field_description:hr_attendance_timesheet_project.field_attendance_change_project_wizard__new_project_id
+msgid "New Project"
+msgstr "Nowy projekt"
+
+#. module: hr_attendance_timesheet_project
+#. odoo-python
+#: code:addons/hr_attendance_timesheet_project/wizard/attendance_change_project_wizard.py:0
+msgid "New project is the same as current project."
+msgstr "Nowy projekt jest taki sam jak bieżący projekt."
+
+#. module: hr_attendance_timesheet_project
+#. odoo-python
+#: code:addons/hr_attendance_timesheet_project/models/hr_attendance.py:0
+msgid ""
+"No default project found. Please configure a default project in Settings."
+msgstr ""
+"Nie znaleziono domyślnego projektu. Skonfiguruj domyślny projekt w Ustawieniach."
+
+#. module: hr_attendance_timesheet_project
+#. odoo-javascript
+#: code:addons/hr_attendance_timesheet_project/static/src/components/kiosk_action_choice/kiosk_action_choice.xml:0
+msgid "No projects found matching '"
+msgstr "Nie znaleziono projektów pasujących do '"
+
+#. module: hr_attendance_timesheet_project
+#. odoo-python
+#: code:addons/hr_attendance_timesheet_project/wizard/attendance_change_project_wizard.py:0
+msgid "Please select a new project."
+msgstr "Wybierz nowy projekt."
+
+#. module: hr_attendance_timesheet_project
+#: model_terms:ir.ui.view,arch_db:hr_attendance_timesheet_project.view_hr_employee_form_inherit
+msgid "Project Settings"
+msgstr "Ustawienia projektu"
+
+#. module: hr_attendance_timesheet_project
+#: model:ir.model.fields,help:hr_attendance_timesheet_project.field_hr_attendance__current_project_id
+msgid "Project from the active timesheet"
+msgstr "Projekt z aktywnej karty pracy"
+
+#. module: hr_attendance_timesheet_project
+#. odoo-python
+#: code:addons/hr_attendance_timesheet_project/controllers/main.py:0
+msgid "Project not found"
+msgstr "Nie znaleziono projektu"
+
+#. module: hr_attendance_timesheet_project
+#. odoo-javascript
+#: code:addons/hr_attendance_timesheet_project/static/src/components/kiosk_action_choice/kiosk_action_choice.xml:0
+msgid "Search projects..."
+msgstr "Szukaj projektów..."
+
+#. module: hr_attendance_timesheet_project
+#. odoo-javascript
+#: code:addons/hr_attendance_timesheet_project/static/src/components/kiosk_action_choice/kiosk_action_choice.xml:0
+msgid "Select a project:"
+msgstr "Wybierz projekt:"
+
+#. module: hr_attendance_timesheet_project
+#: model_terms:ir.ui.view,arch_db:hr_attendance_timesheet_project.view_attendance_change_project_wizard_form
+msgid "Select new project..."
+msgstr "Wybierz nowy projekt..."
+
+#. module: hr_attendance_timesheet_project
+#. odoo-python
+#: code:addons/hr_attendance_timesheet_project/models/hr_attendance.py:0
+msgid "Selected project does not allow timesheets."
+msgstr "Wybrany projekt nie zezwala na karty pracy."
+
+#. module: hr_attendance_timesheet_project
+#: model:ir.model.fields,help:hr_attendance_timesheet_project.field_hr_attendance__total_timesheet_hours
+msgid "Sum of all timesheet hours for this attendance"
+msgstr "Suma wszystkich godzin z kart pracy dla tej obecności"
+
+#. module: hr_attendance_timesheet_project
+#: model:project.project,label_tasks:hr_attendance_timesheet_project.project_koszty_stale
+msgid "Tasks"
+msgstr "Zadania"
+
+#. module: hr_attendance_timesheet_project
+#. odoo-python
+#: code:addons/hr_attendance_timesheet_project/models/hr_attendance.py:0
+msgid "Timesheet Auto-Filled"
+msgstr "Karta pracy uzupełniona automatycznie"
+
+#. module: hr_attendance_timesheet_project
+#. odoo-python
+#: code:addons/hr_attendance_timesheet_project/models/hr_attendance.py:0
+msgid "Timesheet Gap Detected"
+msgstr "Wykryto lukę w kartach pracy"
+
+#. module: hr_attendance_timesheet_project
+#. odoo-python
+#: code:addons/hr_attendance_timesheet_project/models/account_analytic_line.py:0
+msgid ""
+"Timesheet date (%(timesheet_date)s) must be within attendance date range.\n"
+"\n"
+"This timesheet is linked to an attendance that spans multiple days:\n"
+"  Check-in: %(check_in)s (%(check_in_date)s)\n"
+"  Check-out: %(check_out)s (%(check_out_date)s)\n"
+"\n"
+"Timesheet date must be either %(check_in_date)s or %(check_out_date)s."
+msgstr ""
+"Data karty pracy (%(timesheet_date)s) musi mieścić się w zakresie dat obecności.\n"
+"\n"
+"Ta karta pracy jest powiązana z obecnością obejmującą kilka dni:\n"
+"  Rozpoczecie pracy: %(check_in)s (%(check_in_date)s)\n"
+"  Zakończenie pracy: %(check_out)s (%(check_out_date)s)\n"
+"\n"
+"Data karty pracy musi być równa %(check_in_date)s lub %(check_out_date)s."
+
+#. module: hr_attendance_timesheet_project
+#. odoo-python
+#: code:addons/hr_attendance_timesheet_project/models/account_analytic_line.py:0
+msgid ""
+"Timesheet date (%(timesheet_date)s) must match attendance date (%(attendance_date)s).\n"
+"\n"
+"This timesheet is linked to an attendance on %(attendance_date)s (%(check_in)s to %(check_out)s).\n"
+"\n"
+"Please change the timesheet date to %(attendance_date)s."
+msgstr ""
+"Data karty pracy (%(timesheet_date)s) musi być zgodna z datą obecności (%(attendance_date)s).\n"
+"\n"
+"Ta karta pracy jest powiązana z obecnością w dniu %(attendance_date)s (%(check_in)s–%(check_out)s).\n"
+"\n"
+"Zmień datę karty pracy na %(attendance_date)s."
+
+#. module: hr_attendance_timesheet_project
+#. odoo-python
+#: code:addons/hr_attendance_timesheet_project/models/account_analytic_line.py:0
+msgid ""
+"Timesheet employee (%(timesheet_emp)s) must match attendance employee (%(attendance_emp)s).\n"
+"\n"
+"The timesheet is linked to an attendance for %(attendance_emp)s, so the timesheet must also be for the same employee."
+msgstr ""
+"Pracownik na karcie pracy (%(timesheet_emp)s) musi być zgodny z pracownikiem obecności (%(attendance_emp)s).\n"
+"\n"
+"Karta pracy jest powiązana z obecnością dla %(attendance_emp)s, więc karta pracy również musi dotyczyć tego samego pracownika."
+
+#. module: hr_attendance_timesheet_project
+#: model:ir.model.fields,help:hr_attendance_timesheet_project.field_hr_attendance__timesheet_ids
+msgid "Timesheet entries generated from this attendance"
+msgstr "Wpisy kart pracy wygenerowane z tej obecności"
+
+#. module: hr_attendance_timesheet_project
+#: model:ir.model.fields,field_description:hr_attendance_timesheet_project.field_hr_attendance__timesheet_ids
+#: model_terms:ir.ui.view,arch_db:hr_attendance_timesheet_project.view_hr_attendance_form_inherit
+msgid "Timesheets"
+msgstr "Karty pracy"
+
+#. module: hr_attendance_timesheet_project
+#: model_terms:ir.ui.view,arch_db:hr_attendance_timesheet_project.view_timesheet_tree_attendance
+msgid "Total Hours"
+msgstr "Łącznie godzin"
+
+#. module: hr_attendance_timesheet_project
+#: model:ir.model.fields,field_description:hr_attendance_timesheet_project.field_hr_attendance__total_timesheet_hours
+msgid "Total Timesheet Hours"
+msgstr "Łączna liczba godzin kart pracy"
+
+#. module: hr_attendance_timesheet_project
+#. odoo-python
+#: code:addons/hr_attendance_timesheet_project/models/account_analytic_line.py:0
+msgid ""
+"Total timesheet hours (%(new_total)s h) cannot exceed attendance worked hours (%(worked)s h) by more than 15 minutes.\n"
+"\n"
+"Attendance: %(check_in)s to %(check_out)s\n"
+"Worked hours: %(worked)s h\n"
+"Other timesheets: %(other)s h\n"
+"This entry: %(current)s h\n"
+"Total: %(new_total)s h\n"
+"Maximum allowed: %(max)s h\n"
+"Excess: %(excess)s h (%(excess_min)s min)\n"
+"\n"
+"Please reduce the hours or adjust the attendance check-in/check-out times first."
+msgstr ""
+"Łączna liczba godzin kart pracy (%(new_total)s h) nie może przekroczyć przepracowanych godzin obecności (%(worked)s h) o więcej niż 15 minut.\n"
+"\n"
+"Obecność: %(check_in)s–%(check_out)s\n"
+"Przepracowane godziny: %(worked)s h\n"
+"Inne karty pracy: %(other)s h\n"
+"Ten wpis: %(current)s h\n"
+"Suma: %(new_total)s h\n"
+"Maksymalnie dozwolone: %(max)s h\n"
+"Nadwyżka: %(excess)s h (%(excess_min)s min)\n"
+"\n"
+"Zmniejsz liczbę godzin lub najpierw dostosuj czasy zameldowania/wymeldowania obecności."
+
+#. module: hr_attendance_timesheet_project
+#. odoo-python
+#: code:addons/hr_attendance_timesheet_project/models/account_analytic_line.py:0
+msgid ""
+"Total timesheet hours (%(timesheet)s h) cannot exceed attendance worked hours (%(attendance)s h) by more than %(tolerance)s minutes.\n"
+"\n"
+"Attendance: %(check_in)s to %(check_out)s\n"
+"Worked hours: %(attendance)s h\n"
+"Total timesheets: %(timesheet)s h\n"
+"Excess: %(excess)s h (%(excess_min)s min)\n"
+"\n"
+"To fix this, you must either:\n"
+"1. Reduce the timesheet hours, OR\n"
+"2. Adjust the attendance check-in/check-out times to increase worked hours"
+msgstr ""
+"Łączna liczba godzin kart pracy (%(timesheet)s h) nie może przekroczyć przepracowanych godzin obecności (%(attendance)s h) o więcej niż %(tolerance)s minut.\n"
+"\n"
+"Obecność: %(check_in)s–%(check_out)s\n"
+"Przepracowane godziny: %(attendance)s h\n"
+"Suma kart pracy: %(timesheet)s h\n"
+"Nadwyżka: %(excess)s h (%(excess_min)s min)\n"
+"\n"
+"Aby to naprawić, musisz:\n"
+"1. Zmniejszyć liczbę godzin na kartach pracy LUB\n"
+"2. Dostosować czasy zameldowania/wymeldowania obecności, aby zwiększyć liczbę przepracowanych godzin"
+
+#. module: hr_attendance_timesheet_project
+#. odoo-javascript
+#: code:addons/hr_attendance_timesheet_project/static/src/components/kiosk_action_choice/kiosk_action_choice.xml:0
+msgid "Unable to load projects"
+msgstr "Nie można wczytać projektów"
+
+#. module: hr_attendance_timesheet_project
+#. odoo-python
+#: code:addons/hr_attendance_timesheet_project/controllers/main.py:0
+msgid "Unknown"
+msgstr "Nieznany"
+
+#. module: hr_attendance_timesheet_project
+#. odoo-python
+#: code:addons/hr_attendance_timesheet_project/models/hr_attendance.py:0
+msgid "Work on %s"
+msgstr "Praca nad %s"
+
+#. module: hr_attendance_timesheet_project
+#. odoo-python
+#: code:addons/hr_attendance_timesheet_project/models/account_analytic_line.py:0
+msgid "ongoing"
+msgstr "trwa"

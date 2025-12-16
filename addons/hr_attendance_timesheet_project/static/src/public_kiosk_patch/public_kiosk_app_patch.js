@@ -56,7 +56,8 @@ patch(kioskAttendanceApp.prototype, {
                     await this._showActionChoiceDialog(
                         checkResult.employee_id,
                         checkResult.attendance_id,
-                        checkResult.current_project_name
+                        checkResult.current_project_name,
+                        null  // No PIN for barcode scans - barcode is the authentication
                     );
                     return;
                 } else {
@@ -103,12 +104,32 @@ patch(kioskAttendanceApp.prototype, {
             if (checkResult && checkResult.employee_id) {
                 // Employee found - check if already checked in
                 if (checkResult.attendance_state === 'checked_in') {
-                    console.log("[ProjectPatch] Employee is checked in, showing dialog");
-                    // Employee is checked in - show choice dialog
+                    console.log("[ProjectPatch] Employee is checked in");
+                    // Employee is checking out - VALIDATE PIN FIRST if required
+                    if (checkResult.use_pin) {
+                        console.log("[ProjectPatch] PIN required, validating...");
+                        // Validate PIN before showing dialog
+                        const pinValidation = await rpc("/hr_attendance/kiosk_validate_pin", {
+                            token: this.props.token,
+                            employee_id: employeeId,
+                            pin_code: enteredPin,
+                        });
+
+                        console.log("[ProjectPatch] PIN validation result:", pinValidation);
+
+                        if (!pinValidation.valid) {
+                            console.log("[ProjectPatch] PIN invalid, delegating to original method to show error");
+                            // PIN invalid - delegate to original method to show error
+                            return originalOnManualSelection.call(this, employeeId, enteredPin);
+                        }
+                        console.log("[ProjectPatch] PIN valid, showing dialog");
+                    }
+                    // PIN valid or not required - show dialog
                     await this._showActionChoiceDialog(
                         checkResult.employee_id,
                         checkResult.attendance_id,
-                        checkResult.current_project_name
+                        checkResult.current_project_name,
+                        enteredPin  // Pass validated PIN
                     );
                     return;
                 } else {
@@ -131,7 +152,7 @@ patch(kioskAttendanceApp.prototype, {
     /**
      * Show the action choice dialog (Check Out or Change Project)
      */
-    async _showActionChoiceDialog(employeeId, attendanceId, currentProjectName) {
+    async _showActionChoiceDialog(employeeId, attendanceId, currentProjectName, validatedPin) {
         console.log("[ProjectPatch] Showing action choice dialog for employee:", employeeId);
         const self = this;
 
@@ -157,6 +178,7 @@ patch(kioskAttendanceApp.prototype, {
                                     {
                                         token: self.props.token,
                                         attendance_id: attendanceId,
+                                        pin_code: validatedPin,  // Pass validated PIN
                                     }
                                 );
 

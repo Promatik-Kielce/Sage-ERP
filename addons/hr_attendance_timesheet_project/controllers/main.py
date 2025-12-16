@@ -101,9 +101,38 @@ class HrAttendanceTimesheetProject(http.Controller):
             'attendance_state': employee.attendance_state,
             'attendance_id': attendance_id,
             'current_project_name': current_project_name,
+            'use_pin': company.attendance_kiosk_use_pin,
         }
         _logger.info("[Kiosk] check_employee_status result: %s", result)
         return result
+
+    @http.route('/hr_attendance/kiosk_validate_pin', type='jsonrpc', auth='public')
+    def kiosk_validate_pin(self, token, employee_id, pin_code):
+        """
+        Validate employee PIN without performing attendance action.
+        Returns whether PIN is valid.
+        """
+        _logger.info("[Kiosk] validate_pin called for employee: %s", employee_id)
+        company = self._get_company(token)
+        if not company:
+            _logger.warning("[Kiosk] No company found for token")
+            return {'valid': False}
+
+        employee = request.env['hr.employee'].sudo().browse(employee_id)
+        if not employee or employee.company_id != company:
+            _logger.warning("[Kiosk] Employee not found or wrong company")
+            return {'valid': False}
+
+        # Check if PIN is required
+        if not company.attendance_kiosk_use_pin:
+            # PIN not required - always valid
+            return {'valid': True}
+
+        # Validate PIN
+        pin_valid = (employee.pin == pin_code)
+        _logger.info("[Kiosk] PIN validation result: %s", pin_valid)
+
+        return {'valid': pin_valid}
 
     @http.route('/hr_attendance/kiosk_get_employee_projects', type='jsonrpc', auth='public')
     def kiosk_get_employee_projects(self, employee_id):
@@ -163,20 +192,30 @@ class HrAttendanceTimesheetProject(http.Controller):
             return {'success': False, 'error': str(e)}
 
     @http.route('/hr_attendance/kiosk_checkout', type='jsonrpc', auth='public')
-    def kiosk_checkout(self, token, attendance_id, latitude=False, longitude=False):
+    def kiosk_checkout(self, token, attendance_id, pin_code=None, latitude=False, longitude=False):
         """
         Perform check-out for the given attendance.
-        Similar to normal attendance toggle but explicitly for check-out.
+        NOTE: PIN validation should be done in frontend before calling this,
+        but we add defensive validation here as well.
         """
+        _logger.info("[Kiosk] kiosk_checkout called for attendance: %s", attendance_id)
         company = self._get_company(token)
         if not company:
+            _logger.warning("[Kiosk] No company found")
             return {}
 
         attendance = request.env['hr.attendance'].sudo().browse(attendance_id)
         if not attendance or attendance.check_out:
+            _logger.warning("[Kiosk] Attendance not found or already checked out")
             return {}
 
         employee = attendance.employee_id
+
+        # DEFENSIVE PIN VALIDATION (belt and suspenders approach)
+        if company.attendance_kiosk_use_pin:
+            if pin_code is None or employee.pin != pin_code:
+                _logger.warning("[Kiosk] PIN validation failed in kiosk_checkout")
+                return {}
 
         # Get geoip info
         geo_ip_response = self._get_geoip_response(
