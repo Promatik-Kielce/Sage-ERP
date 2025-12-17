@@ -16,7 +16,7 @@ class HrAttendance(http.Controller):
         return company
 
     @staticmethod
-    def _get_user_attendance_data(employee):
+    def _get_user_attendance_data(employee, include_hours_balance=True):
         response = {}
         if employee:
             response = {
@@ -29,9 +29,11 @@ class HrAttendance(http.Controller):
                 'display_systray': employee.company_id.attendance_from_systray,
                 'device_tracking_enabled': employee.company_id.attendance_device_tracking,
                 'exceeded_eight_hours': employee.hours_today >= 8.0 and employee.attendance_state == 'checked_in',
-                'hours_balance': float_round(employee.hours_balance, precision_digits=2),
-                'display_extra_hours': employee.display_extra_hours,
             }
+            # Only include hours_balance for systray widget, not for kiosk checkout
+            if include_hours_balance:
+                response['hours_balance'] = float_round(employee.hours_balance, precision_digits=2)
+                response['display_extra_hours'] = employee.display_extra_hours
         return response
 
     @staticmethod
@@ -40,8 +42,9 @@ class HrAttendance(http.Controller):
         if employee:
             overtime_line = request.env['hr.attendance.overtime.line'].sudo().search([
                 ('employee_id', '=', employee.id), ('date', '=', datetime.date.today())], limit=1)
+            # Get basic attendance data but exclude hours_balance to avoid expensive computation during checkout
             response = {
-                **HrAttendance._get_user_attendance_data(employee),
+                **HrAttendance._get_user_attendance_data(employee, include_hours_balance=False),
                 'employee_name': employee.name,
                 'employee_avatar': employee.image_256 and image_data_uri(employee.image_256),
                 'total_overtime': float_round(employee.total_overtime, precision_digits=2),

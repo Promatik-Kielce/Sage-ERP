@@ -57,7 +57,8 @@ patch(kioskAttendanceApp.prototype, {
                         checkResult.employee_id,
                         checkResult.attendance_id,
                         checkResult.current_project_name,
-                        null  // No PIN for barcode scans - barcode is the authentication
+                        null,  // No PIN for barcode scans - barcode is the authentication
+                        true   // barcode_authenticated flag
                     );
                     return;
                 } else {
@@ -129,7 +130,8 @@ patch(kioskAttendanceApp.prototype, {
                         checkResult.employee_id,
                         checkResult.attendance_id,
                         checkResult.current_project_name,
-                        enteredPin  // Pass validated PIN
+                        enteredPin,  // Pass validated PIN
+                        false        // Not barcode authenticated - this is manual selection
                     );
                     return;
                 } else {
@@ -152,7 +154,7 @@ patch(kioskAttendanceApp.prototype, {
     /**
      * Show the action choice dialog (Check Out or Change Project)
      */
-    async _showActionChoiceDialog(employeeId, attendanceId, currentProjectName, validatedPin) {
+    async _showActionChoiceDialog(employeeId, attendanceId, currentProjectName, validatedPin, barcodeAuthenticated) {
         console.log("[ProjectPatch] Showing action choice dialog for employee:", employeeId);
         const self = this;
 
@@ -178,7 +180,8 @@ patch(kioskAttendanceApp.prototype, {
                                     {
                                         token: self.props.token,
                                         attendance_id: attendanceId,
-                                        pin_code: validatedPin,  // Pass validated PIN
+                                        pin_code: validatedPin,  // Pass validated PIN (or null for barcode)
+                                        barcode_authenticated: barcodeAuthenticated,  // Indicate if barcode auth
                                     }
                                 );
 

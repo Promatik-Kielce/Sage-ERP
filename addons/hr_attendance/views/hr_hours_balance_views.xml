@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Hours Balance Adjustment Form View -->
+    <record id="view_hr_hours_balance_adjustment_form" model="ir.ui.view">
+        <field name="name">hr.hours.balance.adjustment.form</field>
+        <field name="model">hr.hours.balance.adjustment</field>
+        <field name="arch" type="xml">
+            <form string="Hours Balance Adjustment" create="false" edit="false" delete="false">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="employee_id"/>
+                            <field name="date"/>
+                            <field name="adjustment_amount" widget="float_time"/>
+                        </group>
+                        <group>
+                            <field name="original_balance" widget="float_time"/>
+                            <field name="new_balance" widget="float_time"/>
+                            <field name="user_id"/>
+                            <field name="create_date"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="reason" nolabel="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Hours Balance Adjustment List View -->
+    <record id="view_hr_hours_balance_adjustment_tree" model="ir.ui.view">
+        <field name="name">hr.hours.balance.adjustment.list</field>
+        <field name="model">hr.hours.balance.adjustment</field>
+        <field name="arch" type="xml">
+            <list string="Hours Balance Adjustments" create="false" delete="false">
+                <field name="date"/>
+                <field name="employee_id"/>
+                <field name="adjustment_amount" widget="float_time" decoration-success="adjustment_amount > 0" decoration-danger="adjustment_amount &lt; 0"/>
+                <field name="original_balance" widget="float_time"/>
+                <field name="new_balance" widget="float_time"/>
+                <field name="reason"/>
+                <field name="user_id"/>
+                <field name="create_date"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Hours Balance Adjustment Action -->
+    <record id="action_hr_hours_balance_adjustment" model="ir.actions.act_window">
+        <field name="name">Hours Balance Adjustments</field>
+        <field name="res_model">hr.hours.balance.adjustment</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No manual adjustments yet
+            </p>
+            <p>
+                Manual adjustments allow HR managers to add or subtract hours from employee balances.
+                All adjustments are logged with full audit trail.
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu Item under HR > Attendances -->
+    <menuitem
+        id="menu_hr_hours_balance_adjustment"
+        name="Balance Adjustments"
+        parent="hr_attendance.menu_hr_attendance_root"
+        action="action_hr_hours_balance_adjustment"
+        sequence="50"
+        groups="hr.group_hr_user"/>
+
+    <!-- Adjustment Wizard Form -->
+    <record id="view_hr_hours_balance_adjustment_wizard_form" model="ir.ui.view">
+        <field name="name">hr.hours.balance.adjustment.wizard.form</field>
+        <field name="model">hr.hours.balance.adjustment.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Adjust Hours Balance">
+                <group>
+                    <group>
+                        <field name="employee_id" options="{'no_create': True}"/>
+                        <field name="current_balance" widget="float_time" readonly="1"/>
+                    </group>
+                    <group>
+                        <field name="adjustment_amount" widget="float_time"/>
+                        <field name="date"/>
+                        <field name="preview_new_balance" widget="float_time" readonly="1" class="oe_inline" decoration-success="preview_new_balance > 0" decoration-danger="preview_new_balance &lt; 0"/>
+                    </group>
+                </group>
+                <group>
+                    <field name="reason" placeholder="e.g., Migrated +8.5h from old system, Manual correction for public holiday, etc."/>
+                </group>
+                <footer>
+                    <button name="action_apply_adjustment" string="Apply Adjustment" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

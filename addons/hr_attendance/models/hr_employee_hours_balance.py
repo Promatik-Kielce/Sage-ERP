@@ -102,6 +102,9 @@ class HrEmployeeHoursBalanceLine(models.Model):
             # Exclude current day since work isn't finished yet
             end_date = datetime.now().date() - timedelta(days=1)
 
+        # Include today for adjustments (they can be created with today's date)
+        adjustments_end_date = datetime.now().date()
+
         # Get employee timezone
         tz = pytz.timezone(employee.tz or 'UTC')
 
@@ -144,9 +147,88 @@ class HrEmployeeHoursBalanceLine(models.Model):
                     leave_dates[current] = leave.holiday_status_id.name
                 current += timedelta(days=1)
 
+        # Fetch all manual balance adjustments for the period (including today)
+        adjustments = self.env['hr.hours.balance.adjustment'].search([
+            ('employee_id', '=', employee.id),
+            ('date', '>=', start_date),
+            ('date', '<=', adjustments_end_date),
+        ], order='date asc, id asc')
+
+        # Group adjustments by date
+        adjustments_by_date = defaultdict(list)
+        for adj in adjustments:
+            adjustments_by_date[adj.date].append(adj)
+
+        # Calculate initial balance directly without recursion
+        # This prevents double-counting or missing adjustments
+
+        # 1. Sum all adjustments before start_date
+        prior_adjustments = self.env['hr.hours.balance.adjustment'].search([
+            ('employee_id', '=', employee.id),
+            ('date', '<', start_date),
+        ])
+        initial_adjustment_balance = sum(prior_adjustments.mapped('adjustment_amount'))
+
+        # 2. Calculate work balance (worked - expected) before start_date
+        initial_work_balance = 0.0
+        if employee.hours_balance_start_date and employee.hours_balance_start_date < start_date:
+            # Calculate by iterating through each prior date
+            prior_start = employee.hours_balance_start_date
+            prior_end = start_date - timedelta(days=1)
+
+            # Fetch prior attendances
+            prior_attendances = self.env['hr.attendance'].search([
+                ('employee_id', '=', employee.id),
+                ('check_in', '>=', datetime.combine(prior_start, datetime.min.time())),
+                ('check_in', '<=', datetime.combine(prior_end, datetime.max.time())),
+                ('check_out', '!=', False),
+            ])
+
+            # Group by date
+            prior_attendance_by_date = defaultdict(list)
+            for att in prior_attendances:
+                att_date = att.check_in.date()
+                prior_attendance_by_date[att_date].append(att)
+
+            # Calculate balance for each prior date
+            prior_date = prior_start
+            while prior_date <= prior_end:
+                # Get expected hours
+                weekday = prior_date.weekday()
+                is_weekend = weekday >= 5
+
+                if is_weekend:
+                    expected_hours = 0.0
+                else:
+                    # Calculate expected hours for this date
+                    datetime_start = datetime.combine(prior_date, datetime.min.time())
+                    datetime_end = datetime.combine(prior_date, datetime.max.time())
+                    datetime_start_utc = tz.localize(datetime_start).astimezone(pytz.utc)
+                    datetime_end_utc = tz.localize(datetime_end).astimezone(pytz.utc)
+
+                    work_intervals = calendar._work_intervals_batch(
+                        datetime_start_utc, datetime_end_utc,
+                        resources=employee.resource_id
+                    )[employee.resource_id.id]
+                    expected_hours = sum(
+                        (stop - start).total_seconds() / 3600.0
+                        for start, stop, meta in work_intervals
+                    )
+
+                # Get worked hours
+                day_attendances = prior_attendance_by_date.get(prior_date, [])
+                worked_hours = sum(att.worked_hours for att in day_attendances)
+
+                # Add to balance (simplified - using basic worked - expected)
+                initial_work_balance += (worked_hours - expected_hours)
+
+                prior_date += timedelta(days=1)
+
+        initial_balance = initial_work_balance + initial_adjustment_balance
+
         # Calculate balance for each day
         balance_lines = []
-        cumulative_balance = 0.0
+        cumulative_balance = initial_balance
 
         current_date = start_date
         while current_date <= end_date:
@@ -257,7 +339,64 @@ class HrEmployeeHoursBalanceLine(models.Model):
                 'attendance_count': attendance_count,
             })
 
+            # Add any manual adjustments for this date
+            if current_date in adjustments_by_date:
+                for adjustment in adjustments_by_date[current_date]:
+                    cumulative_balance += adjustment.adjustment_amount
+
+                    # Create adjustment entry
+                    adjustment_notes = _('✏️ Manual Adjustment: %s%s hours\nReason: %s\nAdjusted by: %s') % (
+                        '+' if adjustment.adjustment_amount > 0 else '',
+                        round(adjustment.adjustment_amount, 2),
+                        adjustment.reason,
+                        adjustment.user_id.name
+                    )
+
+                    balance_lines.append({
+                        'employee_id': employee.id,
+                        'date': current_date,
+                        'worked_hours': 0.0,  # Adjustments don't have worked hours
+                        'expected_hours': 0.0,
+                        'is_weekend': is_weekend,
+                        'is_public_holiday': False,
+                        'has_approved_leave': False,
+                        'leave_name': '',
+                        'balance_delta': adjustment.adjustment_amount,
+                        'balance_cumulative': cumulative_balance,
+                        'notes': adjustment_notes,
+                        'attendance_count': 0,
+                    })
+
             current_date += timedelta(days=1)
+
+        # Add adjustments dated after end_date (e.g., today's adjustments)
+        # These are included in the widget balance but need to be shown in detail view too
+        for adj_date in sorted(adjustments_by_date.keys()):
+            if adj_date > end_date:
+                for adjustment in adjustments_by_date[adj_date]:
+                    cumulative_balance += adjustment.adjustment_amount
+
+                    adjustment_notes = _('✏️ Manual Adjustment: %s%s hours\nReason: %s\nAdjusted by: %s') % (
+                        '+' if adjustment.adjustment_amount > 0 else '',
+                        round(adjustment.adjustment_amount, 2),
+                        adjustment.reason,
+                        adjustment.user_id.name
+                    )
+
+                    balance_lines.append({
+                        'employee_id': employee.id,
+                        'date': adj_date,
+                        'worked_hours': 0.0,
+                        'expected_hours': 0.0,
+                        'is_weekend': adj_date.weekday() >= 5,
+                        'is_public_holiday': False,
+                        'has_approved_leave': False,
+                        'leave_name': '',
+                        'balance_delta': adjustment.adjustment_amount,
+                        'balance_cumulative': cumulative_balance,
+                        'notes': adjustment_notes,
+                        'attendance_count': 0,
+                    })
 
         return balance_lines
 
@@ -312,7 +451,31 @@ class HrEmployeeHoursBalanceLine(models.Model):
                 lines = self._get_balance_lines_for_employee(employee, start_date, end_date)
                 all_lines.extend(lines)
 
-        # Apply offset and limit
+        # Parse and apply order parameter BEFORE offset/limit
+        if order:
+            # Parse order string like "date desc, id asc"
+            order_fields = []
+            for order_part in order.split(','):
+                order_part = order_part.strip()
+                if ' desc' in order_part.lower():
+                    field = order_part.lower().replace(' desc', '').strip()
+                    order_fields.append((field, True))  # True = descending
+                elif ' asc' in order_part.lower():
+                    field = order_part.lower().replace(' asc', '').strip()
+                    order_fields.append((field, False))  # False = ascending
+                else:
+                    order_fields.append((order_part, False))  # Default ascending
+
+            # Apply multi-field sorting
+            if order_fields:
+                # Sort by multiple fields, applying each in reverse order
+                for field, desc in reversed(order_fields):
+                    all_lines.sort(
+                        key=lambda x: (x.get(field) is None, x.get(field) or 0 if isinstance(x.get(field), (int, float)) else x.get(field) or ''),
+                        reverse=desc
+                    )
+
+        # Apply offset and limit AFTER sorting
         if offset:
             all_lines = all_lines[offset:]
         if limit:

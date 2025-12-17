@@ -42,6 +42,13 @@
                         </span>
                     </div>
                 </button>
+                <button name="action_view_balance_adjustments"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-edit"
+                        groups="hr.group_hr_user">
+                    <field name="hours_balance_adjustment_count" widget="statinfo" string="Adjustments"/>
+                </button>
                 <button name="action_view_hours_balance_detail"
                         class="oe_stat_button"
                         icon="fa-balance-scale"
@@ -61,6 +68,18 @@
                     </div>
                 </button>
             </button>
+            <!-- Add Adjust Balance button in the Hours Balance stat button -->
+            <xpath expr="//button[@name='action_view_hours_balance_detail']" position="after">
+                <button name="action_adjust_hours_balance"
+                        string="Adjust Balance"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-pencil"
+                        groups="hr.group_hr_user"
+                        help="Manually adjust employee hours balance">
+                    <span class="o_stat_text">Adjust Balance</span>
+                </button>
+            </xpath>
             <xpath expr="//group[@name='managers']" position="inside">
                 <field name="attendance_manager_id" string="Attendance" widget="many2one_avatar_user" groups="hr_attendance.group_hr_attendance_user"/>
             </xpath>
@@ -72,11 +91,32 @@
             </xpath>
             <!-- identification_group -->
             <group name="identification_group" position="inside">
-                <field 
+                <field
                     name="ruleset_id" string="Overtime Ruleset"
                     placeholder="Select a ruleset to manage overtime."
                     />
             </group>
+            <!-- Add notebook page for adjustment history -->
+            <!-- TEMPORARILY DISABLED - MODEL LOADING ISSUE -->
+            <!--
+            <xpath expr="//notebook" position="inside">
+                <page string="Balance Adjustments" name="balance_adjustments" groups="hr.group_hr_user">
+                    <field name="hours_balance_adjustment_ids" readonly="1">
+                        <tree create="false" delete="false" edit="false">
+                            <field name="date"/>
+                            <field name="adjustment_amount" widget="float_time"
+                                   decoration-success="adjustment_amount &gt; 0"
+                                   decoration-danger="adjustment_amount &lt; 0"/>
+                            <field name="original_balance" widget="float_time"/>
+                            <field name="new_balance" widget="float_time"/>
+                            <field name="reason"/>
+                            <field name="user_id" widget="many2one_avatar_user"/>
+                            <field name="create_date" string="Created On"/>
+                        </tree>
+                    </field>
+                </page>
+            </xpath>
+            -->
         </field>
     </record>
 

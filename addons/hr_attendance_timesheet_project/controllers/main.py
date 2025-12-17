@@ -192,13 +192,16 @@ class HrAttendanceTimesheetProject(http.Controller):
             return {'success': False, 'error': str(e)}
 
     @http.route('/hr_attendance/kiosk_checkout', type='jsonrpc', auth='public')
-    def kiosk_checkout(self, token, attendance_id, pin_code=None, latitude=False, longitude=False):
+    def kiosk_checkout(self, token, attendance_id, pin_code=None, barcode_authenticated=False, latitude=False, longitude=False):
         """
         Perform check-out for the given attendance.
         NOTE: PIN validation should be done in frontend before calling this,
         but we add defensive validation here as well.
+
+        Args:
+            barcode_authenticated: If True, skip PIN validation (barcode scan is the auth method)
         """
-        _logger.info("[Kiosk] kiosk_checkout called for attendance: %s", attendance_id)
+        _logger.info("[Kiosk] kiosk_checkout called for attendance: %s (barcode_auth: %s)", attendance_id, barcode_authenticated)
         company = self._get_company(token)
         if not company:
             _logger.warning("[Kiosk] No company found")
@@ -212,7 +215,8 @@ class HrAttendanceTimesheetProject(http.Controller):
         employee = attendance.employee_id
 
         # DEFENSIVE PIN VALIDATION (belt and suspenders approach)
-        if company.attendance_kiosk_use_pin:
+        # Skip PIN validation if this was authenticated by barcode scan
+        if company.attendance_kiosk_use_pin and not barcode_authenticated:
             if pin_code is None or employee.pin != pin_code:
                 _logger.warning("[Kiosk] PIN validation failed in kiosk_checkout")
                 return {}

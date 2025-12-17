@@ -53,13 +53,28 @@ class HrEmployee(models.Model):
         string='Hours Balance',
         compute='_compute_hours_balance',
         compute_sudo=True,
-        store=True,
-        help='Cumulative hours balance (overtime minus undertime). Positive means extra hours worked, negative means hours owed.')
+        store=False,  # Don't store, compute on-demand
+        help='Cumulative hours balance (overtime minus undertime), including manual adjustments. Positive means extra hours worked, negative means hours owed.')
     hours_balance_start_date = fields.Date(
         string='Balance Start Date',
         help='Date from which to start calculating hours balance. Defaults to employee creation or 1 year ago.')
 
+    # Manual adjustment fields
+    hours_balance_adjustment_ids = fields.One2many(
+        'hr.hours.balance.adjustment',
+        'employee_id',
+        string='Balance Adjustments',
+        help='Manual adjustments applied to hours balance')
+    hours_balance_adjustment_count = fields.Integer(
+        string='Adjustment Count',
+        compute='_compute_hours_balance_adjustment_count')
+
     ruleset_id = fields.Many2one(readonly=False, related="version_id.ruleset_id", inherited=True, groups="hr.group_hr_manager")
+
+    @api.depends('hours_balance_adjustment_ids')
+    def _compute_hours_balance_adjustment_count(self):
+        for employee in self:
+            employee.hours_balance_adjustment_count = len(employee.hours_balance_adjustment_ids)
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -273,10 +288,28 @@ class HrEmployee(models.Model):
             "name": "Badge Scanner"
         }
 
-    @api.depends('attendance_ids.check_in', 'attendance_ids.check_out', 'attendance_ids.worked_hours')
     def _compute_hours_balance(self):
         """
-        Compute cumulative hours balance for each employee.
+        Compute cumulative hours balance for each employee, including manual adjustments.
+        Formula: (worked hours - expected hours) + manual adjustments
+        """
+        for employee in self:
+            # Get calculated balance (worked - expected)
+            calculated_balance = employee._compute_hours_balance_value()
+
+            # Add manual adjustments
+            total_adjustments = sum(
+                employee.hours_balance_adjustment_ids.mapped('adjustment_amount')
+            )
+
+            employee.hours_balance = calculated_balance + total_adjustments
+
+    def _compute_hours_balance_value(self):
+        """
+        Calculate hours balance WITHOUT manual adjustments.
+        Used for both display and as baseline for adjustments.
+        Returns: float (hours balance)
+
         Calculates: total worked hours - total expected hours
         Weekend work counts as pure bonus (no expected hours)
         Counts absent workdays as negative balance
@@ -284,131 +317,130 @@ class HrEmployee(models.Model):
         from datetime import datetime, timedelta
         from collections import defaultdict
 
-        for employee in self:
-            if not employee.id:
-                employee.hours_balance = 0.0
-                continue
+        self.ensure_one()
 
-            # Get start date for calculation
-            if employee.hours_balance_start_date:
-                start_date = employee.hours_balance_start_date
+        if not self.id:
+            return 0.0
+
+        # Get start date for calculation
+        if self.hours_balance_start_date:
+            start_date = self.hours_balance_start_date
+        else:
+            # Find first attendance check-in date
+            first_attendance = self.env['hr.attendance'].search([
+                ('employee_id', '=', self.id),
+                ('check_in', '!=', False)
+            ], order='check_in asc', limit=1)
+
+            if first_attendance:
+                start_date = first_attendance.check_in.date()
             else:
-                # Find first attendance check-in date
-                first_attendance = self.env['hr.attendance'].search([
-                    ('employee_id', '=', employee.id),
-                    ('check_in', '!=', False)
-                ], order='check_in asc', limit=1)
+                # No attendance records, balance will be 0
+                return 0.0
 
-                if first_attendance:
-                    start_date = first_attendance.check_in.date()
-                else:
-                    # No attendance records, balance will be 0
-                    employee.hours_balance = 0.0
-                    continue
+        # End date is yesterday (exclude current day since work isn't finished)
+        end_date = datetime.now().date() - timedelta(days=1)
 
-            # End date is yesterday (exclude current day since work isn't finished)
-            end_date = datetime.now().date() - timedelta(days=1)
+        # Get timezone
+        tz = pytz.timezone(self.tz or 'UTC')
 
-            # Get timezone
-            tz = pytz.timezone(employee.tz or 'UTC')
+        # Get resource calendar
+        calendar = self.resource_calendar_id or self.company_id.resource_calendar_id
 
-            # Get resource calendar
-            calendar = employee.resource_calendar_id or employee.company_id.resource_calendar_id
+        # Fetch all attendances for the period
+        start_datetime = datetime.combine(start_date, datetime.min.time())
+        end_datetime = datetime.combine(end_date, datetime.max.time())
 
-            # Fetch all attendances for the period
-            start_datetime = datetime.combine(start_date, datetime.min.time())
-            end_datetime = datetime.combine(end_date, datetime.max.time())
+        attendances = self.env['hr.attendance'].search([
+            ('employee_id', '=', self.id),
+            ('check_in', '>=', start_datetime),
+            ('check_in', '<=', end_datetime),
+            ('check_out', '!=', False),
+        ])
 
-            attendances = self.env['hr.attendance'].search([
-                ('employee_id', '=', employee.id),
-                ('check_in', '>=', start_datetime),
-                ('check_in', '<=', end_datetime),
-                ('check_out', '!=', False),
-            ])
+        # Group attendances by date
+        worked_by_date = defaultdict(float)
+        for att in attendances:
+            att_date = att.check_in.date()
+            worked_by_date[att_date] += att.worked_hours
 
-            # Group attendances by date
-            worked_by_date = defaultdict(float)
-            for att in attendances:
-                att_date = att.check_in.date()
-                worked_by_date[att_date] += att.worked_hours
+        # Fetch all leaves for the period
+        leaves = self.env['hr.leave'].search([
+            ('employee_id', '=', self.id),
+            ('state', '=', 'validate'),
+            ('date_from', '<=', fields.Datetime.to_datetime(end_date)),
+            ('date_to', '>=', fields.Datetime.to_datetime(start_date)),
+        ])
 
-            # Fetch all leaves for the period
-            leaves = self.env['hr.leave'].search([
-                ('employee_id', '=', employee.id),
-                ('state', '=', 'validate'),
-                ('date_from', '<=', fields.Datetime.to_datetime(end_date)),
-                ('date_to', '>=', fields.Datetime.to_datetime(start_date)),
-            ])
+        # Build set of dates with approved leaves
+        leave_dates = set()
+        for leave in leaves:
+            leave_start = leave.date_from.date() if isinstance(leave.date_from, datetime) else leave.date_from
+            leave_end = leave.date_to.date() if isinstance(leave.date_to, datetime) else leave.date_to
+            current = leave_start
+            while current <= leave_end:
+                if current >= start_date and current <= end_date:
+                    leave_dates.add(current)
+                current += timedelta(days=1)
 
-            # Build set of dates with approved leaves
-            leave_dates = set()
-            for leave in leaves:
-                leave_start = leave.date_from.date() if isinstance(leave.date_from, datetime) else leave.date_from
-                leave_end = leave.date_to.date() if isinstance(leave.date_to, datetime) else leave.date_to
-                current = leave_start
-                while current <= leave_end:
-                    if current >= start_date and current <= end_date:
-                        leave_dates.add(current)
-                    current += timedelta(days=1)
+        # Calculate balance for each day from start to end
+        balance = 0.0
+        current_date = start_date
 
-            # Calculate balance for each day from start to end
-            balance = 0.0
-            current_date = start_date
+        while current_date <= end_date:
+            weekday = current_date.weekday()
+            is_weekend = weekday >= 5  # Saturday=5, Sunday=6
 
-            while current_date <= end_date:
-                weekday = current_date.weekday()
-                is_weekend = weekday >= 5  # Saturday=5, Sunday=6
+            # Check for public holiday
+            datetime_start = datetime.combine(current_date, datetime.min.time())
+            datetime_end = datetime.combine(current_date, datetime.max.time())
+            datetime_start_utc = tz.localize(datetime_start).astimezone(pytz.utc)
+            datetime_end_utc = tz.localize(datetime_end).astimezone(pytz.utc)
+            datetime_start_naive = datetime_start_utc.replace(tzinfo=None)
+            datetime_end_naive = datetime_end_utc.replace(tzinfo=None)
 
-                # Check for public holiday
-                datetime_start = datetime.combine(current_date, datetime.min.time())
-                datetime_end = datetime.combine(current_date, datetime.max.time())
-                datetime_start_utc = tz.localize(datetime_start).astimezone(pytz.utc)
-                datetime_end_utc = tz.localize(datetime_end).astimezone(pytz.utc)
-                datetime_start_naive = datetime_start_utc.replace(tzinfo=None)
-                datetime_end_naive = datetime_end_utc.replace(tzinfo=None)
+            # Check for public holidays (global calendar leaves only, not individual employee leaves)
+            public_holiday = self.env['resource.calendar.leaves'].search([
+                ('calendar_id', '=', calendar.id),
+                ('date_from', '<=', datetime_end_naive),
+                ('date_to', '>=', datetime_start_naive),
+                ('resource_id', '=', False)  # Only global public holidays, not individual leaves
+            ], limit=1)
+            is_public_holiday = bool(public_holiday)
 
-                # Check for public holidays (global calendar leaves only, not individual employee leaves)
-                public_holiday = self.env['resource.calendar.leaves'].search([
-                    ('calendar_id', '=', calendar.id),
-                    ('date_from', '<=', datetime_end_naive),
-                    ('date_to', '>=', datetime_start_naive),
-                    ('resource_id', '=', False)  # Only global public holidays, not individual leaves
-                ], limit=1)
-                is_public_holiday = bool(public_holiday)
+            # Check for approved leave
+            has_approved_leave = current_date in leave_dates
 
-                # Check for approved leave
-                has_approved_leave = current_date in leave_dates
+            # Get expected hours
+            if is_public_holiday or has_approved_leave or is_weekend:
+                expected_hours = 0.0
+            else:
+                # Get work intervals for this day
+                work_intervals = calendar._work_intervals_batch(
+                    datetime_start_utc, datetime_end_utc,
+                    resources=self.resource_id
+                )[self.resource_id.id]
+                expected_hours = sum(
+                    (stop - start).total_seconds() / 3600.0
+                    for start, stop, meta in work_intervals
+                )
 
-                # Get expected hours
-                if is_public_holiday or has_approved_leave or is_weekend:
-                    expected_hours = 0.0
-                else:
-                    # Get work intervals for this day
-                    work_intervals = calendar._work_intervals_batch(
-                        datetime_start_utc, datetime_end_utc,
-                        resources=employee.resource_id
-                    )[employee.resource_id.id]
-                    expected_hours = sum(
-                        (stop - start).total_seconds() / 3600.0
-                        for start, stop, meta in work_intervals
-                    )
+            # Get actual worked hours
+            worked_hours = worked_by_date.get(current_date, 0.0)
 
-                # Get actual worked hours
-                worked_hours = worked_by_date.get(current_date, 0.0)
+            # Calculate balance delta
+            if is_public_holiday or has_approved_leave or is_weekend:
+                # Public holidays, approved leaves, and weekends: all worked hours count as bonus
+                # If no work, no penalty (balance_delta = 0)
+                balance_delta = worked_hours
+            else:
+                # Regular weekday: difference between worked and expected
+                balance_delta = worked_hours - expected_hours
 
-                # Calculate balance delta
-                if is_public_holiday or has_approved_leave or is_weekend:
-                    # Public holidays, approved leaves, and weekends: all worked hours count as bonus
-                    # If no work, no penalty (balance_delta = 0)
-                    balance_delta = worked_hours
-                else:
-                    # Regular weekday: difference between worked and expected
-                    balance_delta = worked_hours - expected_hours
+            balance += balance_delta
+            current_date += timedelta(days=1)
 
-                balance += balance_delta
-                current_date += timedelta(days=1)
-
-            employee.hours_balance = balance
+        return balance
 
     def action_view_hours_balance_detail(self):
         """
@@ -457,4 +489,30 @@ class HrEmployee(models.Model):
             'flags': {
                 'mode': 'readonly',  # Read-only mode
             },
+        }
+
+    def action_adjust_hours_balance(self):
+        """Open wizard to adjust hours balance"""
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Adjust Hours Balance',
+            'res_model': 'hr.hours.balance.adjustment.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'default_employee_id': self.id,
+            }
+        }
+
+    def action_view_balance_adjustments(self):
+        """View all balance adjustments for this employee"""
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': f'Balance Adjustments - {self.name}',
+            'res_model': 'hr.hours.balance.adjustment',
+            'view_mode': 'tree,form',
+            'domain': [('employee_id', '=', self.id)],
+            'context': {'default_employee_id': self.id}
         }
