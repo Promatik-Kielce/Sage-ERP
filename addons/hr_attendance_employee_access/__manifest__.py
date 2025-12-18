@@ -24,7 +24,7 @@ attendance data while maintaining data integrity through read-only access.
     """,
     'author': 'Sage-ERP',
     'website': '',
-    'depends': ['hr_attendance'],
+    'depends': ['hr_attendance', 'analytic'],
     'data': [
         'security/hr_attendance_security.xml',
         'security/ir.model.access.csv',

@@ -1,3 +1,4 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_hr_attendance_employee_all_reader,hr.attendance employee all reader,hr_attendance.model_hr_attendance,group_hr_attendance_all_reader,1,0,0,0
 access_hr_employee_employee_all_reader,hr.employee employee reader,hr.model_hr_employee,group_hr_attendance_all_reader,1,0,0,0
+access_account_analytic_line_employee_all_reader,account.analytic.line employee reader,analytic.model_account_analytic_line,group_hr_attendance_all_reader,1,0,0,0
