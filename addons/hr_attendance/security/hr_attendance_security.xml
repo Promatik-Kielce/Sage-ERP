@@ -85,5 +85,17 @@
             <field name="perm_unlink" eval="0"/>
             <field name="perm_read" eval="1"/>
         </record>
+
+        <!-- Analytic Lines (Timesheets) - allow employees to read their own -->
+        <record id="analytic_line_rule_attendance_employee" model="ir.rule">
+            <field name="name">Analytic Line: Employee read own timesheets</field>
+            <field name="model_id" ref="analytic.model_account_analytic_line"/>
+            <field name="domain_force">[('user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="0"/>
+            <field name="perm_create" eval="0"/>
+            <field name="perm_unlink" eval="0"/>
+        </record>
     </data>
 </odoo>
