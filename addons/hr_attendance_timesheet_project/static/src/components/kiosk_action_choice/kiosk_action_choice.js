@@ -10,6 +10,7 @@ export class KioskActionChoice extends Component {
     static props = {
         employeeId: Number,
         attendanceId: Number,
+        employeeName: { type: String, optional: true },
         currentProjectName: { type: String, optional: true },
         inactivityTimeout: { type: Number, optional: true },
         onCheckOut: Function,
@@ -77,12 +78,12 @@ export class KioskActionChoice extends Component {
             this.state.projects = result.projects || [];
 
             if (this.state.projects.length === 0) {
-                this.state.error = "No projects available";
+                this.state.error = "Brak dostępnych projektów";
                 console.warn("[KioskActionChoice] No projects found");
             }
         } catch (error) {
             console.error("[KioskActionChoice] Failed to load projects:", error);
-            this.state.error = "Failed to load projects. Please try again.";
+            this.state.error = "Nie udało się załadować projektów. Spróbuj ponownie.";
             this.state.projects = []; // Ensure it's always an array
         } finally {
             this.state.loading = false;
@@ -105,7 +106,7 @@ export class KioskActionChoice extends Component {
             console.log("[KioskActionChoice] Project change result:", result);
 
             if (result.success === false) {
-                throw new Error(result.error || "Failed to change project");
+                throw new Error(result.error || "Nie udało się zmienić projektu");
             }
 
             // Notify parent component of success first
@@ -120,7 +121,7 @@ export class KioskActionChoice extends Component {
             }
         } catch (error) {
             console.error("[KioskActionChoice] Failed to change project:", error);
-            this.state.error = error.message || "Failed to change project. Please try again.";
+            this.state.error = error.message || "Nie udało się zmienić projektu. Spróbuj ponownie.";
             this.state.loading = false;
         }
     }
@@ -144,7 +145,7 @@ export class KioskActionChoice extends Component {
             }
         } catch (error) {
             console.error("[KioskActionChoice] Check out error:", error);
-            this.state.error = "Failed to check out. Please try again.";
+            this.state.error = "Nie udało się wylogować. Spróbuj ponownie.";
             this.state.loading = false;
         }
     }

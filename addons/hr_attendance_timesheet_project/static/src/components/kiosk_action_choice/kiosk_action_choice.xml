@@ -1,12 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates xml:space="preserve">
     <t t-name="hr_attendance_timesheet_project.KioskActionChoice">
-        <Dialog title="'What would you like to do?'" size="'lg'">
+        <Dialog title="'Co chcesz zrobić?'" size="'lg'">
             <t t-if="!state.closing">
             <div class="kiosk-action-choice-dialog">
+                <t t-if="props.employeeName">
+                    <h4 class="employee-name-header" style="text-align: center; margin-bottom: 0.5rem; font-weight: bold;">
+                        <t t-esc="props.employeeName"/>
+                    </h4>
+                </t>
                 <t t-if="props.currentProjectName">
                     <p class="current-project-info" style="text-align: center; margin-bottom: 1rem; font-size: 1.1rem; color: #666;">
-                        Currently working on: <strong t-esc="props.currentProjectName" style="color: #007bff;"/>
+                        Aktualnie pracujesz nad: <strong t-esc="props.currentProjectName" style="color: #007bff;"/>
                     </p>
                 </t>
 
@@ -26,8 +31,8 @@
                             t-on-click="onClickCheckOut"
                             t-att-disabled="state.loading">
                             <i class="fa fa-sign-out fa-3x"/>
-                            <span>Check Out</span>
-                            <small>End work for today</small>
+                            <span>Wyjście</span>
+                            <small>Zakończ pracę na dziś</small>
                         </button>
 
                         <button
@@ -35,8 +40,8 @@
                             t-on-click="onClickChangeProject"
                             t-att-disabled="state.loading">
                             <i class="fa fa-exchange fa-3x"/>
-                            <span>Change Project</span>
-                            <small>Continue working on different project</small>
+                            <span>Zmień Projekt</span>
+                            <small>Kontynuuj pracę nad innym projektem</small>
                         </button>
                     </div>
 
@@ -45,7 +50,7 @@
                             class="btn btn-link kiosk-btn-cancel"
                             t-on-click="onClickCancel"
                             t-att-disabled="state.loading">
-                            Cancel
+                            Anuluj
                         </button>
                     </div>
                 </t>
@@ -53,12 +58,12 @@
                 <t t-else="">
                     <!-- Project list view -->
                     <div class="kiosk-project-list">
-                        <h3>Select a project:</h3>
+                        <h3>Wybierz projekt:</h3>
 
                         <t t-if="state.loading">
                             <div class="text-center">
                                 <i class="fa fa-spinner fa-spin fa-3x"/>
-                                <p>Loading projects...</p>
+                                <p>Ładowanie projektów...</p>
                             </div>
                         </t>
 
@@ -70,7 +75,7 @@
                                     <input
                                         type="text"
                                         class="form-control kiosk-search-input"
-                                        placeholder="Search projects..."
+                                        placeholder="Szukaj projektów..."
                                         t-att-value="state.searchTerm"
                                         t-on-input="onSearchInput"
                                         t-att-disabled="state.loading"/>
@@ -106,7 +111,7 @@
                             <t t-else="">
                                 <div class="kiosk-empty-state">
                                     <i class="fa fa-search fa-3x"/>
-                                    <p>No projects found matching '<strong t-esc="state.searchTerm"/>'</p>
+                                    <p>Nie znaleziono projektów pasujących do '<strong t-esc="state.searchTerm"/>'</p>
                                 </div>
                             </t>
 
@@ -115,18 +120,18 @@
                                     class="btn btn-secondary kiosk-btn-back"
                                     t-on-click="onClickBack"
                                     t-att-disabled="state.loading">
-                                    <i class="fa fa-arrow-left"/> Back
+                                    <i class="fa fa-arrow-left"/> Wstecz
                                 </button>
                             </div>
                         </t>
 
                         <t t-else="">
                             <div class="text-center">
-                                <p>Unable to load projects</p>
+                                <p>Nie udało się załadować projektów</p>
                                 <button
                                     class="btn btn-secondary"
                                     t-on-click="onClickBack">
-                                    <i class="fa fa-arrow-left"/> Back
+                                    <i class="fa fa-arrow-left"/> Wstecz
                                 </button>
                             </div>
                         </t>

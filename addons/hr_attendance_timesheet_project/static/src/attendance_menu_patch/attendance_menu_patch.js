@@ -22,11 +22,11 @@ patch(ActivityMenu.prototype, {
 
     async showCheckOutDialog() {
         try {
-            // Get current attendance record
+            // Get current attendance record and employee name
             const attendanceRecords = await this.orm.searchRead(
                 'hr.attendance',
                 [['employee_id', '=', this.employee.id], ['check_out', '=', false]],
-                ['id', 'current_project_id'],
+                ['id', 'current_project_id', 'employee_id'],
                 { limit: 1 }
             );
 
@@ -39,11 +39,13 @@ patch(ActivityMenu.prototype, {
 
             const attendance = attendanceRecords[0];
             const currentProjectName = attendance.current_project_id ? attendance.current_project_id[1] : null;
+            const employeeName = attendance.employee_id ? attendance.employee_id[1] : null;
 
             // Show the dialog
             this.dialog.add(KioskActionChoice, {
                 employeeId: this.employee.id,
                 attendanceId: attendance.id,
+                employeeName: employeeName,
                 currentProjectName: currentProjectName,
                 onCheckOut: async () => {
                     await this.handleCheckOut();
