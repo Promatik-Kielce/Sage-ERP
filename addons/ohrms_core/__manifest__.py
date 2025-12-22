@@ -68,6 +68,7 @@
         'views/hr_config_view.xml',
         'views/ir_ui_menu_views.xml',
         'views/hr_employee_views.xml',
+        'views/hr_resignation_menu_hide.xml',
     ],
     'assets': {
         'web.assets_backend': [
