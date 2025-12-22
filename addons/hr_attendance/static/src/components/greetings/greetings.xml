@@ -35,6 +35,11 @@
                                         Checked in at <strong><t t-esc="this.check_in_time"/></strong>
                                     </t>
                                 </div>
+                                <!-- Current Project (only on check-in) -->
+                                <div t-if="!attendance.check_out and this.currentProjectNumber"
+                                     class="alert alert-success text-center p-3" role="status">
+                                    Project: <strong><t t-esc="this.currentProjectNumber"/> - <t t-esc="this.currentProjectName"/></strong>
+                                </div>
                                 <div class="d-flex flex-column w-100">
                                     <div
                                         class="alert alert-info text-center p-3"

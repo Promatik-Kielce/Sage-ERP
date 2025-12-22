@@ -19,6 +19,11 @@ class HrAttendance(http.Controller):
     def _get_user_attendance_data(employee, include_hours_balance=True):
         response = {}
         if employee:
+            # Get current project from active attendance (if checked in)
+            current_project = None
+            if employee.last_attendance_id and not employee.last_attendance_id.check_out:
+                current_project = employee.last_attendance_id.current_project_id
+
             response = {
                 'id': employee.id,
                 'hours_today': float_round(employee.hours_today, precision_digits=2),
@@ -29,6 +34,8 @@ class HrAttendance(http.Controller):
                 'display_systray': employee.company_id.attendance_from_systray,
                 'device_tracking_enabled': employee.company_id.attendance_device_tracking,
                 'exceeded_eight_hours': employee.hours_today >= 8.0 and employee.attendance_state == 'checked_in',
+                'current_project_number': current_project.project_number if current_project else False,
+                'current_project_name': current_project.name if current_project else False,
             }
             # Only include hours_balance for systray widget, not for kiosk checkout
             if include_hours_balance:

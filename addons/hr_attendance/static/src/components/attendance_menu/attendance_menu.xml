@@ -20,6 +20,13 @@
                                 <div t-esc="this.lastAttendanceWorkedHours" t-attf-class="fs-3 text-info {{ !this.isFirstAttendance ? 'text-end' : '' }}"/>
                             </div>
                         </div>
+                        <!-- Current Project Display -->
+                        <div t-if="this.state.checkedIn and this.currentProjectNumber" class="att_container p-2 bg-100 rounded">
+                            <small class="d-block text-muted">Current Project</small>
+                            <div class="fs-6 text-primary fw-medium">
+                                <t t-esc="this.currentProjectNumber"/> - <t t-esc="this.currentProjectName"/>
+                            </div>
+                        </div>
                         <div t-if="!this.isFirstAttendance"
                             class="att_container d-flex flex-column"
                             t-att-class="this.state.checkedIn ? 'p-3 bg-100 rounded' : ''">

@@ -88,6 +88,10 @@ export class ActivityMenu extends Component {
             this.hoursBalancePositive = this.hoursBalance >= 0;
             this.displayExtraHours = this.employee.display_extra_hours;
 
+            // Current project
+            this.currentProjectNumber = this.employee.current_project_number || false;
+            this.currentProjectName = this.employee.current_project_name || false;
+
             // Check if employee exceeded 8 hours and show notification
             if (this.employee.exceeded_eight_hours && !this._hasAcknowledgedToday()) {
                 this._showEightHourNotification();
