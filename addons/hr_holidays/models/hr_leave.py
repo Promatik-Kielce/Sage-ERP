@@ -609,6 +609,10 @@ Versions:
                         days = 1 if not leave.request_unit_half else 0.5
                     else:
                         days = hours / 24
+                elif leave.request_unit_hours:
+                    # For hourly leave requests, use simple time difference (don't exclude lunch)
+                    hours = (leave.date_to - leave.date_from).total_seconds() / 3600
+                    days = hours / (calendar.hours_per_day or HOURS_PER_DAY)
                 elif leave.leave_type_request_unit == 'day' and check_leave_type:
                     # list of tuples (day, hours)
                     work_time_per_day_list = work_time_per_day_mapped[leave.date_from, leave.date_to, leave.holiday_status_id.include_public_holidays_in_duration, calendar][leave.employee_id.id]
