@@ -20,37 +20,54 @@ class HrAttendanceTimesheetProject(http.Controller):
 
     @staticmethod
     def _get_employee_info_response(employee):
-        """Get employee info response similar to hr_attendance controller"""
+        """
+        Get employee info response for kiosk checkout confirmation.
+
+        PERFORMANCE OPTIMIZATION: This method only accesses STORED fields to avoid
+        triggering expensive computed field recalculations (hours_today, total_overtime, etc.)
+        which caused ~10s delays after kiosk inactivity.
+        """
         response = {}
         if employee:
-            # Get current project info from active timesheet
+            # Get current attendance info from stored fields only
             current_attendance = employee.last_attendance_id
             current_project_name = None
-            if current_attendance and not current_attendance.check_out and current_attendance.active_timesheet_id:
+
+            # Derive attendance_state from stored check_out field instead of computed field
+            is_checked_in = bool(current_attendance and not current_attendance.check_out)
+
+            if is_checked_in and current_attendance.active_timesheet_id:
                 if current_attendance.active_timesheet_id.project_id:
                     current_project_name = current_attendance.active_timesheet_id.project_id.display_name
 
+            # Return minimal data using STORED fields only - no expensive computed fields
             response = {
                 'id': employee.id,
                 'employee_name': employee.name,
                 'employee_avatar': employee.image_256 and image_data_uri(employee.image_256),
-                'hours_today': float_round(employee.hours_today, precision_digits=2),
-                'hours_previously_today': float_round(employee.hours_previously_today, precision_digits=2),
-                'last_attendance_worked_hours': float_round(employee.last_attendance_worked_hours, precision_digits=2),
+                # Stored related field
                 'last_check_in': employee.last_check_in,
-                'attendance_state': employee.attendance_state,
-                'total_overtime': float_round(employee.total_overtime, precision_digits=2),
+                # Derived from stored field, not computed
+                'attendance_state': 'checked_in' if is_checked_in else 'checked_out',
+                # Stored fields from company
                 'kiosk_delay': employee.company_id.attendance_kiosk_delay * 1000,
                 'inactivity_timeout': employee.company_id.attendance_kiosk_inactivity_timeout * 1000,
+                # Attendance data from stored fields
                 'attendance': {
-                    'check_in': employee.last_attendance_id.check_in,
-                    'check_out': employee.last_attendance_id.check_out
+                    'check_in': current_attendance.check_in if current_attendance else None,
+                    'check_out': current_attendance.check_out if current_attendance else None
                 },
                 'current_project_name': current_project_name,
+                # Stored company settings
                 'display_systray': employee.company_id.attendance_from_systray,
                 'device_tracking_enabled': employee.company_id.attendance_device_tracking,
                 'use_pin': employee.company_id.attendance_kiosk_use_pin,
                 'display_overtime': employee.company_id.hr_attendance_display_overtime,
+                # NOTE: These expensive computed fields are intentionally excluded:
+                # - hours_today (triggers _compute_hours_today with DB search)
+                # - hours_previously_today (same)
+                # - last_attendance_worked_hours (same)
+                # - total_overtime (triggers _read_group query)
             }
         return response
 
@@ -83,12 +100,16 @@ class HrAttendanceTimesheetProject(http.Controller):
             _logger.warning("[Kiosk] No employee found")
             return {}
 
-        # Get current attendance info
+        # Get current attendance info - using stored fields only to avoid expensive computed field access
         current_attendance = employee.last_attendance_id
         current_project_name = None
         attendance_id = None
 
-        if current_attendance and not current_attendance.check_out:
+        # Derive attendance_state from stored check_out field instead of computed field
+        # This avoids triggering _compute_attendance_state -> _compute_last_attendance_id chain
+        is_checked_in = bool(current_attendance and not current_attendance.check_out)
+
+        if is_checked_in:
             # Employee is checked in
             attendance_id = current_attendance.id
             # Get project from active timesheet
@@ -98,7 +119,7 @@ class HrAttendanceTimesheetProject(http.Controller):
         result = {
             'employee_id': employee.id,
             'employee_name': employee.name,
-            'attendance_state': employee.attendance_state,
+            'attendance_state': 'checked_in' if is_checked_in else 'checked_out',
             'attendance_id': attendance_id,
             'current_project_name': current_project_name,
             'use_pin': company.attendance_kiosk_use_pin,

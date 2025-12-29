@@ -12,5 +12,6 @@ class IrHttp(models.AbstractModel):
         res = super().lazy_session_info()
         if self.env.user and self.env.user.employee_id:
             employee = self.env.user.employee_id
-            res['attendance_user_data'] = HrAttendance._get_user_attendance_data(employee)
+            # Exclude hours_balance from session info to avoid expensive computation on every request
+            res['attendance_user_data'] = HrAttendance._get_user_attendance_data(employee, include_hours_balance=False)
         return res
