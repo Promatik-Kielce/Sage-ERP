@@ -192,11 +192,19 @@ class HrEmployee(models.Model):
         """ Check In/Check Out action
             Check In: create a new attendance record
             Check Out: modify check_out field of appropriate attendance record
+
+        PERFORMANCE OPTIMIZATION: Derives attendance state from stored last_attendance_id
+        field instead of accessing the computed attendance_state field, which would trigger
+        expensive database searches after ORM cache invalidation (e.g., after kiosk inactivity).
         """
         self.ensure_one()
         action_date = fields.Datetime.now()
 
-        if self.attendance_state != 'checked_in':
+        # Derive state from STORED last_attendance_id field instead of computed attendance_state
+        last_att = self.last_attendance_id
+        is_checked_in = bool(last_att and not last_att.check_out)
+
+        if not is_checked_in:
             if geo_information:
                 vals = {
                     'employee_id': self.id,

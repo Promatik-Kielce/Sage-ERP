@@ -259,19 +259,35 @@ class HrAttendance(http.Controller):
 
     @http.route('/hr_attendance/employees_infos', type="jsonrpc", auth="public")
     def employees_infos(self, token, limit, offset, domain):
+        """
+        PERFORMANCE OPTIMIZATION: Derives attendance_state from stored last_attendance_id
+        field instead of accessing the computed attendance_state field, which would trigger
+        expensive database searches after ORM cache invalidation (e.g., after kiosk inactivity).
+        """
         company = self._get_company(token)
         if company:
             domain = Domain(domain) & Domain('company_id', '=', company.id)
-            employees = request.env['hr.employee'].sudo().search_fetch(domain, ['id', 'display_name', 'job_id'],
-                limit=limit, offset=offset, order="name, id")
-            employees_data = [{
-                'id': employee.id,
-                'display_name': employee.display_name,
-                'job_id': employee.job_id.name,
-                'avatar': image_data_uri(employee.avatar_128),
-                'status': employee.attendance_state,
-                'mode': employee.last_attendance_id.in_mode
-            } for employee in employees]
+            # Include last_attendance_id in fetch for efficient state derivation
+            employees = request.env['hr.employee'].sudo().search_fetch(
+                domain,
+                ['id', 'display_name', 'job_id', 'avatar_128', 'last_attendance_id'],
+                limit=limit, offset=offset, order="name, id"
+            )
+            employees_data = []
+            for employee in employees:
+                # Derive attendance_state from STORED last_attendance_id field
+                # instead of triggering the computed field
+                last_att = employee.last_attendance_id
+                attendance_state = 'checked_in' if (last_att and not last_att.check_out) else 'checked_out'
+
+                employees_data.append({
+                    'id': employee.id,
+                    'display_name': employee.display_name,
+                    'job_id': employee.job_id.name,
+                    'avatar': image_data_uri(employee.avatar_128),
+                    'status': attendance_state,
+                    'mode': last_att.in_mode if last_att else False
+                })
             return {'records': employees_data, 'length': request.env['hr.employee'].sudo().search_count(domain)}
         return []
 
