@@ -175,11 +175,129 @@ export class GanttRenderer extends Component {
                 }
             });
 
+            // Update day separators when view range changes
+            this.timeline.on('rangechanged', () => {
+                this._addDaySeparators(this.props.scale);
+            });
+
             // Set initial visible window based on scale
             this._setVisibleWindow(scale);
 
+            // Add day separator lines
+            this._addDaySeparators(scale);
+
         } catch (error) {
             console.error("[web_gantt] Error initializing timeline:", error);
+        }
+    }
+
+    _addDaySeparators(scale) {
+        if (!this.timeline) return;
+
+        // Remove existing day separators
+        this._removeDaySeparators();
+
+        // Only add separators for week/month scales where days need to be distinguished
+        if (scale !== 'week' && scale !== 'month') return;
+
+        const window = this.timeline.getWindow();
+        const start = new Date(window.start);
+        const end = new Date(window.end);
+
+        // Start from beginning of the first day
+        const current = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+        current.setDate(current.getDate() + 1); // Start from next day boundary
+
+        this._daySeparatorIds = [];
+        this._weekendBackgroundIds = [];
+
+        while (current < end) {
+            const dayOfWeek = current.getDay();
+            const id = `day-sep-${current.getTime()}`;
+            try {
+                this.timeline.addCustomTime(current, id);
+                this._daySeparatorIds.push(id);
+            } catch (e) {
+                // Custom time already exists, skip
+            }
+
+            // Check if this day is a weekend (Saturday=6 or Sunday=0)
+            // Add background item for weekend days
+            if (dayOfWeek === 0 || dayOfWeek === 6) {
+                const weekendStart = new Date(current);
+                weekendStart.setDate(weekendStart.getDate() - 1); // Start from previous midnight
+                weekendStart.setHours(0, 0, 0, 0);
+                const weekendEnd = new Date(current);
+                weekendEnd.setHours(0, 0, 0, 0);
+
+                const bgId = `weekend-bg-${current.getTime()}`;
+                this._weekendBackgroundIds.push({
+                    id: bgId,
+                    start: weekendStart,
+                    end: weekendEnd,
+                    type: 'background',
+                    className: 'vis-weekend-background',
+                });
+            }
+
+            current.setDate(current.getDate() + 1);
+        }
+
+        // Add weekend background items to the timeline
+        this._addWeekendBackgrounds();
+    }
+
+    _addWeekendBackgrounds() {
+        if (!this.timeline || !this._weekendBackgroundIds || this._weekendBackgroundIds.length === 0) return;
+
+        try {
+            const items = this.timeline.itemsData;
+            if (items) {
+                this._weekendBackgroundIds.forEach(bg => {
+                    try {
+                        items.add(bg);
+                    } catch (e) {
+                        // Item might already exist
+                    }
+                });
+            }
+        } catch (e) {
+            console.log("[web_gantt] Could not add weekend backgrounds:", e);
+        }
+    }
+
+    _removeDaySeparators() {
+        if (!this.timeline) return;
+
+        // Remove custom time markers
+        if (this._daySeparatorIds) {
+            this._daySeparatorIds.forEach(id => {
+                try {
+                    this.timeline.removeCustomTime(id);
+                } catch (e) {
+                    // Ignore if already removed
+                }
+            });
+            this._daySeparatorIds = [];
+        }
+
+        // Remove weekend background items
+        if (this._weekendBackgroundIds && this._weekendBackgroundIds.length > 0) {
+            try {
+                const items = this.timeline.itemsData;
+                if (items) {
+                    this._weekendBackgroundIds.forEach(bg => {
+                        try {
+                            items.remove(bg.id);
+                        } catch (e) {
+                            // Ignore if already removed
+                        }
+                    });
+                }
+            } catch (e) {
+                // Ignore errors
+            }
+            this._weekendBackgroundIds = [];
         }
     }
 
@@ -274,6 +392,8 @@ export class GanttRenderer extends Component {
             this.timeline.setOptions(this._getScaleOptions(scale));
             // Update visible window when scale changes
             this._setVisibleWindow(scale);
+            // Re-add day separators for new scale/window
+            this._addDaySeparators(scale);
         } catch (error) {
             console.error("[web_gantt] Error refreshing timeline:", error);
         }

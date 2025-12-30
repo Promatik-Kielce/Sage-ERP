@@ -88,7 +88,7 @@
 
             // Content area with timeline items
             .vis-itemset {
-                background-color: #ffffff;
+                background-color: transparent;  // Transparent so custom time lines show through
 
                 .vis-foreground {
                     .vis-group {
@@ -96,6 +96,11 @@
                         min-height: 50px;  // Match employee label height
                     }
                 }
+            }
+
+            // White background on center panel - below custom times
+            .vis-panel.vis-center {
+                background-color: #ffffff;
             }
 
             // Timeline items (attendance bars)
@@ -136,9 +141,23 @@
                 width: 2px;
             }
 
+            // Day separator lines (custom time markers)
             .vis-custom-time {
-                background-color: #6c757d;
-                width: 2px;
+                background-color: #dee2e6;
+                width: 1px;
+                pointer-events: none;  // Don't interfere with item clicks
+
+                // Hide the draggable handle
+                .vis-custom-time-marker {
+                    display: none;
+                }
+            }
+
+            // Weekend background highlighting
+            .vis-item.vis-background.vis-weekend-background {
+                background-color: #f1f3f5 !important;
+                border: none !important;
+                opacity: 1 !important;
             }
 
             // Grid background
