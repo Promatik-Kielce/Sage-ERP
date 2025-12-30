@@ -147,6 +147,7 @@ class HrLeave(models.Model):
         tracking=True)
     holiday_status_requires_allocation = fields.Boolean(related="holiday_status_id.requires_allocation")
     color = fields.Integer("Color", related='holiday_status_id.color')
+    gantt_color = fields.Integer("Gantt Color", compute='_compute_gantt_color')
     validation_type = fields.Selection(string='Validation Type', related='holiday_status_id.leave_validation_type', readonly=False)
     # HR data
 
@@ -683,6 +684,21 @@ Versions:
     def _compute_can_approve(self):
         for holiday in self:
             holiday.can_approve = holiday._check_approval_update('validate1', raise_if_not_possible=False)
+
+    @api.depends('state')
+    def _compute_gantt_color(self):
+        """Color based on leave status for Gantt view.
+        - Green (10): Approved
+        - Orange (2): To Approve (confirm, validate1)
+        - Red (1): Refused/Cancelled
+        """
+        for leave in self:
+            if leave.state == 'validate':
+                leave.gantt_color = 10  # Green
+            elif leave.state in ('confirm', 'validate1'):
+                leave.gantt_color = 2   # Orange
+            else:  # refuse, cancel
+                leave.gantt_color = 1   # Red
 
     @api.depends('state', 'employee_id', 'department_id')
     def _compute_can_back_to_approve(self):

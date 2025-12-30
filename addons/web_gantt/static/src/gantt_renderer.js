@@ -225,9 +225,9 @@ export class GanttRenderer extends Component {
             // Add background item for weekend days
             if (dayOfWeek === 0 || dayOfWeek === 6) {
                 const weekendStart = new Date(current);
-                weekendStart.setDate(weekendStart.getDate() - 1); // Start from previous midnight
                 weekendStart.setHours(0, 0, 0, 0);
                 const weekendEnd = new Date(current);
+                weekendEnd.setDate(weekendEnd.getDate() + 1); // End at next day midnight
                 weekendEnd.setHours(0, 0, 0, 0);
 
                 const bgId = `weekend-bg-${current.getTime()}`;

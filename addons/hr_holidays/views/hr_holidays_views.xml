@@ -47,6 +47,32 @@
         sequence="3"
         groups="hr_holidays.group_hr_holidays_responsible"/>
 
+    <record id="hr_leave_action_gantt_timeline" model="ir.actions.act_window">
+        <field name="name">Leave Timeline</field>
+        <field name="res_model">hr.leave</field>
+        <field name="view_mode">gantt,list,form</field>
+        <field name="context">{
+            'search_default_approve': 1,
+            'search_default_validated': 1,
+        }</field>
+        <field name="domain">[]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No time off requests to display
+            </p>
+            <p>
+                This timeline shows all employee leaves and their status.
+            </p>
+        </field>
+    </record>
+
+    <menuitem
+        id="menu_hr_leave_timeline"
+        name="Leave Timeline"
+        parent="menu_hr_holidays_management"
+        action="hr_leave_action_gantt_timeline"
+        sequence="1"/>
+
     <menuitem
         id="menu_open_department_leave_approve"
         name="Time Off"
