@@ -276,6 +276,7 @@
                 default_group_by="employee_id"
                 precision="hour"
                 create="false"
+                edit="true"
                 delete="false"
                 disable_drag_drop="true">
                 <field name="employee_id"/>

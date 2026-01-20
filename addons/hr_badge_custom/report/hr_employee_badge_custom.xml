@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="print_employee_badge_custom" inherit_id="hr.print_employee_badge">
+        <xpath expr="//div[@class='page']" position="replace">
+            <div class="page">
+                <div class="oe_structure"/>
+                <t t-foreach="docs" t-as="employee">
+                    <div style="display: inline-block; page-break-inside: avoid; width: 241pt; height: 156pt; border: 1pt solid #ccc; border-radius: 8pt; margin: 5pt; padding: 6pt; position: relative; box-sizing: border-box;">
+
+                        <!-- Company Logo - Top, Centered -->
+                        <div style="text-align: center; padding-bottom: 4pt; border-bottom: 1pt solid #eee;">
+                            <img t-if="employee.company_id.logo"
+                                 t-att-src="image_data_uri(employee.company_id.logo)"
+                                 style="max-height: 40pt; max-width: 80%;"
+                                 alt="Company Logo"/>
+                        </div>
+
+                        <!-- Main Content Area -->
+                        <table style="width: 100%; height: 98pt; border-spacing: 0; border-collapse: collapse; margin-top: 4pt;" class="table-borderless">
+                            <tr>
+                                <!-- Left: QR Code (Big) -->
+                                <td style="width: 35%; vertical-align: middle; text-align: center; padding: 0;">
+                                    <img t-if="employee.barcode"
+                                         t-att-src="'/report/barcode/QR/%s' % employee.barcode"
+                                         style="width: 78pt; height: 78pt;"
+                                         alt="Employee QR Code"/>
+                                </td>
+
+                                <!-- Right: Name, Position, Department -->
+                                <td style="width: 65%; vertical-align: middle; text-align: center; padding: 0;">
+                                    <div>
+                                        <div style="font-size: 13pt; font-weight: bold;" t-out="employee.name" data-oe-demo="Jaroslaw Majcherczyk"/>
+                                        <div style="font-size: 10pt; padding-top: 6pt;" t-out="employee.job_id.name" data-oe-demo="Programista .NET"/>
+                                        <div style="font-size: 9pt; padding-top: 4pt; color: #555;" t-out="employee.department_id.name" data-oe-demo="IT"/>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- Sage Logo - Bottom Right Corner -->
+                        <img src="https://sage.erp/web/static/img/logo2.png"
+                             style="position: absolute; bottom: 6pt; right: 6pt; width: 54pt; height: 18pt;"
+                             alt="Sage Logo"/>
+
+                    </div>
+                </t>
+                <div class="oe_structure"/>
+            </div>
+        </xpath>
+    </template>
+</odoo>

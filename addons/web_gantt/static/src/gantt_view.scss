@@ -91,6 +91,9 @@
                 background-color: transparent;  // Transparent so custom time lines show through
 
                 .vis-foreground {
+                    pointer-events: auto;  // Ensure foreground is clickable
+                    z-index: 5;  // Above background
+
                     .vis-group {
                         border-bottom: 1px solid #e9ecef;
                         min-height: 50px;  // Match employee label height
@@ -114,6 +117,8 @@
                 cursor: pointer;
                 transition: all 0.2s ease;
                 min-height: 32px;  // Make items taller and easier to click
+                pointer-events: auto !important;  // Ensure items are clickable
+                z-index: 10;  // Ensure items are above backgrounds
 
                 &:hover {
                     opacity: 0.9;
@@ -158,10 +163,14 @@
                 background-color: #f1f3f5 !important;
                 border: none !important;
                 opacity: 1 !important;
+                pointer-events: none !important;  // Don't block clicks on items
+                z-index: 1;  // Keep behind regular items
             }
 
-            // Grid background
+            // Grid background - ensure it doesn't block item clicks
             .vis-background {
+                pointer-events: none;  // Don't capture clicks
+
                 .vis-grid {
                     &.vis-vertical {
                         border-color: #e9ecef;

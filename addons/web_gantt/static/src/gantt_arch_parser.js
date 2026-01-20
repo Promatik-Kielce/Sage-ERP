@@ -29,6 +29,11 @@ export class GanttArchParser {
         const defaultGroupBy = root.getAttribute("default_group_by");
         console.log("[web_gantt] ArchParser - default_group_by attribute:", defaultGroupBy);
 
+        // Debug: log the edit attribute
+        const editAttr = root.getAttribute("edit");
+        console.log("[web_gantt] ArchParser - edit attribute raw value:", editAttr);
+        console.log("[web_gantt] ArchParser - edit !== 'false':", editAttr !== "false");
+
         const result = {
             // Required attributes
             dateStartField: root.getAttribute("date_start"),

@@ -6,6 +6,7 @@ export class GanttRenderer extends Component {
     setup() {
         this.ganttRef = useRef("gantt");
         this.timeline = null;
+        this.items = [];  // Store items as instance variable for event handler access
 
         this.state = useState({
             isLoading: false,
@@ -52,7 +53,7 @@ export class GanttRenderer extends Component {
 
         // Prepare groups (employees) and items (attendance records)
         const groups = [];
-        const items = [];
+        this.items = [];  // Reset items array
 
         Object.entries(data.groups).forEach(([groupKey, groupData]) => {
             // Create label with attendance state indicator
@@ -84,12 +85,12 @@ export class GanttRenderer extends Component {
                     className: task.custom_class || '',
                     task: task,  // Store task data for click handling
                 };
-                items.push(item);
+                this.items.push(item);
             });
         });
 
         console.log("[web_gantt] Groups:", groups);
-        console.log("[web_gantt] Items:", items);
+        console.log("[web_gantt] Items:", this.items);
 
         // Timeline options
         const options = {
@@ -152,16 +153,18 @@ export class GanttRenderer extends Component {
         try {
             this.timeline = new window.vis.Timeline(
                 this.ganttRef.el,
-                new window.vis.DataSet(items),
+                new window.vis.DataSet(this.items),
                 new window.vis.DataSet(groups),
                 options
             );
 
-            // Bind events
-            this.timeline.on('select', (properties) => {
-                if (properties.items.length > 0) {
-                    const itemId = properties.items[0];
-                    const item = items.find(i => i.id === itemId);
+            // Bind events - use 'click' event for more reliable click detection
+            this.timeline.on('click', (properties) => {
+                console.log("[web_gantt] Click event:", properties);
+                if (properties.item) {
+                    const itemId = properties.item;
+                    const item = this.items.find(i => i.id === itemId);
+                    console.log("[web_gantt] Found item:", item);
                     if (item && item.task) {
                         this.onTaskClick(item.task);
                     }
@@ -353,7 +356,7 @@ export class GanttRenderer extends Component {
 
         // Update groups and items
         const groups = [];
-        const items = [];
+        this.items = [];  // Reset items array
 
         Object.entries(data.groups).forEach(([groupKey, groupData]) => {
             // Create label with attendance state indicator
@@ -373,7 +376,7 @@ export class GanttRenderer extends Component {
             });
 
             groupData.tasks.forEach(task => {
-                items.push({
+                this.items.push({
                     id: task.id,
                     group: groupKey,
                     start: new Date(task.start),  // Convert to Date object
@@ -388,7 +391,7 @@ export class GanttRenderer extends Component {
 
         try {
             this.timeline.setGroups(new window.vis.DataSet(groups));
-            this.timeline.setItems(new window.vis.DataSet(items));
+            this.timeline.setItems(new window.vis.DataSet(this.items));
             this.timeline.setOptions(this._getScaleOptions(scale));
             // Update visible window when scale changes
             this._setVisibleWindow(scale);
@@ -530,18 +533,21 @@ export class GanttRenderer extends Component {
 
     onTaskClick(task) {
         console.log("[web_gantt] Task clicked:", task);
+        console.log("[web_gantt] canEdit:", this.props.archInfo.canEdit);
+        console.log("[web_gantt] modelName:", this.props.archInfo.modelName);
+        console.log("[web_gantt] recordId:", task.recordId);
 
-        if (this.props.archInfo.canEdit) {
-            // Open record in form view
-            const action = {
-                type: "ir.actions.act_window",
-                res_model: this.props.archInfo.modelName,
-                res_id: task.recordId,
-                views: [[false, "form"]],
-                target: "current",
-            };
-            this.env.services.action.doAction(action);
-        }
+        // Always open form view on click - the form view will handle permissions
+        // Opening a record for viewing should always be allowed
+        const action = {
+            type: "ir.actions.act_window",
+            res_model: this.props.archInfo.modelName,
+            res_id: task.recordId,
+            views: [[false, "form"]],
+            target: "current",
+        };
+        console.log("[web_gantt] Opening action:", action);
+        this.env.services.action.doAction(action);
     }
 
     async onTaskDateChange(properties) {
