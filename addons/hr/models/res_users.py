@@ -26,28 +26,12 @@ HR_READABLE_FIELDS = [
 
 HR_WRITABLE_FIELDS = [
     'additional_note',
-    'private_street',
-    'private_street2',
-    'private_city',
-    'private_state_id',
-    'private_zip',
-    'private_country_id',
-    'private_phone',
-    'private_email',
     'barcode',
     'category_ids',
     'display_name',
-    'emergency_contact',
-    'emergency_phone',
-    'employee_bank_account_ids',
-    'job_title',
     'km_home_work',
-    'mobile_phone',
-    'pin',
     'visa_expire',
-    'work_email',
     'work_location_id',
-    'work_phone',
 ]
 
 
@@ -123,7 +107,10 @@ class ResUsers(models.Model):
 
     @property
     def SELF_WRITEABLE_FIELDS(self):
-        return super().SELF_WRITEABLE_FIELDS + HR_WRITABLE_FIELDS
+        # Remove 'name', 'email', 'phone' - users should not edit these themselves
+        base_fields = super().SELF_WRITEABLE_FIELDS
+        restricted = {'name', 'email', 'phone'}
+        return [f for f in base_fields if f not in restricted] + HR_WRITABLE_FIELDS
 
     @api.onchange("private_state_id")
     def _onchange_private_state_id(self):
