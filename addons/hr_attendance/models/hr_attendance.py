@@ -23,6 +23,19 @@ def get_google_maps_url(latitude, longitude):
     return "https://maps.google.com?q=%s,%s" % (latitude, longitude)
 
 
+def format_hours_minutes(value):
+    """Format a float as 'Xh Ymin' (e.g., 5.5 -> '5h 30min')."""
+    hours = int(abs(value))
+    minutes = round((abs(value) - hours) * 60)
+    if minutes == 60:
+        minutes = 0
+        hours += 1
+    sign = '-' if value < 0 else ''
+    if minutes == 0:
+        return f'{sign}{hours}h'
+    return f'{sign}{hours}h {minutes}min'
+
+
 class HrAttendance(models.Model):
     _name = 'hr.attendance'
     _description = "Attendance"
@@ -131,12 +144,12 @@ class HrAttendance(models.Model):
                 color = 1 if oldest_open < (datetime.today() - timedelta(days=1)) else 10
             else:
                 # All checked out - color based on total daily hours
-                if total_worked <= 7.5:
-                    color = 1  # Red - short day
+                if total_worked < 8.0:
+                    color = 1  # Red - under 8h target
                 elif total_worked >= 8.5:
                     color = 3  # Yellow - overtime
                 else:
-                    color = 10  # Green - normal 8h day
+                    color = 10  # Green - met 8h target
 
             # Apply same color to all attendances in this day
             for att in attendances:
@@ -241,7 +254,7 @@ class HrAttendance(models.Model):
             else:
                 attendance.display_name = _(
                     "%(worked_hours)s (%(check_in)s-%(check_out)s)",
-                    worked_hours=format_duration(attendance.worked_hours),
+                    worked_hours=format_hours_minutes(attendance.worked_hours),
                     check_in=format_time(self.env, attendance.check_in, time_format=None, tz=tz, lang_code=self.env.lang),
                     check_out=format_time(self.env, attendance.check_out, time_format=None, tz=tz, lang_code=self.env.lang),
                 )

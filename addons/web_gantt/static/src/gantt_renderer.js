@@ -481,13 +481,24 @@ export class GanttRenderer extends Component {
         return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
     }
 
+    _formatHoursMinutes(value) {
+        if (!value) return '0h';
+        const hours = Math.floor(Math.abs(value));
+        const minutes = Math.round((Math.abs(value) - hours) * 60);
+        const sign = value < 0 ? '-' : '';
+        if (minutes === 0) {
+            return `${sign}${hours}h`;
+        }
+        return `${sign}${hours}h ${minutes}min`;
+    }
+
     _getItemContent(task, archInfo) {
         // Extract worked hours for display
         const record = task.record;
         const workedHours = record.worked_hours;
 
         if (workedHours) {
-            return `${workedHours.toFixed(1)}h`;
+            return this._formatHoursMinutes(workedHours);
         }
 
         return '';
@@ -504,12 +515,12 @@ export class GanttRenderer extends Component {
 
         // Add worked hours
         if (record.worked_hours) {
-            parts.push(`Worked: ${record.worked_hours.toFixed(2)}h`);
+            parts.push(`Worked: ${this._formatHoursMinutes(record.worked_hours)}`);
         }
 
         // Add overtime
         if (record.overtime_hours) {
-            parts.push(`Overtime: ${record.overtime_hours.toFixed(2)}h`);
+            parts.push(`Overtime: ${this._formatHoursMinutes(record.overtime_hours)}`);
         }
 
         // Add date range

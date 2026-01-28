@@ -29,6 +29,13 @@ class HrAttendance(models.Model):
         store=False,
         help="Project from the active timesheet"
     )
+    main_project_id = fields.Many2one(
+        'project.project',
+        string='Main Project',
+        compute='_compute_main_project',
+        store=True,
+        help="Project with the most timesheet hours in this attendance"
+    )
     total_timesheet_hours = fields.Float(
         string='Total Timesheet Hours',
         compute='_compute_timesheet_hours',
@@ -47,6 +54,31 @@ class HrAttendance(models.Model):
         """Get current project from active timesheet"""
         for attendance in self:
             attendance.current_project_id = attendance.active_timesheet_id.project_id if attendance.active_timesheet_id else False
+
+    @api.depends('timesheet_ids.unit_amount', 'timesheet_ids.project_id')
+    def _compute_main_project(self):
+        """Calculate the project with the most timesheet hours for each attendance."""
+        for attendance in self:
+            if not attendance.timesheet_ids:
+                attendance.main_project_id = False
+                continue
+
+            # Group hours by project
+            hours_by_project = {}
+            for timesheet in attendance.timesheet_ids:
+                project = timesheet.project_id
+                if not project:
+                    continue
+                if project not in hours_by_project:
+                    hours_by_project[project] = 0.0
+                hours_by_project[project] += timesheet.unit_amount
+
+            if not hours_by_project:
+                attendance.main_project_id = False
+                continue
+
+            # Find project with maximum hours
+            attendance.main_project_id = max(hours_by_project, key=hours_by_project.get)
 
     @api.depends('timesheet_ids.unit_amount', 'worked_hours')
     def _compute_timesheet_hours(self):

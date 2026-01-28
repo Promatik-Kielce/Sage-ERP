@@ -28,7 +28,7 @@ from odoo import api, fields, models, _
 from odoo.http import request
 from odoo.tools import float_utils
 from odoo.tools import format_duration
-from pytz import utc
+from pytz import timezone, utc
 
 ROUNDING_FACTOR = 16
 
@@ -97,8 +97,14 @@ class HrEmployee(models.Model):
             [('employee_id', '=', employee[0]['id'])],
             fields=['id', 'check_in', 'check_out', 'worked_hours'])
         attendance_line = []
+        # Get user's timezone for display
+        user_tz = timezone(self.env.user.tz or 'UTC')
         for line in attendance:
             if line['check_in'] and line['check_out']:
+                # Convert UTC times to user's local timezone
+                check_in_local = utc.localize(line['check_in']).astimezone(user_tz)
+                check_out_local = utc.localize(line['check_out']).astimezone(user_tz)
+
                 # Determine color based on worked hours
                 worked_hours_val = line['worked_hours']
                 if worked_hours_val < 7.9:
@@ -109,10 +115,10 @@ class HrEmployee(models.Model):
                     hours_color = 'default'
 
                 val = {
-                    'id':line['id'],
-                    'date': line['check_in'].date(),
-                    'sign_in': line['check_in'].time().strftime('%H:%M'),
-                    'sign_out': line['check_out'].time().strftime('%H:%M'),
+                    'id': line['id'],
+                    'date': check_in_local.date(),
+                    'sign_in': check_in_local.strftime('%H:%M'),
+                    'sign_out': check_out_local.strftime('%H:%M'),
                     'worked_hours': format_duration(line['worked_hours']),
                     'hours_color': hours_color
                 }

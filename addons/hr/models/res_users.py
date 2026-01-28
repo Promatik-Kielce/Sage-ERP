@@ -27,6 +27,7 @@ HR_READABLE_FIELDS = [
 HR_WRITABLE_FIELDS = [
     'additional_note',
     'barcode',
+    'birthday',
     'category_ids',
     'display_name',
     'km_home_work',
@@ -74,6 +75,7 @@ class ResUsers(models.Model):
     emergency_contact = fields.Char(related='employee_id.emergency_contact', readonly=False, related_sudo=False)
     emergency_phone = fields.Char(related='employee_id.emergency_phone', readonly=False, related_sudo=False)
     visa_expire = fields.Date(related='employee_id.visa_expire', readonly=False, related_sudo=False)
+    birthday = fields.Date(related='employee_id.birthday', readonly=False, related_sudo=False)
     additional_note = fields.Text(related='employee_id.additional_note', readonly=False, related_sudo=False)
     barcode = fields.Char(related='employee_id.barcode', readonly=False, related_sudo=False)
     pin = fields.Char(related='employee_id.pin', readonly=False, related_sudo=False)
