@@ -519,11 +519,10 @@
                                                     t-att-style="employee['is_birthday'] ? 'color: white; font-weight:500' : ''">
                                                     <t t-esc="employee['name']"/>
                                                 </h2>
-                                                <p t-att-style="employee['is_birthday'] ? 'color: white; font-weight:500' : ''"><t t-esc="employee['birthday']"/></p>
                                                 <t t-if="employee['is_birthday']">
                                                     <span class="birthday"><t t-esc="this.translations.happyBirthday"/> 🎁</span>
                                                 </t>
-                                                <t t-if="employee['days']">
+                                                <t t-elif="employee['days']">
                                                     <span class="days_left"> <t
                                                             t-esc="employee['days']"/>
                                                         <t t-esc="this.translations.daysLeft"/></span>

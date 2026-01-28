@@ -252,15 +252,24 @@ class HrEmployee(models.Model):
                                                   limit=1)
         today = fields.Date.today()
         birthday_employees = self.env['hr.employee'].search_read(
-            [('birthday', '!=', False)], fields=['id', 'name', 'birthday'], order='birthday ASC', limit=4)
+            [('birthday', '!=', False)], fields=['id', 'name', 'birthday'])
 
         for emp in birthday_employees:
-            if emp['birthday'].month == today.month and emp[
-                'birthday'].day == today.day:
+            if emp['birthday'].month == today.month and emp['birthday'].day == today.day:
                 emp['is_birthday'] = True
+                emp['days'] = 0
             else:
                 emp_birthday = emp['birthday'].replace(year=today.year)
-                emp['days'] = (emp_birthday - today).days
+                days_diff = (emp_birthday - today).days
+                # If birthday already passed this year, calculate for next year
+                if days_diff < 0:
+                    emp_birthday = emp['birthday'].replace(year=today.year + 1)
+                    days_diff = (emp_birthday - today).days
+                emp['days'] = days_diff
+
+        # Sort by days remaining (closest birthdays first)
+        birthday_employees.sort(key=lambda x: x.get('days', 999))
+        birthday_employees = birthday_employees[:4]
         announcements = self.env['hr.announcement'].search_read(
             [('state', '=', 'approved'),
              ('date_start', '<=', fields.Date.today()),
