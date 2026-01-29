@@ -483,8 +483,12 @@ export class GanttRenderer extends Component {
 
     _formatHoursMinutes(value) {
         if (!value) return '0h';
-        const hours = Math.floor(Math.abs(value));
-        const minutes = Math.round((Math.abs(value) - hours) * 60);
+        let hours = Math.floor(Math.abs(value));
+        let minutes = Math.round((Math.abs(value) - hours) * 60);
+        if (minutes === 60) {
+            minutes = 0;
+            hours += 1;
+        }
         const sign = value < 0 ? '-' : '';
         if (minutes === 0) {
             return `${sign}${hours}h`;

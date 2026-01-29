@@ -144,12 +144,13 @@ class HrAttendance(models.Model):
                 color = 1 if oldest_open < (datetime.today() - timedelta(days=1)) else 10
             else:
                 # All checked out - color based on total daily hours
-                if total_worked < 8.0:
-                    color = 1  # Red - under 8h target
+                # 15 min tolerance: >= 7h 45min counts as meeting 8h target
+                if total_worked < 7.75:
+                    color = 1  # Red - under 7h 45min
                 elif total_worked >= 8.5:
                     color = 3  # Yellow - overtime
                 else:
-                    color = 10  # Green - met 8h target
+                    color = 10  # Green - met 8h target (7h 45min - 8h 30min)
 
             # Apply same color to all attendances in this day
             for att in attendances:
