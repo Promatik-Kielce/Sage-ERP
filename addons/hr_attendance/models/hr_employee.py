@@ -13,7 +13,7 @@ class HrEmployee(models.Model):
         'res.users', store=True, readonly=False,
         string="Attendance Approver",
         domain="[('share', '=', False), ('company_ids', 'in', company_id)]",
-        groups="hr_attendance.group_hr_attendance_officer",
+        groups="hr_attendance.group_hr_attendance_officer,hr_attendance.group_hr_attendance_own_reader",
         help="The user set in Attendance will access the attendance of the employee through the dedicated app and will be able to edit them.")
     attendance_ids = fields.One2many(
         'hr.attendance', 'employee_id', groups="hr_attendance.group_hr_attendance_officer,hr.group_hr_user")

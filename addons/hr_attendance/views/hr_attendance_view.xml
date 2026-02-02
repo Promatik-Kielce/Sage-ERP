@@ -346,7 +346,7 @@
         <field name="name">Attendances</field>
         <field name="path">attendances</field>
         <field name="res_model">hr.attendance</field>
-        <field name="group_ids" eval="[(4, ref('hr_attendance.group_hr_attendance_officer'))]"/>
+        <field name="group_ids" eval="[(4, ref('hr_attendance.group_hr_attendance_officer')), (4, ref('hr_attendance.group_hr_attendance_own_reader'))]"/>
         <field name="view_mode">list,gantt,form</field>
         <field name="context">
             {
@@ -489,7 +489,7 @@
 
     <!-- Menus -->
 
-    <menuitem id="menu_hr_attendance_root" name="Attendances" sequence="205" groups="hr_attendance.group_hr_attendance_officer" web_icon="hr_attendance,static/description/icon.png"/>
+    <menuitem id="menu_hr_attendance_root" name="Attendances" sequence="205" groups="hr_attendance.group_hr_attendance_officer,hr_attendance.group_hr_attendance_own_reader" web_icon="hr_attendance,static/description/icon.png"/>
 
     <menuitem id="menu_action_open_form" name="Kiosk Mode" action="open_kiosk_url" parent="menu_hr_attendance_root" sequence="10" groups="hr_attendance.group_hr_attendance_user"/>
 
@@ -507,9 +507,9 @@
         parent="menu_hr_attendance_reporting"
         sequence="10"/>
 
-    <menuitem id="menu_hr_attendance_overview" name="Overview" parent="menu_hr_attendance_root" sequence="5" groups="hr_attendance.group_hr_attendance_officer"/>
+    <menuitem id="menu_hr_attendance_overview" name="Overview" parent="menu_hr_attendance_root" sequence="5" groups="hr_attendance.group_hr_attendance_officer,hr_attendance.group_hr_attendance_own_reader"/>
 
-    <menuitem id="menu_hr_attendance_view_dashboard" name="Dashboard" action="hr_attendance_action" parent="menu_hr_attendance_overview" sequence="1"/>
+    <menuitem id="menu_hr_attendance_view_dashboard" name="Dashboard" action="hr_attendance_action" parent="menu_hr_attendance_overview" sequence="1" groups="hr_attendance.group_hr_attendance_officer,hr_attendance.group_hr_attendance_own_reader"/>
 
     <menuitem id="menu_hr_attendance_employee" name="Employees" parent="menu_hr_attendance_overview" action="hr.open_view_employee_list_my" groups="hr_attendance.group_hr_attendance_officer" sequence="2"/>
 
