@@ -9,7 +9,7 @@
                 <sheet>
                     <group>
                         <field name="id"/>
-                        <field name="tenor_gif_id"/>
+                        <field name="klipy_gif_slug"/>
                         <field name="create_uid"/>
                     </group>
                 </sheet>
@@ -24,7 +24,7 @@
         <field name="arch" type="xml">
             <list string="GIF favorite">
                 <field name="id"/>
-                <field name="tenor_gif_id"/>
+                <field name="klipy_gif_slug"/>
                 <field name="create_uid"/>
             </list>
         </field>

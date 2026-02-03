@@ -34,11 +34,11 @@ const gifFactory = (count = 1, options = {}) => {
     const gifs = [];
     for (let i = 0; i < count; i++) {
         gifs.push({
-            id: `${gifId}`,
+            id: `gif-slug-${gifId}`,
             title: "",
             media_formats: {
                 tinygif: {
-                    url: options.url || "https://media.tenor.com/np49Y1vrJO8AAAAM/crying-cry.gif",
+                    url: options.url || "https://media.klipy.com/gifs/crying-cry.gif",
                     duration: 0,
                     preview: "",
                     dims: [220, 190],
@@ -47,8 +47,8 @@ const gifFactory = (count = 1, options = {}) => {
             },
             created: 1654414453.782169,
             content_description: "Cry GIF",
-            itemurl: "https://tenor.com/view/cry-gif-25866484",
-            url: "https://tenor.com/bUHdw.gif",
+            itemurl: "https://klipy.com/gifs/cry-gif-25866484",
+            url: "https://klipy.com/gifs/cry.gif",
             tags: ["cry"],
             flags: [],
             hasaudio: false,
@@ -61,33 +61,33 @@ const gifFactory = (count = 1, options = {}) => {
 const rpc = {
     search: {
         results: gifFactory(2),
-        next: "CAgQpIGj_8WN_gIaHgoKAD-_xMQ20dMU_xIQ1MVHUnSAQxC98Y6VAAAAADAI",
+        next: "2",
     },
     categories: {
         locale: "en",
         tags: [
             {
                 searchterm: "cry",
-                path: "/v2/search?q=cry&locale=en&component=categories&contentfilter=low",
-                image: "https://media.tenor.com/6uIlQAHIkNoAAAAM/cry.gif",
+                path: "",
+                image: "https://media.klipy.com/categories/cry.gif",
                 name: "#cry",
             },
             {
                 searchterm: "yes",
-                path: "/v2/search?q=yes&locale=en&component=categories&contentfilter=low",
-                image: "https://media.tenor.com/UVmpVqlpVhQAAAAM/yess-yes.gif",
+                path: "",
+                image: "https://media.klipy.com/categories/yes.gif",
                 name: "#yes",
             },
             {
                 searchterm: "no",
-                path: "/v2/search?q=no&locale=en&component=categories&contentfilter=low",
-                image: "https://media.tenor.com/aeswYw-86k8AAAAM/no-nooo.gif",
+                path: "",
+                image: "https://media.klipy.com/categories/no.gif",
                 name: "#no",
             },
             {
                 searchterm: "lol",
-                path: "/v2/search?q=lol&locale=en&component=categories&contentfilter=low",
-                image: "https://media.tenor.com/BiseY2UXovAAAAAM/lmfao-laughing.gif",
+                path: "",
+                image: "https://media.klipy.com/categories/lol.gif",
                 name: "#lol",
             },
         ],
@@ -170,7 +170,7 @@ test("Open a GIF category trigger the search for the category", async () => {
     await start();
     await openDiscuss(channelId);
     await click("button[title='Add GIFs']");
-    await click("img[data-src='https://media.tenor.com/6uIlQAHIkNoAAAAM/cry.gif']");
+    await click("img[data-src='https://media.klipy.com/categories/cry.gif']");
     await contains(".o-discuss-Gif", { count: 2 });
     await contains("input[placeholder='Search for a GIF']", { value: "cry" });
 });
@@ -183,14 +183,14 @@ test("Can have GIF categories with same name", async () => {
         tags: [
             {
                 searchterm: "duplicate",
-                path: "/v2/search?q=duplicate&locale=en&component=categories&contentfilter=low",
-                image: "https://media.tenor.com/BiseY2UXovAAAAAM/duplicate.gif",
+                path: "",
+                image: "https://media.klipy.com/categories/duplicate.gif",
                 name: "#duplicate",
             },
             {
                 searchterm: "duplicate",
-                path: "/v2/search?q=duplicate&locale=en&component=categories&contentfilter=low",
-                image: "https://media.tenor.com/BiseY2UXovAAAAAM/duplicate.gif",
+                path: "",
+                image: "https://media.klipy.com/categories/duplicate.gif",
                 name: "#duplicate",
             },
         ],
@@ -199,7 +199,7 @@ test("Can have GIF categories with same name", async () => {
     await start();
     await openDiscuss(channelId);
     await click("button[title='Add GIFs']");
-    await contains("img[data-src='https://media.tenor.com/BiseY2UXovAAAAAM/duplicate.gif']", {
+    await contains("img[data-src='https://media.klipy.com/categories/duplicate.gif']", {
         count: 2,
     });
 });
@@ -212,7 +212,7 @@ test("Reopen GIF category list when going back", async () => {
     await start();
     await openDiscuss(channelId);
     await click("button[title='Add GIFs']");
-    await click("img[data-src='https://media.tenor.com/6uIlQAHIkNoAAAAM/cry.gif']");
+    await click("img[data-src='https://media.klipy.com/categories/cry.gif']");
     await click("i[aria-label='back']");
     await contains(".o-discuss-GifPicker div[aria-label='list']");
 });
@@ -225,7 +225,7 @@ test("Add GIF to favorite", async () => {
     await start();
     await openDiscuss(channelId);
     await click("button[title='Add GIFs']");
-    await click("img[data-src='https://media.tenor.com/6uIlQAHIkNoAAAAM/cry.gif']");
+    await click("img[data-src='https://media.klipy.com/categories/cry.gif']");
     await click(":nth-child(1 of div) > .o-discuss-Gif .fa-star-o");
     await contains(".o-discuss-Gif .fa-star");
     await click("i[aria-label='back']");
@@ -288,7 +288,7 @@ test("Scrolling at the bottom should trigger the search to load more gif, even a
     await contains(".o-discuss-GifPicker");
     await click(".o-discuss-GifPicker div[aria-label='list-item']", { text: "Favorites" });
     await click("i[aria-label='back']");
-    await click("img[data-src='https://media.tenor.com/6uIlQAHIkNoAAAAM/cry.gif']");
+    await click("img[data-src='https://media.klipy.com/categories/cry.gif']");
     await contains(".o-discuss-Gif", { count: 4 });
     await scroll(".o-discuss-GifPicker-content", "bottom");
     await contains(".o-discuss-Gif", { count: 8 });
@@ -302,8 +302,8 @@ test("Pause GIF when thread is not focused", async () => {
     await start();
     await openDiscuss(channelId);
     await click("button[title='Add GIFs']");
-    await click("img[data-src='https://media.tenor.com/6uIlQAHIkNoAAAAM/cry.gif']");
-    await click("img[data-src='https://media.tenor.com/np49Y1vrJO8AAAAM/crying-cry.gif']:eq(0)");
+    await click("img[data-src='https://media.klipy.com/categories/cry.gif']");
+    await click("img[data-src='https://media.klipy.com/gifs/crying-cry.gif']:eq(0)");
     await contains(".o-mail-LinkPreviewImage");
     queryFirst(".o-mail-Thread").blur();
     await contains(".o-mail-LinkPreviewImage img[data-paused]");
@@ -332,8 +332,8 @@ test("Clicking GIF preview does not raise an error", async () => {
     await start();
     await openDiscuss(channelId);
     await click("button[title='Add GIFs']");
-    await click("img[data-src='https://media.tenor.com/6uIlQAHIkNoAAAAM/cry.gif']");
-    await click("img[data-src='https://media.tenor.com/np49Y1vrJO8AAAAM/crying-cry.gif']:eq(0)");
+    await click("img[data-src='https://media.klipy.com/categories/cry.gif']");
+    await click("img[data-src='https://media.klipy.com/gifs/crying-cry.gif']:eq(0)");
     await click(".o-mail-LinkPreviewImage img");
     await contains(".o-mail-Message");
 });

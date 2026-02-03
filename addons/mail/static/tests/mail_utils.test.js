@@ -27,7 +27,7 @@ test("add_link utility function", () => {
         "fhttps://test.example.com/test": false,
         "https://www.transifex.com/odoo/odoo-11/translate/#fr/lunch?q=text%3A'La+Tartiflette'": true,
         "https://www.transifex.com/odoo/odoo-11/translate/#fr/$/119303430?q=text%3ATartiflette": true,
-        "https://tenor.com/view/chỗgiặt-dog-smile-gif-13860250": true,
+        "https://klipy.com/gifs/dog-smile-gif-13860250": true,
         "http://www.boîtenoire.be": true,
         "https://github.com/odoo/enterprise/compare/16.0...odoo-dev:enterprise:16.0-voip-fix_demo_data-tsm?expand=1": true,
         "https://github.com/odoo/enterprise/compare/16.0...16.0-voip-fix_demo_data-tsm?expand=1": true,

@@ -50,10 +50,10 @@ class ResConfigSettings(models.TransientModel):
     email_primary_color = fields.Char(related='company_id.email_primary_color', readonly=False)
     email_secondary_color = fields.Char(related='company_id.email_secondary_color', readonly=False)
 
-    tenor_api_key = fields.Char(
-        'Tenor API key',
-        config_parameter='discuss.tenor_api_key',
-        help="Add a Tenor GIF API key to enable GIFs support. https://developers.google.com/tenor/guides/quickstart#setup",
+    klipy_api_key = fields.Char(
+        'KLIPY API key',
+        config_parameter='discuss.klipy_api_key',
+        help="Add a KLIPY GIF API key to enable GIFs support. https://klipy.com/developers",
     )
     google_translate_api_key = fields.Char(
         "Message Translation API Key",

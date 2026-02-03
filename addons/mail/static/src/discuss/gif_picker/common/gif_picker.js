@@ -265,13 +265,13 @@ export class GifPicker extends Component {
     async onClickFavorite(gif) {
         if (!this.isFavorite(gif)) {
             this.state.favorites.gifs.push(gif);
-            await this.orm.silent.create("discuss.gif.favorite", [{ tenor_gif_id: gif.id }]);
+            await this.orm.silent.create("discuss.gif.favorite", [{ klipy_gif_slug: gif.id }]);
         } else {
             const index = this.state.favorites.gifs.findIndex(({ id }) => id === gif.id);
             if (index >= 0) {
                 this.state.favorites.gifs.splice(index, 1);
             }
-            await rpc("/discuss/gif/remove_favorite", { tenor_gif_id: gif.id }, { silent: true });
+            await rpc("/discuss/gif/remove_favorite", { klipy_gif_slug: gif.id }, { silent: true });
         }
     }
 

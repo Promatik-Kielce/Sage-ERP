@@ -22,11 +22,11 @@ test("auto layout with link preview list", async () => {
     const pyEnv = await startServer();
     const linkPreviewId = pyEnv["mail.link.preview"].create({
         og_description: "test description",
-        og_image: "https://c.tenor.com/B_zYdea4l-4AAAAC/yay-minions.gif",
+        og_image: "https://media.klipy.com/gifs/yay-minions.gif",
         og_mimetype: "image/gif",
         og_title: "Yay Minions GIF - Yay Minions Happiness - Discover & Share GIFs",
         og_type: "video.other",
-        source_url: "https://tenor.com/view/yay-minions-happiness-happy-excited-gif-15324023",
+        source_url: "https://klipy.com/gifs/yay-minions-happiness-happy-excited-gif-15324023",
     });
     const channelId = pyEnv["discuss.channel"].create({ name: "wololo" });
     pyEnv["mail.message"].create({
@@ -45,11 +45,11 @@ test("auto layout with link preview as gif", async () => {
     const pyEnv = await startServer();
     const linkPreviewId = pyEnv["mail.link.preview"].create({
         og_description: "test description",
-        og_image: "https://c.tenor.com/B_zYdea4l-4AAAAC/yay-minions.gif",
+        og_image: "https://media.klipy.com/gifs/yay-minions.gif",
         og_mimetype: "image/gif",
         og_title: "Yay Minions GIF - Yay Minions Happiness - Discover & Share GIFs",
         og_type: "video.other",
-        source_url: "https://tenor.com/view/yay-minions-happiness-happy-excited-gif-15324023",
+        source_url: "https://klipy.com/gifs/yay-minions-happiness-happy-excited-gif-15324023",
     });
     const channelId = pyEnv["discuss.channel"].create({ name: "wololo" });
     pyEnv["mail.message"].create({
@@ -91,7 +91,7 @@ test("simplest card layout with image", async () => {
     const pyEnv = await startServer();
     const linkPreviewId = pyEnv["mail.link.preview"].create({
         og_description: "Description",
-        og_image: "https://c.tenor.com/B_zYdea4l-4AAAAC/yay-minions.gif",
+        og_image: "https://media.klipy.com/gifs/yay-minions.gif",
         og_title: "Article title",
         og_type: "article",
         source_url: "https://www.odoo.com",
@@ -116,7 +116,7 @@ test("Link preview video layout", async () => {
     const pyEnv = await startServer();
     const linkPreviewId = pyEnv["mail.link.preview"].create({
         og_description: "Description",
-        og_image: "https://c.tenor.com/B_zYdea4l-4AAAAC/yay-minions.gif",
+        og_image: "https://media.klipy.com/gifs/yay-minions.gif",
         og_title: "video title",
         og_type: "video.other",
         source_url: "https://www.odoo.com",
@@ -161,11 +161,11 @@ test("Remove link preview Gif", async () => {
     const pyEnv = await startServer();
     const linkPreviewId = pyEnv["mail.link.preview"].create({
         og_description: "test description",
-        og_image: "https://c.tenor.com/B_zYdea4l-4AAAAC/yay-minions.gif",
+        og_image: "https://media.klipy.com/gifs/yay-minions.gif",
         og_mimetype: "image/gif",
         og_title: "Yay Minions GIF - Yay Minions Happiness - Discover & Share GIFs",
         og_type: "video.other",
-        source_url: "https://tenor.com/view/yay-minions-happiness-happy-excited-gif-15324023",
+        source_url: "https://klipy.com/gifs/yay-minions-happiness-happy-excited-gif-15324023",
     });
     const channelId = pyEnv["discuss.channel"].create({ name: "wololo" });
     pyEnv["mail.message"].create({
@@ -211,7 +211,7 @@ test("Remove link preview video", async () => {
     const pyEnv = await startServer();
     const linkPreviewId = pyEnv["mail.link.preview"].create({
         og_description: "Description",
-        og_image: "https://c.tenor.com/B_zYdea4l-4AAAAC/yay-minions.gif",
+        og_image: "https://media.klipy.com/gifs/yay-minions.gif",
         og_title: "video title",
         og_type: "video.other",
         source_url: "https://www.odoo.com",
