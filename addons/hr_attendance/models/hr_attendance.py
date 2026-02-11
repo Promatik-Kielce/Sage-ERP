@@ -673,7 +673,7 @@ class HrAttendance(models.Model):
         user_domain = Domain(self.env.context.get('user_domain') or Domain.TRUE)
         employee_domain = Domain('company_id', 'in', self.env.context.get('allowed_company_ids', []))
         if not self.env.user.has_group('hr_attendance.group_hr_attendance_user'):
-            employee_domain &= Domain('attendance_manager_id', '=', self.env.user.id)
+            employee_domain &= Domain('|', ('parent_id.user_id', '=', self.env.user.id), ('id', 'child_of', self.env.user.employee_ids.ids))
         if user_domain.is_true():
             # Workaround to make it work only for list view.
             if 'gantt_start_date' in self.env.context:
