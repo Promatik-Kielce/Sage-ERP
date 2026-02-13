@@ -10,8 +10,13 @@
                     </h4>
                 </t>
                 <t t-if="props.currentProjectName">
-                    <p class="current-project-info" style="text-align: center; margin-bottom: 1rem; font-size: 1.1rem; color: #666;">
+                    <p class="current-project-info" style="text-align: center; margin-bottom: 0.5rem; font-size: 1.1rem; color: #666;">
                         Aktualnie pracujesz nad: <strong t-esc="props.currentProjectName" style="color: #007bff;"/>
+                    </p>
+                </t>
+                <t t-if="formattedCheckInTime">
+                    <p class="check-in-time-info" style="text-align: center; margin-bottom: 1rem; font-size: 1.1rem; color: #666;">
+                        Rozpoczęcie pracy: <strong t-esc="formattedCheckInTime" style="color: #007bff;"/>
                     </p>
                 </t>
 

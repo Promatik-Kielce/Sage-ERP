@@ -99,7 +99,7 @@ export class HrDashboard extends Component{
             expenses: _t("EXPENSES"),
             subject: _t("Subject"),
             amount: _t("Amount"),
-            projects: _t("PROJECTS"),
+            projects: _t("TASKS"),
             project: _t("Project"),
             task: _t("Task"),
             dueDate: _t("Due Date"),
@@ -732,7 +732,7 @@ export class HrDashboard extends Component{
             const attendanceRecords = await this.orm.searchRead(
                 'hr.attendance',
                 [['employee_id', '=', this.state.login_employee.id], ['check_out', '=', false]],
-                ['id', 'current_project_id'],
+                ['id', 'current_project_id', 'check_in'],
                 { limit: 1 }
             );
 
@@ -746,12 +746,14 @@ export class HrDashboard extends Component{
 
             const attendance = attendanceRecords[0];
             const currentProjectName = attendance.current_project_id ? attendance.current_project_id[1] : null;
+            const checkInTime = attendance.check_in || null;
 
             // Show the dialog
             this.dialog.add(KioskActionChoice, {
                 employeeId: this.state.login_employee.id,
                 attendanceId: attendance.id,
                 currentProjectName: currentProjectName,
+                checkInTime: checkInTime,
                 onCheckOut: async () => {
                     await this.handleCheckOut();
                 },

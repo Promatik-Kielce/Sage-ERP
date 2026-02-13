@@ -12,6 +12,7 @@ export class KioskActionChoice extends Component {
         attendanceId: Number,
         employeeName: { type: String, optional: true },
         currentProjectName: { type: String, optional: true },
+        checkInTime: { type: String, optional: true },
         inactivityTimeout: { type: Number, optional: true },
         onCheckOut: Function,
         onProjectChanged: Function,
@@ -45,6 +46,18 @@ export class KioskActionChoice extends Component {
             this._cleanupActivityListeners();
             this._clearInactivityTimer();
         });
+    }
+
+    get formattedCheckInTime() {
+        if (!this.props.checkInTime) {
+            return null;
+        }
+        // check_in is a UTC datetime string like "2025-01-15 08:30:00"
+        // Parse as UTC and convert to local time
+        const utcDate = new Date(this.props.checkInTime.replace(' ', 'T') + 'Z');
+        const hours = String(utcDate.getHours()).padStart(2, '0');
+        const minutes = String(utcDate.getMinutes()).padStart(2, '0');
+        return `${hours}:${minutes}`;
     }
 
     get filteredProjects() {

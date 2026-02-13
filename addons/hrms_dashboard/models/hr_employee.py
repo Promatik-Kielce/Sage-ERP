@@ -627,7 +627,8 @@ class HrEmployee(models.Model):
         # Get tasks assigned to the current user
         tasks = self.env['project.task'].sudo().search([
             ('user_ids', 'in', self.env.uid),
-            ('active', '=', True)
+            ('active', '=', True),
+            ('is_closed', '=', False),
         ], order='date_deadline asc')
         task_data = []
         for task in tasks:
