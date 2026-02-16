@@ -122,6 +122,7 @@ class HrAttendanceTimesheetProject(http.Controller):
             'attendance_state': 'checked_in' if is_checked_in else 'checked_out',
             'attendance_id': attendance_id,
             'current_project_name': current_project_name,
+            'check_in': str(current_attendance.check_in) if is_checked_in and current_attendance.check_in else None,
             'use_pin': company.attendance_kiosk_use_pin,
         }
         _logger.info("[Kiosk] check_employee_status result: %s", result)

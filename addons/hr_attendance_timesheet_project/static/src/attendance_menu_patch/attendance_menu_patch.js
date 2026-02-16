@@ -26,7 +26,7 @@ patch(ActivityMenu.prototype, {
             const attendanceRecords = await this.orm.searchRead(
                 'hr.attendance',
                 [['employee_id', '=', this.employee.id], ['check_out', '=', false]],
-                ['id', 'current_project_id', 'employee_id'],
+                ['id', 'current_project_id', 'employee_id', 'check_in'],
                 { limit: 1 }
             );
 
@@ -40,6 +40,7 @@ patch(ActivityMenu.prototype, {
             const attendance = attendanceRecords[0];
             const currentProjectName = attendance.current_project_id ? attendance.current_project_id[1] : null;
             const employeeName = attendance.employee_id ? attendance.employee_id[1] : null;
+            const checkInTime = attendance.check_in || null;
 
             // Show the dialog
             this.dialog.add(KioskActionChoice, {
@@ -47,6 +48,7 @@ patch(ActivityMenu.prototype, {
                 attendanceId: attendance.id,
                 employeeName: employeeName,
                 currentProjectName: currentProjectName,
+                checkInTime: checkInTime,
                 onCheckOut: async () => {
                     await this.handleCheckOut();
                 },

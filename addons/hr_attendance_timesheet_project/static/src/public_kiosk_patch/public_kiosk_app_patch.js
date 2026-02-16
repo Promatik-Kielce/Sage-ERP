@@ -58,6 +58,7 @@ patch(kioskAttendanceApp.prototype, {
                         checkResult.attendance_id,
                         checkResult.employee_name,
                         checkResult.current_project_name,
+                        checkResult.check_in,
                         null,  // No PIN for barcode scans - barcode is the authentication
                         true   // barcode_authenticated flag
                     );
@@ -132,6 +133,7 @@ patch(kioskAttendanceApp.prototype, {
                         checkResult.attendance_id,
                         checkResult.employee_name,
                         checkResult.current_project_name,
+                        checkResult.check_in,
                         enteredPin,  // Pass validated PIN
                         false        // Not barcode authenticated - this is manual selection
                     );
@@ -156,7 +158,7 @@ patch(kioskAttendanceApp.prototype, {
     /**
      * Show the action choice dialog (Check Out or Change Project)
      */
-    async _showActionChoiceDialog(employeeId, attendanceId, employeeName, currentProjectName, validatedPin, barcodeAuthenticated) {
+    async _showActionChoiceDialog(employeeId, attendanceId, employeeName, currentProjectName, checkInTime, validatedPin, barcodeAuthenticated) {
         console.log("[ProjectPatch] Showing action choice dialog for employee:", employeeId);
         const self = this;
 
@@ -173,6 +175,7 @@ patch(kioskAttendanceApp.prototype, {
                         attendanceId: attendanceId,
                         employeeName: employeeName,
                         currentProjectName: currentProjectName,
+                        checkInTime: checkInTime || null,
                         inactivityTimeout: this.inactivityTimeout,
                         onCheckOut: async () => {
                             console.log("[ProjectPatch] Check out button clicked");
