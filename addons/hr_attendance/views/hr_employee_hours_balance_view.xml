@@ -5,7 +5,7 @@
         <field name="name">hr.employee.hours.balance.line.list</field>
         <field name="model">hr.employee.hours.balance.line</field>
         <field name="arch" type="xml">
-            <list string="Hours Balance Detail" create="false" edit="false" delete="false" default_order="date desc">
+            <list string="Hours Balance Detail" create="false" edit="false" delete="false" default_order="date desc" limit="0">
                 <field name="date"/>
                 <field name="day_of_week"/>
                 <field name="worked_hours" widget="float_time" sum="Total Worked"/>
@@ -90,6 +90,9 @@
             <search string="Hours Balance Search">
                 <field name="employee_id"/>
                 <field name="date"/>
+                <group string="Group By">
+                    <filter string="Month" name="group_by_month" context="{'group_by': 'month'}"/>
+                </group>
             </search>
         </field>
     </record>

@@ -1,9 +1,22 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
+import math
+
 import pytz
 from dateutil.relativedelta import relativedelta
 
 from odoo import models, fields, api, exceptions, _
+
+
+def _round_half_hour(delta):
+    """Round a float (hours) to the nearest 0.5h, rounding >= 0.25h away from zero.
+
+    Deltas under 15 minutes (0.25h) from zero round to 0.
+    Examples: +0.2 -> 0.0, +0.25 -> +0.5, +0.78 -> +1.0
+    """
+    if delta >= 0:
+        return math.floor(delta * 2 + 0.5) / 2
+    return -math.floor(-delta * 2 + 0.5) / 2
 
 
 class HrEmployee(models.Model):
@@ -310,7 +323,7 @@ class HrEmployee(models.Model):
                 employee.hours_balance_adjustment_ids.mapped('adjustment_amount')
             )
 
-            employee.hours_balance = calculated_balance + total_adjustments
+            employee.hours_balance = _round_half_hour(calculated_balance + total_adjustments)
 
     def _compute_hours_balance_value(self):
         """
@@ -445,6 +458,8 @@ class HrEmployee(models.Model):
                 # Regular weekday: difference between worked and expected
                 balance_delta = worked_hours - expected_hours
 
+            # Round daily delta to nearest 0.5h (15-min threshold)
+            balance_delta = _round_half_hour(balance_delta)
             balance += balance_delta
             current_date += timedelta(days=1)
 
@@ -490,6 +505,7 @@ class HrEmployee(models.Model):
             ],
             'context': {
                 'default_employee_id': self.id,
+                'search_default_group_by_month': 1,
                 'create': False,  # Disable create button
                 'edit': False,    # Disable edit
                 'delete': False,  # Disable delete
