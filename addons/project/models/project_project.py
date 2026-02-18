@@ -31,7 +31,7 @@ class ProjectProject(models.Model):
         'mail.tracking.duration.mixin',
         'analytic.plan.fields.mixin',
     ]
-    _order = "sequence, name, id"
+    _order = 'project_number asc, sequence asc, name asc, id asc'
     _rating_satisfaction_days = 30  # takes 30 days by default
     _track_duration_field = 'stage_id'
 

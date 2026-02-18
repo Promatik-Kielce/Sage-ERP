@@ -245,7 +245,7 @@
             <field name="mode">primary</field>
             <field name="arch" type="xml">
                 <xpath expr="//list" position="attributes">
-                    <attribute name="default_order">sequence, name, id</attribute>
+                    <attribute name="default_order">project_number asc, sequence asc, name asc, id asc</attribute>
                 </xpath>
                 <field name="sequence" position="attributes">
                     <attribute name="column_invisible">0</attribute>
@@ -687,7 +687,7 @@
             <field name="arch" type="xml">
                 <list position="attributes">
                     <attribute name="js_class"></attribute>
-                    <attribute name="default_order">sequence, is_favorite desc, name, id</attribute>
+                    <attribute name="default_order">project_number asc, sequence asc, is_favorite desc, name asc, id asc</attribute>
                 </list>
                 <field name="sequence" position="attributes">
                     <attribute name="column_invisible">False</attribute>

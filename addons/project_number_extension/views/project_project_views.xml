@@ -46,12 +46,17 @@
         <field name="name">project.project.list.inherit.number</field>
         <field name="model">project.project</field>
         <field name="inherit_id" ref="project.view_project"/>
+        <field name="priority">999</field>
         <field name="arch" type="xml">
+            <xpath expr="//list" position="attributes">
+                <attribute name="default_order">project_number asc, sequence asc, name asc, id asc</attribute>
+            </xpath>
             <xpath expr="//field[@name='name']" position="after">
                 <field name="project_number" optional="show"/>
             </xpath>
         </field>
     </record>
+
 
     <!-- Search View - Add searchable field -->
     <record id="project_project_search_view_inherit_number" model="ir.ui.view">
@@ -65,4 +70,20 @@
             </xpath>
         </field>
     </record>
+
+
+    <!-- Kanban View - order by project_number -->
+    <record id="project_project_kanban_view_inherit_number_order" model="ir.ui.view">
+        <field name="name">project.project.kanban.inherit.number.order</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.view_project_kanban"/>
+        <field name="priority">999</field>
+        <field name="arch" type="xml">
+            <xpath expr="//kanban" position="attributes">
+                <attribute name="default_order">project_number asc, sequence asc, name asc, id asc</attribute>
+            </xpath>
+        </field>
+    </record>
+
+
 </odoo>

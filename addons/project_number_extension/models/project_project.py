@@ -8,6 +8,7 @@ from odoo.tools.translate import _
 
 class ProjectProject(models.Model):
     _inherit = 'project.project'
+    _order = 'project_number asc, sequence asc, name asc, id asc'
 
     project_number = fields.Char(
         string='Project Number',
