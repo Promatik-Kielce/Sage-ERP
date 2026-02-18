@@ -6,6 +6,7 @@ import pytz
 
 from odoo import models, fields, api, _
 from odoo.tools import format_date
+from odoo.addons.hr_attendance.models.hr_employee import _round_half_hour
 
 
 class HrEmployeeHoursBalanceLine(models.Model):
@@ -32,6 +33,7 @@ class HrEmployeeHoursBalanceLine(models.Model):
     balance_cumulative = fields.Float(string='Total Balance', help='Running total balance up to this date')
     notes = fields.Text(string='Calculation Notes')
     attendance_count = fields.Integer(string='# Attendances')
+    month = fields.Char(string='Month', search='_search_month')
 
     # Split fields for chart coloring
     balance_delta_positive = fields.Float(string='Daily + (Surplus)', compute='_compute_split_values', store=False, group_operator='sum')
@@ -67,6 +69,10 @@ class HrEmployeeHoursBalanceLine(models.Model):
             else:
                 line.balance_cumulative_positive = 0.0
                 line.balance_cumulative_negative = abs(line.balance_cumulative)  # Store as positive for display
+
+    def _search_month(self, operator, value):
+        """Dummy search method to pass view validation. Actual filtering is in search_read."""
+        return []
 
     @api.model
     def _get_balance_lines_for_employee(self, employee, start_date=None, end_date=None):
@@ -220,7 +226,7 @@ class HrEmployeeHoursBalanceLine(models.Model):
                 worked_hours = sum(att.worked_hours for att in day_attendances)
 
                 # Add to balance (simplified - using basic worked - expected)
-                initial_work_balance += (worked_hours - expected_hours)
+                initial_work_balance += _round_half_hour(worked_hours - expected_hours)
 
                 prior_date += timedelta(days=1)
 
@@ -322,11 +328,21 @@ class HrEmployeeHoursBalanceLine(models.Model):
                         round(worked_hours, 2), round(expected_hours, 2), round(undertime, 2)
                     )
 
+            # Round daily delta to nearest 0.5h (15-min threshold)
+            raw_delta = balance_delta
+            balance_delta = _round_half_hour(balance_delta)
+            if round(raw_delta, 2) != round(balance_delta, 2):
+                notes += _(' [rounded %s%sh → %s%sh]') % (
+                    '+' if raw_delta >= 0 else '', round(raw_delta, 2),
+                    '+' if balance_delta >= 0 else '', round(balance_delta, 2),
+                )
+
             cumulative_balance += balance_delta
 
             balance_lines.append({
                 'employee_id': employee.id,
                 'date': current_date,
+                'month': current_date.strftime('%Y-%m'),
                 'worked_hours': worked_hours,
                 'expected_hours': expected_hours,
                 'is_weekend': is_weekend,
@@ -342,7 +358,8 @@ class HrEmployeeHoursBalanceLine(models.Model):
             # Add any manual adjustments for this date
             if current_date in adjustments_by_date:
                 for adjustment in adjustments_by_date[current_date]:
-                    cumulative_balance += adjustment.adjustment_amount
+                    rounded_adj = _round_half_hour(adjustment.adjustment_amount)
+                    cumulative_balance += rounded_adj
 
                     # Create adjustment entry
                     adjustment_notes = _('✏️ Manual Adjustment: %s%s hours\nReason: %s\nAdjusted by: %s') % (
@@ -351,17 +368,23 @@ class HrEmployeeHoursBalanceLine(models.Model):
                         adjustment.reason,
                         adjustment.user_id.name
                     )
+                    if round(adjustment.adjustment_amount, 2) != round(rounded_adj, 2):
+                        adjustment_notes += _(' [rounded %s%sh → %s%sh]') % (
+                            '+' if adjustment.adjustment_amount >= 0 else '', round(adjustment.adjustment_amount, 2),
+                            '+' if rounded_adj >= 0 else '', round(rounded_adj, 2),
+                        )
 
                     balance_lines.append({
                         'employee_id': employee.id,
                         'date': current_date,
+                        'month': current_date.strftime('%Y-%m'),
                         'worked_hours': 0.0,  # Adjustments don't have worked hours
                         'expected_hours': 0.0,
                         'is_weekend': is_weekend,
                         'is_public_holiday': False,
                         'has_approved_leave': False,
                         'leave_name': '',
-                        'balance_delta': adjustment.adjustment_amount,
+                        'balance_delta': rounded_adj,
                         'balance_cumulative': cumulative_balance,
                         'notes': adjustment_notes,
                         'attendance_count': 0,
@@ -374,7 +397,8 @@ class HrEmployeeHoursBalanceLine(models.Model):
         for adj_date in sorted(adjustments_by_date.keys()):
             if adj_date > end_date:
                 for adjustment in adjustments_by_date[adj_date]:
-                    cumulative_balance += adjustment.adjustment_amount
+                    rounded_adj = _round_half_hour(adjustment.adjustment_amount)
+                    cumulative_balance += rounded_adj
 
                     adjustment_notes = _('✏️ Manual Adjustment: %s%s hours\nReason: %s\nAdjusted by: %s') % (
                         '+' if adjustment.adjustment_amount > 0 else '',
@@ -382,17 +406,23 @@ class HrEmployeeHoursBalanceLine(models.Model):
                         adjustment.reason,
                         adjustment.user_id.name
                     )
+                    if round(adjustment.adjustment_amount, 2) != round(rounded_adj, 2):
+                        adjustment_notes += _(' [rounded %s%sh → %s%sh]') % (
+                            '+' if adjustment.adjustment_amount >= 0 else '', round(adjustment.adjustment_amount, 2),
+                            '+' if rounded_adj >= 0 else '', round(rounded_adj, 2),
+                        )
 
                     balance_lines.append({
                         'employee_id': employee.id,
                         'date': adj_date,
+                        'month': adj_date.strftime('%Y-%m'),
                         'worked_hours': 0.0,
                         'expected_hours': 0.0,
                         'is_weekend': adj_date.weekday() >= 5,
                         'is_public_holiday': False,
                         'has_approved_leave': False,
                         'leave_name': '',
-                        'balance_delta': adjustment.adjustment_amount,
+                        'balance_delta': rounded_adj,
                         'balance_cumulative': cumulative_balance,
                         'notes': adjustment_notes,
                         'attendance_count': 0,
@@ -408,10 +438,11 @@ class HrEmployeeHoursBalanceLine(models.Model):
         """
         from datetime import datetime, date as date_type
 
-        # Parse domain to extract employee_id and date range
+        # Parse domain to extract employee_id, date range, and month filter
         employee_ids = []
         start_date = None
         end_date = None
+        filter_month = None
 
         if domain:
             for criterion in domain:
@@ -435,6 +466,8 @@ class HrEmployeeHoursBalanceLine(models.Model):
                                 end_date = datetime.strptime(value, '%Y-%m-%d').date()
                             elif isinstance(value, date_type):
                                 end_date = value
+                    elif field == 'month' and operator == '=':
+                        filter_month = value
 
         # If no employee specified, use current user's employee
         if not employee_ids:
@@ -450,6 +483,16 @@ class HrEmployeeHoursBalanceLine(models.Model):
             if employee.exists():
                 lines = self._get_balance_lines_for_employee(employee, start_date, end_date)
                 all_lines.extend(lines)
+
+        # Apply month filter if specified
+        if filter_month:
+            all_lines = [l for l in all_lines if l.get('month') == filter_month]
+
+        # Capture initial balance before reordering (lines are still chronological)
+        if all_lines:
+            initial_balance = all_lines[0]['balance_cumulative'] - all_lines[0]['balance_delta']
+        else:
+            initial_balance = 0.0
 
         # Parse and apply order parameter BEFORE offset/limit
         if order:
@@ -475,6 +518,12 @@ class HrEmployeeHoursBalanceLine(models.Model):
                         reverse=desc
                     )
 
+        # Recalculate cumulative balance in display order
+        running = initial_balance
+        for line in all_lines:
+            running += line['balance_delta']
+            line['balance_cumulative'] = running
+
         # Apply offset and limit AFTER sorting
         if offset:
             all_lines = all_lines[offset:]
@@ -495,6 +544,39 @@ class HrEmployeeHoursBalanceLine(models.Model):
         """Override read to prevent database access"""
         # This model doesn't have real records, return empty
         return []
+
+    @api.model
+    def search_fetch(self, domain, field_names=None, offset=0, limit=None, order=None):
+        """Override to prevent DB query on non-existent table."""
+        records = self.search_read(domain=domain, fields=['id'], offset=offset, limit=limit, order=order)
+        return self.browse([r['id'] for r in records])
+
+    def export_data(self, fields_to_export):
+        """Override export to use virtual data instead of querying non-existent table."""
+        field_names = []
+        for f in fields_to_export:
+            name = f[0] if isinstance(f, (list, tuple)) else f
+            field_names.append(name)
+
+        # Reconstruct domain from context
+        domain = []
+        emp_id = self.env.context.get('default_employee_id')
+        if emp_id:
+            domain = [('employee_id', '=', emp_id)]
+
+        records = self.search_read(domain=domain, fields=field_names)
+
+        rows = []
+        for record in records:
+            row = []
+            for fname in field_names:
+                val = record.get(fname, '')
+                if val is None or val is False:
+                    val = ''
+                row.append(val)
+            rows.append(row)
+
+        return {'datas': rows}
 
     @api.model
     def web_search_read(self, domain=None, specification=None, offset=0, limit=None, order=None, count_limit=None):
@@ -519,6 +601,135 @@ class HrEmployeeHoursBalanceLine(models.Model):
         return {
             'length': length,
             'records': records,
+        }
+
+    @api.model
+    def formatted_read_group(self, domain, groupby=(), aggregates=(), having=(), offset=0, limit=None, order=None):
+        """Override to generate grouped data from virtual records."""
+        from collections import OrderedDict
+
+        all_records = self.search_read(domain=domain)
+        if not all_records and groupby:
+            return []
+
+        # Parse aggregates
+        agg_specs = list(aggregates)
+
+        if not groupby:
+            # No groupby — return single aggregate row
+            group = {'__extra_domain': [(1, '=', 1)]}
+            for agg in agg_specs:
+                parts = agg.split(':')
+                fname, func = parts[0], parts[1] if len(parts) > 1 else 'sum'
+                if fname == '__count':
+                    group['__count'] = len(all_records)
+                elif all_records and fname in all_records[0]:
+                    values = [r.get(fname, 0) or 0 for r in all_records]
+                    group[agg] = sum(values) if func == 'sum' else len(values)
+                else:
+                    group[agg] = 0
+            return [group]
+
+        gb_field = groupby[0].split(':')[0]
+
+        # Group records
+        groups_dict = OrderedDict()
+        for record in all_records:
+            key = record.get(gb_field, False)
+            if key not in groups_dict:
+                groups_dict[key] = []
+            groups_dict[key].append(record)
+
+        # Build formatted groups
+        groups = []
+        for key, records in groups_dict.items():
+            group = {
+                groupby[0]: key,
+                '__extra_domain': [(gb_field, '=', key)],
+                '__count': len(records),
+            }
+
+            for agg in agg_specs:
+                parts = agg.split(':')
+                fname, func = parts[0], parts[1] if len(parts) > 1 else 'sum'
+                if fname == '__count':
+                    group['__count'] = len(records)
+                elif records and fname in records[0]:
+                    values = [r.get(fname, 0) or 0 for r in records]
+                    if func == 'sum':
+                        group[agg] = sum(values)
+                    elif func == 'avg':
+                        group[agg] = sum(values) / len(values) if values else 0
+                    elif func in ('max', 'min'):
+                        group[agg] = (max if func == 'max' else min)(values) if values else 0
+                    else:
+                        group[agg] = sum(values)
+                else:
+                    group[agg] = 0
+
+            groups.append(group)
+
+        # Sort groups
+        reverse = False
+        if order:
+            for part in order.split(','):
+                tokens = part.strip().split()
+                if tokens[0].split(':')[0] == gb_field:
+                    reverse = len(tokens) > 1 and tokens[1].lower() == 'desc'
+                    break
+        groups.sort(key=lambda g: g.get(groupby[0]) or '', reverse=reverse)
+
+        # Apply offset/limit
+        if offset:
+            groups = groups[offset:]
+        if limit:
+            groups = groups[:limit]
+
+        return groups
+
+    @api.model
+    def web_read_group(self, domain, groupby, aggregates=(), limit=None, offset=0, order=None, **kwargs):
+        """Override to support grouping for virtual model without DB access."""
+        if not groupby:
+            return {'groups': [], 'length': 0}
+
+        groups = self.formatted_read_group(
+            domain, groupby=groupby, aggregates=aggregates,
+            offset=offset, limit=limit, order=order,
+        )
+
+        # Auto-unfold: include __records for each group
+        spec = kwargs.get('unfold_read_specification') or {}
+        opening_info = kwargs.get('opening_info') or []
+
+        # Build a set of unfolded group values from opening_info
+        unfolded_values = set()
+        for info in opening_info:
+            if not info.get('folded', True):
+                unfolded_values.add(info.get('value'))
+
+        gb_field = groupby[0].split(':')[0]
+
+        for group in groups:
+            group_val = group.get(groupby[0])
+            # Unfold if opening_info says so, or if auto_unfold is requested
+            is_open = group_val in unfolded_values or kwargs.get('auto_unfold', False)
+
+            if is_open and spec:
+                # Get records for this group via search_read
+                group_domain = list(domain) + group['__extra_domain']
+                records = self.search_read(domain=group_domain, fields=list(spec.keys()) + ['id'])
+                group['__records'] = records
+
+        total = len(groups) + offset
+        if limit and len(groups) == limit:
+            # There might be more groups
+            all_groups = self.formatted_read_group(domain, groupby=groupby, aggregates=['__count'])
+            total = len(all_groups)
+
+        return {
+            'groups': groups,
+            'length': total,
         }
 
     @api.model

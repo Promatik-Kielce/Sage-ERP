@@ -5,7 +5,7 @@
         <field name="name">hr.employee.hours.balance.line.list</field>
         <field name="model">hr.employee.hours.balance.line</field>
         <field name="arch" type="xml">
-            <list string="Hours Balance Detail" create="false" edit="false" delete="false" default_order="date desc">
+            <list string="Hours Balance Detail" create="false" edit="false" delete="false" default_order="date desc" limit="0">
                 <field name="date"/>
                 <field name="day_of_week"/>
                 <field name="worked_hours" widget="float_time" sum="Total Worked"/>
@@ -82,19 +82,7 @@
         </field>
     </record>
 
-    <!-- Employee Hours Balance Line Search View -->
-    <record id="hr_employee_hours_balance_line_view_search" model="ir.ui.view">
-        <field name="name">hr.employee.hours.balance.line.search</field>
-        <field name="model">hr.employee.hours.balance.line</field>
-        <field name="arch" type="xml">
-            <search string="Hours Balance Search">
-                <field name="employee_id"/>
-                <field name="date"/>
-            </search>
-        </field>
-    </record>
-
-    <!-- Employee Hours Balance Action -->
+<!-- Employee Hours Balance Action -->
     <record id="hr_employee_hours_balance_line_action" model="ir.actions.act_window">
         <field name="name">Hours Balance Detail</field>
         <field name="res_model">hr.employee.hours.balance.line</field>
