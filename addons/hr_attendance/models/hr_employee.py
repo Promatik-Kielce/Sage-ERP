@@ -505,7 +505,7 @@ class HrEmployee(models.Model):
             ],
             'context': {
                 'default_employee_id': self.id,
-                'search_default_group_by_month': 1,
+                'group_by': ['month'],
                 'create': False,  # Disable create button
                 'edit': False,    # Disable edit
                 'delete': False,  # Disable delete

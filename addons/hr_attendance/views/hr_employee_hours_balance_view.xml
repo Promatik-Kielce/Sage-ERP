@@ -82,22 +82,7 @@
         </field>
     </record>
 
-    <!-- Employee Hours Balance Line Search View -->
-    <record id="hr_employee_hours_balance_line_view_search" model="ir.ui.view">
-        <field name="name">hr.employee.hours.balance.line.search</field>
-        <field name="model">hr.employee.hours.balance.line</field>
-        <field name="arch" type="xml">
-            <search string="Hours Balance Search">
-                <field name="employee_id"/>
-                <field name="date"/>
-                <group string="Group By">
-                    <filter string="Month" name="group_by_month" context="{'group_by': 'month'}"/>
-                </group>
-            </search>
-        </field>
-    </record>
-
-    <!-- Employee Hours Balance Action -->
+<!-- Employee Hours Balance Action -->
     <record id="hr_employee_hours_balance_line_action" model="ir.actions.act_window">
         <field name="name">Hours Balance Detail</field>
         <field name="res_model">hr.employee.hours.balance.line</field>
