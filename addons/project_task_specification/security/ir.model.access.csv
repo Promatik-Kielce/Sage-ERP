@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_project_task_specification_user_read,project.task.specification user read,model_project_task_specification,base.group_user,1,0,0,0
+access_project_task_specification_admin_full,project.task.specification admin full,model_project_task_specification,base.group_system,1,1,1,1
+access_project_task_spec_pdf_manager,project.task.spec manager,model_project_task_specification,project_task_specification.group_project_spec_pdf_manager,1,1,1,1

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="group_project_spec_pdf_manager" model="res.groups">
+        <field name="name">Project Spec PDF Manager</field>
+    </record>
+</odoo>

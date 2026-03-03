@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Kanban -->
+    <record id="view_project_task_specification_kanban" model="ir.ui.view">
+        <field name="name">project.task.specification.kanban</field>
+        <field name="model">project.task.specification</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_small_column" default_order="sequence, id desc">
+                <field name="name"/>
+                <field name="project_id"/>
+                <field name="state"/>
+                <field name="owner_id"/>
+                <field name="color"/>
+
+                <!-- Preview fields -->
+                <field name="assumptions_preview"/>
+                <field name="description_preview_html"/>
+
+                <!-- PDF fields -->
+                <field name="is_pdf"/>
+                <field name="pdf_filename"/>
+                <field name="pdf_uploaded_at"/>
+
+                <templates>
+                    <t t-name="card">
+                        <div class="oe_kanban_global_click o_kanban_record">
+
+                            <div class="o_kanban_record_top">
+                                <strong><field name="name"/></strong>
+                                <span class="badge text-bg-secondary ms-2" t-if="record.is_pdf.raw_value">PDF</span>
+                            </div>
+
+                            <div class="mt-2 text-muted">
+                                <span>Projekt: </span><field name="project_id"/>
+                            </div>
+
+                            <div class="mt-2">
+                                <field name="state"/>
+                            </div>
+
+                            <div class="mt-2 text-muted">
+                                <span>Właściciel: </span><field name="owner_id"/>
+                            </div>
+
+                            <!-- TEXT TILE -->
+                            <t t-if="!record.is_pdf.raw_value">
+
+                                <div class="mt-2" t-if="record.assumptions_preview.raw_value">
+                                    <div class="text-muted small">Założenia:</div>
+                                    <div class="o_project_spec_preview">
+                                        <t t-esc="record.assumptions_preview.raw_value"/>
+                                    </div>
+                                </div>
+
+                                <div class="mt-2" t-if="record.description_preview_html.raw_value">
+                                    <div class="text-muted small">Opis / Założenia projektowe:</div>
+                                    <div class="o_project_spec_preview o_project_spec_preview_html">
+                                        <t t-out="record.description_preview_html.raw_value"/>
+                                    </div>
+                                </div>
+
+                            </t>
+
+                            <!-- PDF TILE -->
+                            <t t-else="">
+
+                                <div class="mt-2 text-muted" t-if="record.pdf_filename.raw_value">
+                                    <span>Plik: </span><t t-esc="record.pdf_filename.raw_value"/>
+                                </div>
+
+                                <div class="mt-2 text-muted" t-if="record.pdf_uploaded_at.raw_value">
+                                    <span>Wgrano: </span><field name="pdf_uploaded_at"/>
+                                </div>
+
+                                <div class="mt-2 d-flex gap-2">
+                                    <button type="object" name="action_preview_pdf" class="btn btn-sm btn-secondary">Podgląd</button>
+                                    <button type="object" name="action_download_pdf" class="btn btn-sm btn-secondary">Pobierz</button>
+                                </div>
+
+                            </t>
+
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- List -->
+    <record id="view_project_task_specification_list" model="ir.ui.view">
+        <field name="name">project.task.specification.list</field>
+        <field name="model">project.task.specification</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="project_id"/>
+                <field name="is_pdf" optional="hide"/>
+                <field name="pdf_filename" optional="hide" invisible="not is_pdf"/>
+                <field name="state"/>
+                <field name="owner_id"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form -->
+    <record id="view_project_task_specification_form" model="ir.ui.view">
+        <field name="name">project.task.specification.form</field>
+        <field name="model">project.task.specification</field>
+        <field name="arch" type="xml">
+            <form string="Specyfikacja Projektowa">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Np. Architektura API / Założenia MVP lub nazwa PDF"/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group>
+                            <field name="project_id"/>
+                            <field name="owner_id"/>
+                        </group>
+                        <group>
+                            <field name="state"/>
+                            <field name="sequence"/>
+                            <field name="is_pdf"/>
+                        </group>
+                    </group>
+
+                    <!-- PDF section (visible when is_pdf) -->
+                    <group string="PDF" invisible="not is_pdf">
+                        <group>
+                            <button type="object" name="action_preview_pdf" string="Podgląd PDF" class="btn-secondary"
+                                    invisible="not pdf_file"/>
+                            <button type="object" name="action_download_pdf" string="Pobierz PDF" class="btn-secondary"
+                                    invisible="not pdf_file"/>
+                        </group>
+
+                        <!-- Upload + update tylko dla admin / upoważnionych (dopasuj group xmlid jeśli masz inną nazwę) -->
+                        <group groups="project_task_specification.group_project_spec_pdf_manager,base.group_system">
+                            <field name="pdf_filename" placeholder="np. Zalozenia_Projektu_0002.pdf"/>
+                            <field name="pdf_file" filename="pdf_filename"/>
+                        </group>
+
+                        <!-- Info dla pozostałych użytkowników -->
+                        <group groups="base.group_user"
+                               invisible="pdf_file and (1==0)">
+                            <!-- ten group jest tylko placeholder; realnie dostęp do upload blokuje ACL i groups powyżej -->
+                        </group>
+
+                        <group>
+                            <field name="pdf_uploaded_at" readonly="1" invisible="not pdf_uploaded_at"/>
+                        </group>
+                    </group>
+
+                    <!-- Notebook TEXT (hidden when is_pdf) -->
+                    <notebook invisible="is_pdf">
+                        <page string="Założenia">
+                            <group>
+                                <field name="assumptions" placeholder="Wpisz założenia projektowe..."/>
+                                <field name="description" widget="html" placeholder="Szczegółowy opis..."/>
+                            </group>
+                        </page>
+                        <page string="Zakres">
+                            <group>
+                                <field name="scope_in"/>
+                                <field name="scope_out"/>
+                            </group>
+                        </page>
+                        <page string="Ograniczenia i akceptacja">
+                            <group>
+                                <field name="constraints"/>
+                                <field name="acceptance_criteria"/>
+                                <field name="notes"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+</odoo>

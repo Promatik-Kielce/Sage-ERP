@@ -1,0 +1,18 @@
+.o_project_task_specification_button {
+    white-space: nowrap;
+}
+.o_project_spec_preview {
+    font-size: 12px;
+    line-height: 1.3;
+    overflow: hidden;
+    max-height: calc(1.3em * 4); // ~4 linie
+}
+.o_project_spec_preview_html ul,
+.o_project_spec_preview_html ol {
+    padding-left: 1.2rem;
+    margin: 0.25rem 0 0;
+}
+
+.o_project_spec_preview_html li {
+    margin: 0;
+}
