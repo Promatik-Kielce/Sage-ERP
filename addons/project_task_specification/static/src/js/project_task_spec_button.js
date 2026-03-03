@@ -91,7 +91,7 @@ function mountAddPdfButton(actionService, nav, specBtn, canManagePdf) {
                 default_is_pdf: true,
                 default_name: "Nowy PDF",
             },
-            // od razu formularz tworzenia
+            domain: [["project_id", "=", projectId]],
             views: [[false, "form"]],
             target: "current",
         });
