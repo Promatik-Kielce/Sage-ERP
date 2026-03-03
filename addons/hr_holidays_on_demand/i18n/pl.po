@@ -1,0 +1,79 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# * hr_holidays_on_demand
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-03-03 00:00+0000\n"
+"PO-Revision-Date: 2026-03-03 00:00+0000\n"
+"Language-Team: Polish\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: pl\n"
+"Plural-Forms: nplurals=4; plural=(n==1 ? 0 : (n%10>=2 && n%10<=4) && (n%100<12 || n%100>14) ? 1 : n!=1 && (n%10>=0 && n%10<=1) || (n%10>=5 && n%10<=9) || (n%100>=12 && n%100<=14) ? 2 : 3);\n"
+
+#. module: hr_holidays_on_demand
+#: model:ir.model.fields,field_description:hr_holidays_on_demand.field_hr_leave_type__allows_on_demand
+msgid "Allow On-Demand Leave"
+msgstr "Zezwól na urlop na żądanie"
+
+#. module: hr_holidays_on_demand
+#: model:ir.model.fields,field_description:hr_holidays_on_demand.field_hr_leave_type__on_demand_limit
+msgid "On-Demand Days Limit (per year)"
+msgstr "Limit dni urlopu na żądanie (rocznie)"
+
+#. module: hr_holidays_on_demand
+#: model:ir.model.fields,field_description:hr_holidays_on_demand.field_hr_leave__is_on_demand
+msgid "On Demand"
+msgstr "Na żądanie"
+
+#. module: hr_holidays_on_demand
+#: model:ir.model.fields,field_description:hr_holidays_on_demand.field_hr_leave__holiday_status_allows_on_demand
+msgid "Leave Type Allows On Demand"
+msgstr "Typ urlopu zezwala na żądanie"
+
+#. module: hr_holidays_on_demand
+#: model:ir.model.fields,help:hr_holidays_on_demand.field_hr_leave_type__allows_on_demand
+msgid "If checked, employees can flag individual leave requests as 'on demand' (na żądanie). These are drawn from the same paid time off pool but limited per calendar year."
+msgstr "Jeśli zaznaczone, pracownicy mogą oznaczać poszczególne wnioski urlopowe jako 'na żądanie'. Są one pobierane z tej samej puli urlopu wypoczynkowego, ale ograniczone w skali roku kalendarzowego."
+
+#. module: hr_holidays_on_demand
+#: model:ir.model.fields,help:hr_holidays_on_demand.field_hr_leave_type__on_demand_limit
+msgid "Maximum on-demand days allowed per calendar year (Polish law: 4 days)."
+msgstr "Maksymalna liczba dni urlopu na żądanie dozwolona w roku kalendarzowym (prawo polskie: 4 dni)."
+
+#. module: hr_holidays_on_demand
+#: model:ir.model.fields,help:hr_holidays_on_demand.field_hr_leave__is_on_demand
+msgid "Check if this leave request is 'on demand' (na żądanie). Limited per calendar year under Polish labor law."
+msgstr "Zaznacz, jeśli ten wniosek urlopowy jest 'na żądanie'. Ograniczony w skali roku kalendarzowego zgodnie z polskim prawem pracy."
+
+#. module: hr_holidays_on_demand
+#: code:addons/hr_holidays_on_demand/models/hr_leave.py:0
+#, python-format
+msgid "Leave type '%(type)s' does not allow on-demand leaves."
+msgstr "Typ urlopu '%(type)s' nie zezwala na urlopy na żądanie."
+
+#. module: hr_holidays_on_demand
+#: code:addons/hr_holidays_on_demand/models/hr_leave.py:0
+#, python-format
+msgid "You have exceeded the on-demand leave limit of %(limit)s days for %(year)s. Already used: %(taken)s days."
+msgstr "Przekroczono limit urlopu na żądanie wynoszący %(limit)s dni na rok %(year)s. Już wykorzystano: %(taken)s dni."
+
+#. module: hr_holidays_on_demand
+#: code:addons/hr_holidays_on_demand/models/hr_leave_type.py:0
+#, python-format
+msgid "%(base)s, incl. %(remaining)g on demand"
+msgstr "%(base)s, w tym %(remaining)g na żądanie"
+
+#. module: hr_holidays_on_demand
+#: model_terms:ir.ui.view,arch_db:hr_holidays_on_demand.view_hr_leave_form_on_demand
+msgid "On Demand (Na żądanie)"
+msgstr "Na żądanie"
+
+#. module: hr_holidays_on_demand
+#: model_terms:ir.ui.view,arch_db:hr_holidays_on_demand.view_hr_leave_list_on_demand
+msgid "Na żądanie"
+msgstr "Na żądanie"
