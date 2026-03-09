@@ -6,6 +6,9 @@ import { KioskActionChoice } from "@hr_attendance_timesheet_project/components/k
 import { rpc } from "@web/core/network/rpc";
 import { isIosApp } from "@web/core/browser/feature_detection";
 
+
+console.log("[ProjectPatch] attendance_menu_patch loaded");
+
 patch(ActivityMenu.prototype, {
     async signInOut() {
         this.dropdown.close();
@@ -24,9 +27,9 @@ patch(ActivityMenu.prototype, {
         try {
             // Get current attendance record and employee name
             const attendanceRecords = await this.orm.searchRead(
-                'hr.attendance',
-                [['employee_id', '=', this.employee.id], ['check_out', '=', false]],
-                ['id', 'current_project_id', 'employee_id', 'check_in'],
+                "hr.attendance",
+                [["employee_id", "=", this.employee.id], ["check_out", "=", false]],
+                ["id", "current_project_id", "employee_id", "check_in"],
                 { limit: 1 }
             );
 
@@ -42,10 +45,20 @@ patch(ActivityMenu.prototype, {
             const employeeName = attendance.employee_id ? attendance.employee_id[1] : null;
             const checkInTime = attendance.check_in || null;
 
+            console.log("[ActivityMenu] opening dialog with props", {
+                employeeId: this.employee.id,
+                attendanceId: attendance.id,
+                mode: "systray",
+                employeeName: employeeName,
+                currentProjectName: currentProjectName,
+                checkInTime: checkInTime,
+            });
+
             // Show the dialog
             this.dialog.add(KioskActionChoice, {
                 employeeId: this.employee.id,
                 attendanceId: attendance.id,
+                mode: "systray",
                 employeeName: employeeName,
                 currentProjectName: currentProjectName,
                 checkInTime: checkInTime,
@@ -71,23 +84,23 @@ patch(ActivityMenu.prototype, {
         const trackingEnabled = this.employee && this.employee.device_tracking_enabled;
         if (trackingEnabled && !isIosApp() && navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
-                async ({coords: {latitude, longitude}}) => {
+                async ({ coords: { latitude, longitude } }) => {
                     this.employee = await rpc("/hr_attendance/systray_check_in_out", {
                         latitude,
-                        longitude
-                    })
+                        longitude,
+                    });
                     this._searchReadEmployeeFill();
                 },
-                async err => {
-                    this.employee = await rpc("/hr_attendance/systray_check_in_out")
+                async () => {
+                    this.employee = await rpc("/hr_attendance/systray_check_in_out");
                     this._searchReadEmployeeFill();
                 },
                 {
                     enableHighAccuracy: true,
                 }
-            )
+            );
         } else {
-            this.employee = await rpc("/hr_attendance/systray_check_in_out")
+            this.employee = await rpc("/hr_attendance/systray_check_in_out");
             this._searchReadEmployeeFill();
         }
     },

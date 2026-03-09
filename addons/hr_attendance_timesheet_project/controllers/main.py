@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from odoo import http, _
+from odoo import http, _, fields
 from odoo.http import request
 from odoo.tools import float_round
 from odoo.tools.image import image_data_uri
@@ -303,3 +303,72 @@ class HrAttendanceTimesheetProject(http.Controller):
         })
 
         return response
+
+    @http.route('/hr_attendance/kiosk_check_early_checkout', type='jsonrpc', auth='public')
+    def kiosk_check_early_checkout(self, token, attendance_id):
+        """
+        Check whether employee has worked at least 8 hours.
+        Returns data for early checkout warning dialog.
+        """
+        company = self._get_company(token)
+        if not company:
+            return {'success': False, 'error': _('No company found')}
+
+        attendance = request.env['hr.attendance'].sudo().browse(attendance_id)
+        if not attendance.exists() or attendance.check_out:
+            return {'success': False, 'error': _('Attendance not found or already checked out')}
+
+        employee = attendance.employee_id
+        if employee.company_id != company:
+            return {'success': False, 'error': _('Invalid employee/company')}
+
+        check_in = attendance.check_in
+        if not check_in:
+            return {'success': False, 'error': _('Missing check-in time')}
+
+        now = fields.Datetime.now()
+        planned_end = check_in + datetime.timedelta(hours=8)
+        remaining_seconds = int((planned_end - now).total_seconds())
+
+        return {
+            'success': True,
+            'worked_8h': now >= planned_end,
+            'check_in': fields.Datetime.to_string(check_in),
+            'planned_end': fields.Datetime.to_string(planned_end),
+            'remaining_seconds': max(0, remaining_seconds),
+        }
+
+    @http.route('/hr_attendance/systray_check_early_checkout', type='jsonrpc', auth='user')
+    def systray_check_early_checkout(self, attendance_id):
+        try:
+            _logger.warning("[Kiosk] systray_check_early_checkout attendance_id=%s user=%s", attendance_id,
+                            request.env.user.id)
+
+            attendance = request.env['hr.attendance'].sudo().browse(attendance_id)
+            if not attendance.exists() or attendance.check_out:
+                return {'success': False, 'error': _('Attendance not found or already checked out')}
+
+            employee = attendance.employee_id
+            user_employee = request.env.user.employee_id
+
+            if not user_employee or user_employee != employee:
+                return {'success': False, 'error': _('You are not allowed to access this attendance')}
+
+            check_in = attendance.check_in
+            if not check_in:
+                return {'success': False, 'error': _('Missing check-in time')}
+
+            now = fields.Datetime.now()
+            planned_end = check_in + datetime.timedelta(hours=8)
+            remaining_seconds = int((planned_end - now).total_seconds())
+
+            return {
+                'success': True,
+                'worked_8h': now >= planned_end,
+                'check_in': fields.Datetime.to_string(check_in),
+                'planned_end': fields.Datetime.to_string(planned_end),
+                'remaining_seconds': max(0, remaining_seconds),
+            }
+        except Exception as e:
+            _logger.exception("[Kiosk] systray_check_early_checkout failed")
+            raise

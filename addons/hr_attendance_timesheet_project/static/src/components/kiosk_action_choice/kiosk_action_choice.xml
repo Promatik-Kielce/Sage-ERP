@@ -3,147 +3,199 @@
     <t t-name="hr_attendance_timesheet_project.KioskActionChoice">
         <Dialog title="'Co chcesz zrobić?'" size="'lg'">
             <t t-if="!state.closing">
-            <div class="kiosk-action-choice-dialog">
-                <t t-if="props.employeeName">
-                    <h4 class="employee-name-header" style="text-align: center; margin-bottom: 0.5rem; font-weight: bold;">
-                        <t t-esc="props.employeeName"/>
-                    </h4>
-                </t>
-                <t t-if="props.currentProjectName">
-                    <p class="current-project-info" style="text-align: center; margin-bottom: 0.5rem; font-size: 1.1rem; color: #666;">
-                        Aktualnie pracujesz nad: <strong t-esc="props.currentProjectName" style="color: #007bff;"/>
-                    </p>
-                </t>
-                <t t-if="formattedCheckInTime">
-                    <p class="check-in-time-info" style="text-align: center; margin-bottom: 1rem; font-size: 1.1rem; color: #666;">
-                        Rozpoczęcie pracy: <strong t-esc="formattedCheckInTime" style="color: #007bff;"/>
-                    </p>
-                </t>
+                <div class="kiosk-action-choice-dialog">
+                    <t t-if="props.employeeName">
+                        <h4 class="employee-name-header" style="text-align: center; margin-bottom: 0.5rem; font-weight: bold;">
+                            <t t-esc="props.employeeName"/>
+                        </h4>
+                    </t>
 
-                <div class="kiosk-dialog-content">
-                <!-- Error message display -->
-                <t t-if="state.error">
-                    <div class="alert alert-danger kiosk-error-message" role="alert">
-                        <i class="fa fa-exclamation-triangle"/> <t t-esc="state.error"/>
-                    </div>
-                </t>
+                    <t t-if="props.currentProjectName and !state.showEarlyCheckoutConfirm">
+                        <p class="current-project-info" style="text-align: center; margin-bottom: 0.5rem; font-size: 1.1rem; color: #666;">
+                            Aktualnie pracujesz nad:
+                            <strong t-esc="props.currentProjectName" style="color: #007bff;"/>
+                        </p>
+                    </t>
 
-                <t t-if="!state.showProjectList">
-                    <!-- Initial choice: Check Out or Change Project -->
-                    <div class="kiosk-action-buttons">
-                        <button
-                            class="btn btn-danger btn-lg kiosk-btn kiosk-btn-checkout"
-                            t-on-click="onClickCheckOut"
-                            t-att-disabled="state.loading">
-                            <i class="fa fa-sign-out fa-3x"/>
-                            <span>Wyjście</span>
-                            <small>Zakończ pracę na dziś</small>
-                        </button>
+                    <t t-if="formattedCheckInTime and !state.showEarlyCheckoutConfirm">
+                        <p class="check-in-time-info" style="text-align: center; margin-bottom: 0.35rem; font-size: 1.1rem; color: #666;">
+                            Rozpoczęcie pracy:
+                            <strong t-esc="formattedCheckInTime" style="color: #007bff;"/>
+                        </p>
+                    </t>
 
-                        <button
-                            class="btn btn-primary btn-lg kiosk-btn kiosk-btn-change-project"
-                            t-on-click="onClickChangeProject"
-                            t-att-disabled="state.loading">
-                            <i class="fa fa-exchange fa-3x"/>
-                            <span>Zmień Projekt</span>
-                            <small>Kontynuuj pracę nad innym projektem</small>
-                        </button>
-                    </div>
+                    <t t-if="formattedPlannedEndTime and !state.showEarlyCheckoutConfirm">
+                        <p class="planned-end-time-info" style="text-align: center; margin-bottom: 1rem; font-size: 1.1rem; color: #666;">
+                            Planowane zakończenie pracy:
+                            <strong t-esc="formattedPlannedEndTime" style="color: #007bff;"/>
+                        </p>
+                    </t>
 
-                    <div class="kiosk-cancel-section" t-if="props.onCancel">
-                        <button
-                            class="btn btn-link kiosk-btn-cancel"
-                            t-on-click="onClickCancel"
-                            t-att-disabled="state.loading">
-                            Anuluj
-                        </button>
-                    </div>
-                </t>
-
-                <t t-else="">
-                    <!-- Project list view -->
-                    <div class="kiosk-project-list">
-                        <h3>Wybierz projekt:</h3>
-
-                        <t t-if="state.loading">
-                            <div class="text-center">
-                                <i class="fa fa-spinner fa-spin fa-3x"/>
-                                <p>Ładowanie projektów...</p>
+                    <div class="kiosk-dialog-content">
+                        <t t-if="state.error">
+                            <div class="alert alert-danger kiosk-error-message" role="alert">
+                                <i class="fa fa-exclamation-triangle"/> <t t-esc="state.error"/>
                             </div>
                         </t>
 
-                        <t t-elif="Array.isArray(state.projects)">
-                            <!-- Search bar -->
-                            <div class="kiosk-search-container">
-                                <div class="kiosk-search-input-wrapper">
-                                    <i class="fa fa-search kiosk-search-icon"/>
-                                    <input
-                                        type="text"
-                                        class="form-control kiosk-search-input"
-                                        placeholder="Szukaj projektów..."
-                                        t-att-value="state.searchTerm"
-                                        t-on-input="onSearchInput"
-                                        t-att-disabled="state.loading"/>
-                                    <t t-if="state.searchTerm">
-                                        <button
-                                            class="btn kiosk-search-clear"
-                                            t-on-click="clearSearch"
-                                            t-att-disabled="state.loading">
-                                            <i class="fa fa-times"/>
-                                        </button>
-                                    </t>
+                        <t t-if="state.showEarlyCheckoutConfirm">
+                            <div class="kiosk-early-checkout-confirm">
+                                <h3 style="text-align: center; margin-bottom: 1.5rem;">
+                                    Czy na pewno chcesz zakończyć pracę?
+                                </h3>
+
+                                <p style="text-align: center; font-size: 1.1rem; margin-bottom: 0.75rem; color: #666;">
+                                    Zacząłeś pracę o:
+                                    <strong style="color: #007bff;" t-esc="earlyCheckInTime"/>
+                                </p>
+
+                                <p style="text-align: center; font-size: 1.1rem; margin-bottom: 0.75rem; color: #666;">
+                                    Planowany czas zakończenia pracy:
+                                    <strong style="color: #007bff;" t-esc="earlyPlannedEndTime"/>
+                                </p>
+
+                                <p style="text-align: center; font-size: 1.1rem; margin-bottom: 2rem; color: #666;">
+                                    Pozostało do końca pracy:
+                                    <strong style="color: #dc3545;" t-esc="earlyRemainingTime"/>
+                                </p>
+
+                                <div class="kiosk-action-buttons">
+                                    <button
+                                        class="btn btn-danger btn-lg kiosk-btn kiosk-btn-checkout"
+                                        t-on-click="onConfirmEarlyCheckOut"
+                                        t-att-disabled="state.loading">
+                                        <i class="fa fa-check fa-3x"/>
+                                        <span>Tak</span>
+                                        <small>Zakończ pracę mimo to</small>
+                                    </button>
+
+                                    <button
+                                        class="btn btn-secondary btn-lg kiosk-btn"
+                                        t-on-click="onCancelEarlyCheckOut"
+                                        t-att-disabled="state.loading">
+                                        <i class="fa fa-times fa-3x"/>
+                                        <span>Nie</span>
+                                        <small>Wróć do poprzedniego okna</small>
+                                    </button>
                                 </div>
                             </div>
+                        </t>
 
-                            <!-- Project grid or empty state -->
-                            <t t-if="filteredProjects.length > 0">
-                                <div class="kiosk-projects-grid">
-                                    <t t-foreach="filteredProjects" t-as="project" t-key="project.id">
-                                        <button
-                                            class="btn btn-light btn-lg kiosk-project-btn"
-                                            t-att-class="{ 'selected': state.selectedProjectId === project.id }"
-                                            t-on-click="() => this.onSelectProject(project.id)"
-                                            t-att-disabled="state.loading">
-                                            <i class="fa fa-folder-o fa-2x"/>
-                                            <div class="project-info">
-                                                <div class="project-number" t-esc="project.project_number"/>
-                                                <div class="project-name" t-esc="project.name"/>
-                                            </div>
-                                        </button>
-                                    </t>
-                                </div>
-                            </t>
-                            <t t-else="">
-                                <div class="kiosk-empty-state">
-                                    <i class="fa fa-search fa-3x"/>
-                                    <p>Nie znaleziono projektów pasujących do '<strong t-esc="state.searchTerm"/>'</p>
-                                </div>
-                            </t>
-
-                            <div class="kiosk-back-section">
+                        <t t-elif="!state.showProjectList">
+                            <div class="kiosk-action-buttons">
                                 <button
-                                    class="btn btn-secondary kiosk-btn-back"
-                                    t-on-click="onClickBack"
+                                    class="btn btn-danger btn-lg kiosk-btn kiosk-btn-checkout"
+                                    t-on-click="onClickCheckOut"
                                     t-att-disabled="state.loading">
-                                    <i class="fa fa-arrow-left"/> Wstecz
+                                    <i class="fa fa-sign-out fa-3x"/>
+                                    <span>Wyjście</span>
+                                    <small>Zakończ pracę na dziś</small>
+                                </button>
+
+                                <button
+                                    class="btn btn-primary btn-lg kiosk-btn kiosk-btn-change-project"
+                                    t-on-click="onClickChangeProject"
+                                    t-att-disabled="state.loading">
+                                    <i class="fa fa-exchange fa-3x"/>
+                                    <span>Zmień Projekt</span>
+                                    <small>Kontynuuj pracę nad innym projektem</small>
+                                </button>
+                            </div>
+
+                            <div class="kiosk-cancel-section" t-if="props.onCancel">
+                                <button
+                                    class="btn btn-link kiosk-btn-cancel"
+                                    t-on-click="onClickCancel"
+                                    t-att-disabled="state.loading">
+                                    Anuluj
                                 </button>
                             </div>
                         </t>
 
                         <t t-else="">
-                            <div class="text-center">
-                                <p>Nie udało się załadować projektów</p>
-                                <button
-                                    class="btn btn-secondary"
-                                    t-on-click="onClickBack">
-                                    <i class="fa fa-arrow-left"/> Wstecz
-                                </button>
+                            <div class="kiosk-project-list">
+                                <h3>Wybierz projekt:</h3>
+
+                                <t t-if="state.loading">
+                                    <div class="text-center">
+                                        <i class="fa fa-spinner fa-spin fa-3x"/>
+                                        <p>Ładowanie projektów...</p>
+                                    </div>
+                                </t>
+
+                                <t t-elif="Array.isArray(state.projects)">
+                                    <div class="kiosk-search-container">
+                                        <div class="kiosk-search-input-wrapper">
+                                            <i class="fa fa-search kiosk-search-icon"/>
+                                            <input
+                                                type="text"
+                                                class="form-control kiosk-search-input"
+                                                placeholder="Szukaj projektów..."
+                                                t-att-value="state.searchTerm"
+                                                t-on-input="onSearchInput"
+                                                t-att-disabled="state.loading"/>
+                                            <t t-if="state.searchTerm">
+                                                <button
+                                                    class="btn kiosk-search-clear"
+                                                    t-on-click="clearSearch"
+                                                    t-att-disabled="state.loading">
+                                                    <i class="fa fa-times"/>
+                                                </button>
+                                            </t>
+                                        </div>
+                                    </div>
+
+                                    <t t-if="filteredProjects.length > 0">
+                                        <div class="kiosk-projects-grid">
+                                            <t t-foreach="filteredProjects" t-as="project" t-key="project.id">
+                                                <button
+                                                    class="btn btn-light btn-lg kiosk-project-btn"
+                                                    t-att-class="{ 'selected': state.selectedProjectId === project.id }"
+                                                    t-on-click="() => this.onSelectProject(project.id)"
+                                                    t-att-disabled="state.loading">
+                                                    <i class="fa fa-folder-o fa-2x"/>
+                                                    <div class="project-info">
+                                                        <div class="project-number" t-esc="project.project_number"/>
+                                                        <div class="project-name" t-esc="project.name"/>
+                                                    </div>
+                                                </button>
+                                            </t>
+                                        </div>
+                                    </t>
+                                    <t t-else="">
+                                        <div class="kiosk-empty-state">
+                                            <i class="fa fa-search fa-3x"/>
+                                            <p>
+                                                Nie znaleziono projektów pasujących do
+                                                '<strong t-esc="state.searchTerm"/>'
+                                            </p>
+                                        </div>
+                                    </t>
+
+                                    <div class="kiosk-back-section">
+                                        <button
+                                            class="btn btn-secondary kiosk-btn-back"
+                                            t-on-click="onClickBack"
+                                            t-att-disabled="state.loading">
+                                            <i class="fa fa-arrow-left"/> Wstecz
+                                        </button>
+                                    </div>
+                                </t>
+
+                                <t t-else="">
+                                    <div class="text-center">
+                                        <p>Nie udało się załadować projektów</p>
+                                        <button
+                                            class="btn btn-secondary"
+                                            t-on-click="onClickBack">
+                                            <i class="fa fa-arrow-left"/> Wstecz
+                                        </button>
+                                    </div>
+                                </t>
                             </div>
                         </t>
                     </div>
-                </t>
                 </div>
-            </div>
             </t>
         </Dialog>
     </t>

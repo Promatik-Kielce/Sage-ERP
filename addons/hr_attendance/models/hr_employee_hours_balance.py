@@ -5,7 +5,6 @@ from collections import defaultdict
 import pytz
 
 from odoo import models, fields, api, _
-from odoo.tools import format_date
 from odoo.addons.hr_attendance.models.hr_employee import _round_half_hour
 
 
@@ -22,13 +21,25 @@ class HrEmployeeHoursBalanceLine(models.Model):
 
     employee_id = fields.Many2one('hr.employee', string='Employee', required=True)
     date = fields.Date(string='Date', required=True)
-    day_of_week = fields.Char(string='Day', compute='_compute_day_details', store=False)
+    day_of_week = fields.Char(string='Day')
+    check_in_time = fields.Char(string='Wejście')
+    check_out_time = fields.Char(string='Wyjście')
     worked_hours = fields.Float(string='Worked Hours')
     expected_hours = fields.Float(string='Expected Hours')
     is_weekend = fields.Boolean(string='Weekend')
     is_public_holiday = fields.Boolean(string='Public Holiday')
     has_approved_leave = fields.Boolean(string='Has Leave')
     leave_name = fields.Char(string='Leave Type')
+    output_balance_minutes = fields.Integer(string='Output Balance Minutes')
+    output_balance = fields.Char(string='Output Balance')
+    output_balance_type = fields.Selection(
+        [
+            ('early', 'Early'),
+            ('late', 'Late'),
+            ('on_time', 'On Time'),
+        ],
+        string='Output Balance Type'
+    )
     balance_delta = fields.Float(string='Daily +/-', help='Change in balance for this day')
     balance_cumulative = fields.Float(string='Total Balance', help='Running total balance up to this date')
     notes = fields.Text(string='Calculation Notes')
@@ -41,14 +52,55 @@ class HrEmployeeHoursBalanceLine(models.Model):
     balance_cumulative_positive = fields.Float(string='Balance + (Surplus)', compute='_compute_split_values', store=False, group_operator='sum')
     balance_cumulative_negative = fields.Float(string='Balance - (Deficit)', compute='_compute_split_values', store=False, group_operator='sum')
 
-    @api.depends('date')
-    def _compute_day_details(self):
-        """Compute day of week name"""
-        for line in self:
-            if line.date:
-                line.day_of_week = format_date(self.env, line.date, date_format='EEE')  # Mon, Tue, etc.
-            else:
-                line.day_of_week = ''
+    def _get_polish_day_name(self, date_value):
+        day_names = {
+            0: 'Poniedziałek',
+            1: 'Wtorek',
+            2: 'Środa',
+            3: 'Czwartek',
+            4: 'Piątek',
+            5: 'Sobota',
+            6: 'Niedziela',
+        }
+        return day_names.get(date_value.weekday(), '')
+
+    def _format_time_for_employee_tz(self, dt_value, tz):
+        if not dt_value:
+            return ''
+        if dt_value.tzinfo is None:
+            dt_value = pytz.utc.localize(dt_value)
+        return dt_value.astimezone(tz).strftime('%H:%M')
+
+    def _format_minutes_to_hhmm(self, minutes):
+        sign = '-' if minutes < 0 else ''
+        abs_minutes = abs(int(minutes))
+        hours = abs_minutes // 60
+        mins = abs_minutes % 60
+        return f'{sign}{hours:02d}:{mins:02d}'
+
+    def _format_hours_to_hhmm(self, hours_value, signed=False):
+        """
+        Convert decimal hours to HH:MM format.
+        Example:
+            8.23 -> 08:14
+            0.27 -> 00:16
+            -0.27 -> -00:16
+        """
+        if hours_value is None:
+            return ''
+
+        total_minutes = int(round(hours_value * 60))
+        sign = ''
+
+        if signed and total_minutes > 0:
+            sign = '+'
+        elif total_minutes < 0:
+            sign = '-'
+
+        abs_minutes = abs(total_minutes)
+        hours = abs_minutes // 60
+        minutes = abs_minutes % 60
+        return f'{sign}{hours:02d}:{minutes:02d}'
 
     @api.depends('balance_delta', 'balance_cumulative')
     def _compute_split_values(self):
@@ -131,7 +183,7 @@ class HrEmployeeHoursBalanceLine(models.Model):
         # Group attendances by date (using check_in date)
         attendance_by_date = defaultdict(list)
         for att in attendances:
-            att_date = att.check_in.date()
+            att_date = pytz.utc.localize(att.check_in).astimezone(tz).date() if att.check_in.tzinfo is None else att.check_in.astimezone(tz).date()
             attendance_by_date[att_date].append(att)
 
         # Fetch all leaves for the period
@@ -193,7 +245,7 @@ class HrEmployeeHoursBalanceLine(models.Model):
             # Group by date
             prior_attendance_by_date = defaultdict(list)
             for att in prior_attendances:
-                att_date = att.check_in.date()
+                att_date = pytz.utc.localize(att.check_in).astimezone(tz).date() if att.check_in.tzinfo is None else att.check_in.astimezone(tz).date()
                 prior_attendance_by_date[att_date].append(att)
 
             # Calculate balance for each prior date
@@ -284,6 +336,43 @@ class HrEmployeeHoursBalanceLine(models.Model):
             worked_hours = sum(att.worked_hours for att in day_attendances)
             attendance_count = len(day_attendances)
 
+            # Pola Wejcia i Wyjcia
+            day_of_week = self._get_polish_day_name(current_date)
+
+            valid_check_ins = [att.check_in for att in day_attendances if att.check_in]
+            valid_check_outs = [att.check_out for att in day_attendances if att.check_out]
+
+            first_check_in = min(valid_check_ins) if valid_check_ins else False
+            last_check_out = max(valid_check_outs) if valid_check_outs else False
+
+            check_in_time = self._format_time_for_employee_tz(first_check_in, tz) if first_check_in else ''
+            check_out_time = self._format_time_for_employee_tz(last_check_out, tz) if last_check_out else ''
+
+            output_balance_minutes = 0
+            output_balance = ''
+            output_balance_type = 'on_time'
+
+            if (
+                first_check_in and
+                last_check_out and
+                expected_hours > 0 and
+                not is_weekend and
+                not is_public_holiday and
+                not has_approved_leave
+            ):
+                planned_end = first_check_in + timedelta(hours=expected_hours)
+                delta_seconds = (last_check_out - planned_end).total_seconds()
+                output_balance_minutes = int(round(delta_seconds / 60.0))
+                output_balance = self._format_minutes_to_hhmm(output_balance_minutes)
+
+                if output_balance_minutes < 0:
+                    output_balance_type = 'early'
+                elif output_balance_minutes > 0:
+                    output_balance_type = 'late'
+                else:
+                    output_balance_type = 'on_time'
+
+
             # Check if any attendance is technical (absence detection)
             has_technical_attendance = any(att.in_mode == 'technical' for att in day_attendances)
 
@@ -292,49 +381,60 @@ class HrEmployeeHoursBalanceLine(models.Model):
                 # Public holidays: worked hours count as bonus
                 balance_delta = worked_hours
                 if worked_hours > 0:
-                    notes = _('Public holiday work: +%s hours bonus') % round(worked_hours, 2)
+                    notes = _('Praca w święto: bonus %s') % self._format_hours_to_hhmm(worked_hours, signed=True)
                 else:
-                    notes = _('Public holiday - no work expected')
+                    notes = _('Święto - brak oczekiwanej pracy')
             elif has_approved_leave:
                 # Approved leave: worked hours count as bonus
                 balance_delta = worked_hours
                 if worked_hours > 0:
-                    notes = _('Worked on leave (%s): +%s hours bonus') % (leave_name, round(worked_hours, 2))
+                    notes = _('Praca podczas urlopu (%s): bonus %s') % (
+                        leave_name,
+                        self._format_hours_to_hhmm(worked_hours, signed=True)
+                    )
                 else:
-                    notes = _('On approved leave: %s') % leave_name
+                    notes = _('Zatwierdzony urlop: %s') % leave_name
             elif is_weekend:
                 # Weekend: all worked hours are bonus
                 balance_delta = worked_hours
                 if worked_hours > 0:
-                    notes = _('Weekend work: +%s hours bonus') % round(worked_hours, 2)
+                    notes = _('Praca w weekend: bonus %s') % self._format_hours_to_hhmm(worked_hours, signed=True)
                 else:
-                    notes = _('Weekend - no work expected')
+                    notes = _('Weekend - brak oczekiwanej pracy')
             else:
                 # Weekday (Mon-Fri): difference between worked and expected
                 balance_delta = worked_hours - expected_hours
 
                 if attendance_count == 0 and expected_hours > 0:
-                    notes = _('Absent: -%s hours (no attendance recorded)') % round(expected_hours, 2)
+                    notes = _('Nieobecność: %s (brak zarejestrowanej obecności)') % (
+                        self._format_hours_to_hhmm(-expected_hours)
+                    )
                 elif has_technical_attendance:
-                    notes = _('Absent: -%s hours (absence detected by system)') % round(expected_hours, 2)
+                    notes = _('Nieobecność: %s (nieobecność wykryta przez system)') % (
+                        self._format_hours_to_hhmm(-expected_hours)
+                    )
                 elif worked_hours >= expected_hours:
                     overtime = worked_hours - expected_hours
-                    notes = _('Worked %sh, expected %sh: +%sh overtime') % (
-                        round(worked_hours, 2), round(expected_hours, 2), round(overtime, 2)
+                    notes = _('Przepracowano %s, oczekiwano %s: nadgodziny %s') % (
+                        self._format_hours_to_hhmm(worked_hours),
+                        self._format_hours_to_hhmm(expected_hours),
+                        self._format_hours_to_hhmm(overtime, signed=True)
                     )
                 else:
                     undertime = expected_hours - worked_hours
-                    notes = _('Worked %sh, expected %sh: -%sh undertime') % (
-                        round(worked_hours, 2), round(expected_hours, 2), round(undertime, 2)
+                    notes = _('Przepracowano %s, oczekiwano %s: niedoczas %s') % (
+                        self._format_hours_to_hhmm(worked_hours),
+                        self._format_hours_to_hhmm(expected_hours),
+                        self._format_hours_to_hhmm(-undertime)
                     )
 
             # Round daily delta to nearest 0.5h (15-min threshold)
             raw_delta = balance_delta
             balance_delta = _round_half_hour(balance_delta)
             if round(raw_delta, 2) != round(balance_delta, 2):
-                notes += _(' [rounded %s%sh → %s%sh]') % (
-                    '+' if raw_delta >= 0 else '', round(raw_delta, 2),
-                    '+' if balance_delta >= 0 else '', round(balance_delta, 2),
+                notes += _(' [zaokrąglono %s → %s]') % (
+                    self._format_hours_to_hhmm(raw_delta, signed=True),
+                    self._format_hours_to_hhmm(balance_delta, signed=True),
                 )
 
             cumulative_balance += balance_delta
@@ -342,6 +442,9 @@ class HrEmployeeHoursBalanceLine(models.Model):
             balance_lines.append({
                 'employee_id': employee.id,
                 'date': current_date,
+                'day_of_week': day_of_week,
+                'check_in_time': check_in_time,
+                'check_out_time': check_out_time,
                 'month': current_date.strftime('%Y-%m'),
                 'worked_hours': worked_hours,
                 'expected_hours': expected_hours,
@@ -350,6 +453,9 @@ class HrEmployeeHoursBalanceLine(models.Model):
                 'has_approved_leave': has_approved_leave,
                 'leave_name': leave_name,
                 'balance_delta': balance_delta,
+                'output_balance_minutes': output_balance_minutes,
+                'output_balance': output_balance,
+                'output_balance_type': output_balance_type,
                 'balance_cumulative': cumulative_balance,
                 'notes': notes,
                 'attendance_count': attendance_count,
@@ -362,21 +468,23 @@ class HrEmployeeHoursBalanceLine(models.Model):
                     cumulative_balance += rounded_adj
 
                     # Create adjustment entry
-                    adjustment_notes = _('✏️ Manual Adjustment: %s%s hours\nReason: %s\nAdjusted by: %s') % (
-                        '+' if adjustment.adjustment_amount > 0 else '',
-                        round(adjustment.adjustment_amount, 2),
+                    adjustment_notes = _('✏️ Korekta ręczna: %s\nPowód: %s\nWprowadził: %s') % (
+                        self._format_hours_to_hhmm(adjustment.adjustment_amount, signed=True),
                         adjustment.reason,
                         adjustment.user_id.name
                     )
                     if round(adjustment.adjustment_amount, 2) != round(rounded_adj, 2):
-                        adjustment_notes += _(' [rounded %s%sh → %s%sh]') % (
-                            '+' if adjustment.adjustment_amount >= 0 else '', round(adjustment.adjustment_amount, 2),
-                            '+' if rounded_adj >= 0 else '', round(rounded_adj, 2),
+                        adjustment_notes += _(' [zaokrąglono %s → %s]') % (
+                            self._format_hours_to_hhmm(adjustment.adjustment_amount, signed=True),
+                            self._format_hours_to_hhmm(rounded_adj, signed=True),
                         )
 
                     balance_lines.append({
                         'employee_id': employee.id,
                         'date': current_date,
+                        'day_of_week': day_of_week,
+                        'check_in_time': '',
+                        'check_out_time': '',
                         'month': current_date.strftime('%Y-%m'),
                         'worked_hours': 0.0,  # Adjustments don't have worked hours
                         'expected_hours': 0.0,
@@ -385,6 +493,9 @@ class HrEmployeeHoursBalanceLine(models.Model):
                         'has_approved_leave': False,
                         'leave_name': '',
                         'balance_delta': rounded_adj,
+                        'output_balance_minutes': 0,
+                        'output_balance': '',
+                        'output_balance_type': 'on_time',
                         'balance_cumulative': cumulative_balance,
                         'notes': adjustment_notes,
                         'attendance_count': 0,
@@ -415,6 +526,9 @@ class HrEmployeeHoursBalanceLine(models.Model):
                     balance_lines.append({
                         'employee_id': employee.id,
                         'date': adj_date,
+                        'day_of_week': self._get_polish_day_name(adj_date),
+                        'check_in_time': '',
+                        'check_out_time': '',
                         'month': adj_date.strftime('%Y-%m'),
                         'worked_hours': 0.0,
                         'expected_hours': 0.0,
@@ -423,6 +537,9 @@ class HrEmployeeHoursBalanceLine(models.Model):
                         'has_approved_leave': False,
                         'leave_name': '',
                         'balance_delta': rounded_adj,
+                        'output_balance_minutes': 0,
+                        'output_balance': '',
+                        'output_balance_type': 'on_time',
                         'balance_cumulative': cumulative_balance,
                         'notes': adjustment_notes,
                         'attendance_count': 0,
@@ -488,12 +605,6 @@ class HrEmployeeHoursBalanceLine(models.Model):
         if filter_month:
             all_lines = [l for l in all_lines if l.get('month') == filter_month]
 
-        # Capture initial balance before reordering (lines are still chronological)
-        if all_lines:
-            initial_balance = all_lines[0]['balance_cumulative'] - all_lines[0]['balance_delta']
-        else:
-            initial_balance = 0.0
-
         # Parse and apply order parameter BEFORE offset/limit
         if order:
             # Parse order string like "date desc, id asc"
@@ -517,12 +628,6 @@ class HrEmployeeHoursBalanceLine(models.Model):
                         key=lambda x: (x.get(field) is None, x.get(field) or 0 if isinstance(x.get(field), (int, float)) else x.get(field) or ''),
                         reverse=desc
                     )
-
-        # Recalculate cumulative balance in display order
-        running = initial_balance
-        for line in all_lines:
-            running += line['balance_delta']
-            line['balance_cumulative'] = running
 
         # Apply offset and limit AFTER sorting
         if offset:
@@ -655,15 +760,27 @@ class HrEmployeeHoursBalanceLine(models.Model):
                 if fname == '__count':
                     group['__count'] = len(records)
                 elif records and fname in records[0]:
-                    values = [r.get(fname, 0) or 0 for r in records]
-                    if func == 'sum':
-                        group[agg] = sum(values)
-                    elif func == 'avg':
-                        group[agg] = sum(values) / len(values) if values else 0
-                    elif func in ('max', 'min'):
-                        group[agg] = (max if func == 'max' else min)(values) if values else 0
+                    if fname == 'balance_cumulative':
+                        # For running balance, grouped value should be the value
+                        # from the latest record in the group, not the sum.
+                        sorted_records = sorted(
+                            records,
+                            key=lambda r: (
+                                r.get('date') or fields.Date.today(),
+                                r.get('id') or 0,
+                            )
+                        )
+                        group[agg] = sorted_records[-1].get('balance_cumulative', 0.0) or 0.0
                     else:
-                        group[agg] = sum(values)
+                        values = [r.get(fname, 0) or 0 for r in records]
+                        if func == 'sum':
+                            group[agg] = sum(values)
+                        elif func == 'avg':
+                            group[agg] = sum(values) / len(values) if values else 0
+                        elif func in ('max', 'min'):
+                            group[agg] = (max if func == 'max' else min)(values) if values else 0
+                        else:
+                            group[agg] = sum(values)
                 else:
                     group[agg] = 0
 
@@ -841,19 +958,31 @@ class HrEmployeeHoursBalanceLine(models.Model):
                 if fname == '__count' or fname == '*':
                     row.append(len(group_records))
                 elif group_records and fname in group_records[0]:
-                    values = [rec.get(fname, 0) or 0 for rec in group_records]
-                    if func == 'sum':
-                        row.append(sum(values))
-                    elif func == 'avg':
-                        row.append(sum(values) / len(values) if values else 0)
-                    elif func == 'max':
-                        row.append(max(values) if values else 0)
-                    elif func == 'min':
-                        row.append(min(values) if values else 0)
-                    elif func == 'count':
-                        row.append(len(values))
+                    if fname == 'balance_cumulative':
+                        # Running balance in grouped views should display
+                        # the last chronological value in the group.
+                        sorted_records = sorted(
+                            group_records,
+                            key=lambda r: (
+                                r.get('date') or fields.Date.today(),
+                                r.get('id') or 0,
+                            )
+                        )
+                        row.append(sorted_records[-1].get('balance_cumulative', 0.0) or 0.0)
                     else:
-                        row.append(sum(values))
+                        values = [rec.get(fname, 0) or 0 for rec in group_records]
+                        if func == 'sum':
+                            row.append(sum(values))
+                        elif func == 'avg':
+                            row.append(sum(values) / len(values) if values else 0)
+                        elif func == 'max':
+                            row.append(max(values) if values else 0)
+                        elif func == 'min':
+                            row.append(min(values) if values else 0)
+                        elif func == 'count':
+                            row.append(len(values))
+                        else:
+                            row.append(sum(values))
                 else:
                     row.append(0)
 

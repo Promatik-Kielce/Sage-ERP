@@ -8,12 +8,20 @@
             <list string="Hours Balance Detail" create="false" edit="false" delete="false" default_order="date desc" limit="0">
                 <field name="date"/>
                 <field name="day_of_week"/>
+                <field name="check_in_time"/>
+                <field name="check_out_time"/>
                 <field name="worked_hours" widget="float_time" sum="Total Worked"/>
                 <field name="expected_hours" widget="float_time" sum="Total Expected"/>
                 <field name="is_weekend" column_invisible="1"/>
                 <field name="is_public_holiday" column_invisible="1"/>
                 <field name="has_approved_leave" column_invisible="1"/>
                 <field name="leave_name" optional="hide"/>
+                <field name="output_balance"
+                       string="Output Balance"
+                       class="text-center"
+                       decoration-danger="output_balance_type == 'early'"
+                       decoration-success="output_balance_type == 'late'"
+                       decoration-bf="output_balance_type == 'early'"/>
                 <field name="balance_delta" widget="float_time"
                        sum="Total +/-"
                        decoration-success="balance_delta &gt; 0"

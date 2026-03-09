@@ -177,6 +177,8 @@ patch(kioskAttendanceApp.prototype, {
                         currentProjectName: currentProjectName,
                         checkInTime: checkInTime || null,
                         inactivityTimeout: this.inactivityTimeout,
+                        token: self.props.token,
+                        mode: "kiosk",
                         onCheckOut: async () => {
                             console.log("[ProjectPatch] Check out button clicked");
                             // Perform check-out
