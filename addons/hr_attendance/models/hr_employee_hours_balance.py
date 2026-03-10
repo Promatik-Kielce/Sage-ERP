@@ -255,30 +255,36 @@ class HrEmployeeHoursBalanceLine(models.Model):
                 weekday = prior_date.weekday()
                 is_weekend = weekday >= 5
 
+                # if is_weekend:
+                #     expected_hours = 0.0
+                # else:
+                #     # Calculate expected hours for this date
+                #     datetime_start = datetime.combine(prior_date, datetime.min.time())
+                #     datetime_end = datetime.combine(prior_date, datetime.max.time())
+                #     datetime_start_utc = tz.localize(datetime_start).astimezone(pytz.utc)
+                #     datetime_end_utc = tz.localize(datetime_end).astimezone(pytz.utc)
+                #
+                #     work_intervals = calendar._work_intervals_batch(
+                #         datetime_start_utc, datetime_end_utc,
+                #         resources=employee.resource_id
+                #     )[employee.resource_id.id]
+                #     expected_hours = sum(
+                #         (stop - start).total_seconds() / 3600.0
+                #         for start, stop, meta in work_intervals
+                #     )
                 if is_weekend:
                     expected_hours = 0.0
                 else:
-                    # Calculate expected hours for this date
-                    datetime_start = datetime.combine(prior_date, datetime.min.time())
-                    datetime_end = datetime.combine(prior_date, datetime.max.time())
-                    datetime_start_utc = tz.localize(datetime_start).astimezone(pytz.utc)
-                    datetime_end_utc = tz.localize(datetime_end).astimezone(pytz.utc)
-
-                    work_intervals = calendar._work_intervals_batch(
-                        datetime_start_utc, datetime_end_utc,
-                        resources=employee.resource_id
-                    )[employee.resource_id.id]
-                    expected_hours = sum(
-                        (stop - start).total_seconds() / 3600.0
-                        for start, stop, meta in work_intervals
-                    )
-
+                    expected_hours = 8.0
                 # Get worked hours
                 day_attendances = prior_attendance_by_date.get(prior_date, [])
                 worked_hours = sum(att.worked_hours for att in day_attendances)
 
                 # Add to balance (simplified - using basic worked - expected)
-                initial_work_balance += _round_half_hour(worked_hours - expected_hours)
+                prior_delta = worked_hours - expected_hours
+                if employee.ignore_negative_expected_hours and prior_delta < 0:
+                    prior_delta = 0.0
+                initial_work_balance += _round_half_hour(prior_delta)
 
                 prior_date += timedelta(days=1)
 
@@ -318,19 +324,22 @@ class HrEmployeeHoursBalanceLine(models.Model):
             leave_name = leave_dates.get(current_date, '')
 
             # Get expected hours from calendar for this day
+            # if is_public_holiday or has_approved_leave or is_weekend:
+            #     expected_hours = 0.0
+            # else:
+            #     # Get work intervals for this day (requires timezone-aware datetimes)
+            #     work_intervals = calendar._work_intervals_batch(
+            #         datetime_start_utc, datetime_end_utc,
+            #         resources=employee.resource_id
+            #     )[employee.resource_id.id]
+            #     expected_hours = sum(
+            #         (stop - start).total_seconds() / 3600.0
+            #         for start, stop, meta in work_intervals
+            #     )
             if is_public_holiday or has_approved_leave or is_weekend:
                 expected_hours = 0.0
             else:
-                # Get work intervals for this day (requires timezone-aware datetimes)
-                work_intervals = calendar._work_intervals_batch(
-                    datetime_start_utc, datetime_end_utc,
-                    resources=employee.resource_id
-                )[employee.resource_id.id]
-                expected_hours = sum(
-                    (stop - start).total_seconds() / 3600.0
-                    for start, stop, meta in work_intervals
-                )
-
+                expected_hours = 8.0
             # Get actual worked hours
             day_attendances = attendance_by_date.get(current_date, [])
             worked_hours = sum(att.worked_hours for att in day_attendances)
@@ -353,16 +362,20 @@ class HrEmployeeHoursBalanceLine(models.Model):
             output_balance_type = 'on_time'
 
             if (
-                first_check_in and
-                last_check_out and
-                expected_hours > 0 and
-                not is_weekend and
-                not is_public_holiday and
-                not has_approved_leave
+                    first_check_in and
+                    last_check_out and
+                    expected_hours > 0 and
+                    not is_weekend and
+                    not is_public_holiday and
+                    not has_approved_leave
             ):
                 planned_end = first_check_in + timedelta(hours=expected_hours)
                 delta_seconds = (last_check_out - planned_end).total_seconds()
                 output_balance_minutes = int(round(delta_seconds / 60.0))
+
+                if employee.ignore_negative_expected_hours and output_balance_minutes < 0:
+                    output_balance_minutes = 0
+
                 output_balance = self._format_minutes_to_hhmm(output_balance_minutes)
 
                 if output_balance_minutes < 0:
@@ -403,30 +416,47 @@ class HrEmployeeHoursBalanceLine(models.Model):
                     notes = _('Weekend - brak oczekiwanej pracy')
             else:
                 # Weekday (Mon-Fri): difference between worked and expected
-                balance_delta = worked_hours - expected_hours
+                raw_balance_delta = worked_hours - expected_hours
+                balance_delta = raw_balance_delta
 
-                if attendance_count == 0 and expected_hours > 0:
-                    notes = _('Nieobecność: %s (brak zarejestrowanej obecności)') % (
-                        self._format_hours_to_hhmm(-expected_hours)
-                    )
-                elif has_technical_attendance:
-                    notes = _('Nieobecność: %s (nieobecność wykryta przez system)') % (
-                        self._format_hours_to_hhmm(-expected_hours)
-                    )
-                elif worked_hours >= expected_hours:
-                    overtime = worked_hours - expected_hours
-                    notes = _('Przepracowano %s, oczekiwano %s: nadgodziny %s') % (
-                        self._format_hours_to_hhmm(worked_hours),
-                        self._format_hours_to_hhmm(expected_hours),
-                        self._format_hours_to_hhmm(overtime, signed=True)
-                    )
+                if employee.ignore_negative_expected_hours and balance_delta < 0:
+                    balance_delta = 0.0
+
+                    if attendance_count == 0 and expected_hours > 0:
+                        notes = _('Brak obecności, ale ujemne godziny są pomijane dla tego pracownika')
+                    elif has_technical_attendance:
+                        notes = _(
+                            'Nieobecność wykryta przez system, ale ujemne godziny są pomijane dla tego pracownika')
+                    elif worked_hours > 0:
+                        notes = _('Przepracowano %s, oczekiwano %s: ujemne godziny pominięto') % (
+                            self._format_hours_to_hhmm(worked_hours),
+                            self._format_hours_to_hhmm(expected_hours),
+                        )
+                    else:
+                        notes = _('Ujemne godziny pominięto dla tego pracownika')
                 else:
-                    undertime = expected_hours - worked_hours
-                    notes = _('Przepracowano %s, oczekiwano %s: niedoczas %s') % (
-                        self._format_hours_to_hhmm(worked_hours),
-                        self._format_hours_to_hhmm(expected_hours),
-                        self._format_hours_to_hhmm(-undertime)
-                    )
+                    if attendance_count == 0 and expected_hours > 0:
+                        notes = _('Nieobecność: %s (brak zarejestrowanej obecności)') % (
+                            self._format_hours_to_hhmm(-expected_hours)
+                        )
+                    elif has_technical_attendance:
+                        notes = _('Nieobecność: %s (nieobecność wykryta przez system)') % (
+                            self._format_hours_to_hhmm(-expected_hours)
+                        )
+                    elif worked_hours >= expected_hours:
+                        overtime = worked_hours - expected_hours
+                        notes = _('Przepracowano %s, oczekiwano %s: nadgodziny %s') % (
+                            self._format_hours_to_hhmm(worked_hours),
+                            self._format_hours_to_hhmm(expected_hours),
+                            self._format_hours_to_hhmm(overtime, signed=True)
+                        )
+                    else:
+                        undertime = expected_hours - worked_hours
+                        notes = _('Przepracowano %s, oczekiwano %s: niedoczas %s') % (
+                            self._format_hours_to_hhmm(worked_hours),
+                            self._format_hours_to_hhmm(expected_hours),
+                            self._format_hours_to_hhmm(-undertime)
+                        )
 
             # Round daily delta to nearest 0.5h (15-min threshold)
             raw_delta = balance_delta

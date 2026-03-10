@@ -82,6 +82,7 @@
             </xpath>
             <xpath expr="//group[@name='managers']" position="inside">
                 <field name="attendance_manager_id" string="Attendance" widget="many2one_avatar_user" groups="hr_attendance.group_hr_attendance_user"/>
+                <field name="ignore_negative_expected_hours" string="Nie licz ujemnych godzin" groups="hr.group_hr_user"/>
             </xpath>
             <xpath expr="//field[@name='barcode']" position="attributes">
                 <attribute name="string">RFID/Badge Number</attribute>
@@ -94,6 +95,11 @@
                 <field
                     name="ruleset_id" string="Overtime Ruleset"
                     placeholder="Select a ruleset to manage overtime."
+                    />
+                  <field
+                        name="ignore_negative_expected_hours"
+                        string="Nie licz ujemnych godzin"
+                        groups="hr.group_hr_user"
                     />
             </group>
             <!-- Add notebook page for adjustment history -->

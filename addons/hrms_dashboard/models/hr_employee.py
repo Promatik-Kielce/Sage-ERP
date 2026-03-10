@@ -95,24 +95,33 @@ class HrEmployee(models.Model):
 
         attendance = self.env['hr.attendance'].sudo().search_read(
             [('employee_id', '=', employee[0]['id'])],
-            fields=['id', 'check_in', 'check_out', 'worked_hours'])
+            fields=['id', 'employee_id', 'date', 'check_in', 'check_out', 'worked_hours']
+        )
         attendance_line = []
-        # Get user's timezone for display
         user_tz = timezone(self.env.user.tz or 'UTC')
+        employee_rec = self.env['hr.employee'].sudo().browse(employee[0]['id'])
+
         for line in attendance:
             if line['check_in'] and line['check_out']:
-                # Convert UTC times to user's local timezone
                 check_in_local = utc.localize(line['check_in']).astimezone(user_tz)
                 check_out_local = utc.localize(line['check_out']).astimezone(user_tz)
 
-                # Determine color based on worked hours
-                worked_hours_val = line['worked_hours']
-                if worked_hours_val < 7.9:
-                    hours_color = 'red'
-                elif worked_hours_val > 8.5:
-                    hours_color = 'green'
+                worked_hours_val = line['worked_hours'] or 0.0
+                attendance_date = line.get('date')
+                is_weekend = attendance_date.weekday() >= 5 if attendance_date else False
+
+                if employee_rec.ignore_negative_expected_hours:
+                    if is_weekend or worked_hours_val > 8.5:
+                        hours_color = 'green'
+                    else:
+                        hours_color = 'default'
                 else:
-                    hours_color = 'default'
+                    if worked_hours_val < 7.9:
+                        hours_color = 'red'
+                    elif worked_hours_val > 8.5:
+                        hours_color = 'green'
+                    else:
+                        hours_color = 'default'
 
                 val = {
                     'id': line['id'],

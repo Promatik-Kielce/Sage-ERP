@@ -76,17 +76,18 @@
         <field name="inherit_id" ref="hr_attendance.view_attendance_tree"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='employee_id']" position="after">
+                <field name="ignore_negative_expected_hours" column_invisible="1"/>
                 <field name="main_project_id"/>
             </xpath>
             <!-- Add color decoration to worked_hours field -->
             <xpath expr="//field[@name='worked_hours']" position="attributes">
                 <attribute name="decoration-success">worked_hours &gt; 8.5</attribute>
-                <attribute name="decoration-danger">worked_hours &lt; 7.9</attribute>
+                <attribute name="decoration-danger">worked_hours &lt; 7.9 and not ignore_negative_expected_hours</attribute>
             </xpath>
             <xpath expr="//field[@name='worked_hours']" position="after">
                 <field name="total_timesheet_hours" widget="float_time" optional="show"/>
                 <field name="timesheet_hours_diff" widget="float_time" optional="show"
-                       decoration-danger="timesheet_hours_diff &gt; 0.25 or timesheet_hours_diff &lt; -0.25"
+                       decoration-danger="(timesheet_hours_diff &gt; 0.25 or timesheet_hours_diff &lt; -0.25) and not ignore_negative_expected_hours"
                        decoration-warning="timesheet_hours_diff != 0 and timesheet_hours_diff &lt;= 0.25 and timesheet_hours_diff &gt;= -0.25"
                        decoration-success="timesheet_hours_diff == 0"/>
             </xpath>

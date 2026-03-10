@@ -72,6 +72,11 @@ class HrEmployee(models.Model):
         string='Balance Start Date',
         help='Date from which to start calculating hours balance. Defaults to employee creation or 1 year ago.')
 
+    ignore_negative_expected_hours = fields.Boolean(
+        string='Nie licz ujemnych godzin',
+        help='Jeśli zaznaczone, system nie będzie naliczał ujemnego salda za przepracowanie mniejszej liczby godzin niż oczekiwana.'
+    )
+
     # Manual adjustment fields
     hours_balance_adjustment_ids = fields.One2many(
         'hr.hours.balance.adjustment',
@@ -433,19 +438,22 @@ class HrEmployee(models.Model):
             has_approved_leave = current_date in leave_dates
 
             # Get expected hours
+            # if is_public_holiday or has_approved_leave or is_weekend:
+            #     expected_hours = 0.0
+            # else:
+            #     # Get work intervals for this day
+            #     work_intervals = calendar._work_intervals_batch(
+            #         datetime_start_utc, datetime_end_utc,
+            #         resources=self.resource_id
+            #     )[self.resource_id.id]
+            #     expected_hours = sum(
+            #         (stop - start).total_seconds() / 3600.0
+            #         for start, stop, meta in work_intervals
+            #     )
             if is_public_holiday or has_approved_leave or is_weekend:
                 expected_hours = 0.0
             else:
-                # Get work intervals for this day
-                work_intervals = calendar._work_intervals_batch(
-                    datetime_start_utc, datetime_end_utc,
-                    resources=self.resource_id
-                )[self.resource_id.id]
-                expected_hours = sum(
-                    (stop - start).total_seconds() / 3600.0
-                    for start, stop, meta in work_intervals
-                )
-
+                expected_hours = 8.0
             # Get actual worked hours
             worked_hours = worked_by_date.get(current_date, 0.0)
 
@@ -457,6 +465,10 @@ class HrEmployee(models.Model):
             else:
                 # Regular weekday: difference between worked and expected
                 balance_delta = worked_hours - expected_hours
+
+                # For selected employees, do not count negative expected-hours balance
+                if self.ignore_negative_expected_hours and balance_delta < 0:
+                    balance_delta = 0.0
 
             # Round daily delta to nearest 0.5h (15-min threshold)
             balance_delta = _round_half_hour(balance_delta)

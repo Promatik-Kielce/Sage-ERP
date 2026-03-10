@@ -68,6 +68,7 @@ class HrAttendanceTimesheetProject(http.Controller):
                 # - hours_previously_today (same)
                 # - last_attendance_worked_hours (same)
                 # - total_overtime (triggers _read_group query)
+                'ignore_negative_expected_hours': employee.ignore_negative_expected_hours,
             }
         return response
 
@@ -124,6 +125,7 @@ class HrAttendanceTimesheetProject(http.Controller):
             'current_project_name': current_project_name,
             'check_in': str(current_attendance.check_in) if is_checked_in and current_attendance.check_in else None,
             'use_pin': company.attendance_kiosk_use_pin,
+            'ignore_negative_expected_hours': employee.ignore_negative_expected_hours,
         }
         _logger.info("[Kiosk] check_employee_status result: %s", result)
         return result
@@ -326,6 +328,15 @@ class HrAttendanceTimesheetProject(http.Controller):
         if not check_in:
             return {'success': False, 'error': _('Missing check-in time')}
 
+        if employee.ignore_negative_expected_hours:
+            return {
+                'success': True,
+                'worked_8h': True,
+                'check_in': fields.Datetime.to_string(check_in),
+                'planned_end': False,
+                'remaining_seconds': 0,
+            }
+
         now = fields.Datetime.now()
         planned_end = check_in + datetime.timedelta(hours=8)
         remaining_seconds = int((planned_end - now).total_seconds())
@@ -357,6 +368,15 @@ class HrAttendanceTimesheetProject(http.Controller):
             check_in = attendance.check_in
             if not check_in:
                 return {'success': False, 'error': _('Missing check-in time')}
+
+            if employee.ignore_negative_expected_hours:
+                return {
+                    'success': True,
+                    'worked_8h': True,
+                    'check_in': fields.Datetime.to_string(check_in),
+                    'planned_end': False,
+                    'remaining_seconds': 0,
+                }
 
             now = fields.Datetime.now()
             planned_end = check_in + datetime.timedelta(hours=8)

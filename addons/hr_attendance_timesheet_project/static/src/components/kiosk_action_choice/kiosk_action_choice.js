@@ -16,6 +16,7 @@ export class KioskActionChoice extends Component {
         inactivityTimeout: { type: Number, optional: true },
         token: { type: String, optional: true },
         mode: { type: String, optional: true },
+        ignoreNegativeExpectedHours: { type: Boolean, optional: true },
         onCheckOut: Function,
         onProjectChanged: Function,
         onCancel: { type: Function, optional: true },
@@ -70,7 +71,7 @@ export class KioskActionChoice extends Component {
     }
 
     get formattedPlannedEndTime() {
-        if (!this.props.checkInTime) {
+        if (this.props.ignoreNegativeExpectedHours || !this.props.checkInTime) {
             return null;
         }
         const start = this._parseUtcDatetime(this.props.checkInTime);

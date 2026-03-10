@@ -110,14 +110,12 @@ class HrAttendance(models.Model):
     def _compute_color(self):
         """Compute color based on TOTAL daily worked hours for the employee.
         If multiple check-ins exist on the same day, sum them before deciding color."""
-        # Group attendances by employee and date to sum daily hours
         attendances_by_day = defaultdict(lambda: self.env['hr.attendance'])
         for attendance in self:
             if attendance.employee_id and attendance.date:
                 key = (attendance.employee_id.id, attendance.date)
                 attendances_by_day[key] |= attendance
 
-        # Also fetch other attendances for the same employee/dates not in self
         if self:
             dates = list(set(self.mapped('date')))
             employees = self.mapped('employee_id')
@@ -130,29 +128,31 @@ class HrAttendance(models.Model):
                 key = (att.employee_id.id, att.date)
                 attendances_by_day[key] |= att
 
-        # Calculate color based on total daily hours
         for (emp_id, date), attendances in attendances_by_day.items():
             total_worked = sum(att.worked_hours for att in attendances if att.check_out)
             has_open = any(not att.check_out for att in attendances)
+            employee = attendances[:1].employee_id
 
             if has_open:
-                # Has open attendance - green if recent, red if old
                 oldest_open = min(
                     (att.check_in for att in attendances if not att.check_out),
                     default=datetime.now()
                 )
                 color = 1 if oldest_open < (datetime.today() - timedelta(days=1)) else 10
             else:
-                # All checked out - color based on total daily hours
-                # 15 min tolerance: >= 7h 45min counts as meeting 8h target
-                if total_worked < 7.75:
-                    color = 1  # Red - under 7h 45min
-                elif total_worked >= 8.5:
-                    color = 3  # Yellow - overtime
+                if employee.ignore_negative_expected_hours:
+                    if date.weekday() >= 5 or total_worked > 8.0:
+                        color = 10
+                    else:
+                        color = 0
                 else:
-                    color = 10  # Green - met 8h target (7h 45min - 8h 30min)
+                    if total_worked < 7.75:
+                        color = 1
+                    elif total_worked >= 8.5:
+                        color = 3
+                    else:
+                        color = 10
 
-            # Apply same color to all attendances in this day
             for att in attendances:
                 if att in self:
                     att.color = color

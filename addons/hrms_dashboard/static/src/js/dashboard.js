@@ -732,7 +732,7 @@ export class HrDashboard extends Component{
             const attendanceRecords = await this.orm.searchRead(
                 'hr.attendance',
                 [['employee_id', '=', this.state.login_employee.id], ['check_out', '=', false]],
-                ['id', 'current_project_id', 'check_in'],
+                ['id', 'current_project_id', 'check_in', 'ignore_negative_expected_hours'],
                 { limit: 1 }
             );
 
@@ -747,6 +747,7 @@ export class HrDashboard extends Component{
             const attendance = attendanceRecords[0];
             const currentProjectName = attendance.current_project_id ? attendance.current_project_id[1] : null;
             const checkInTime = attendance.check_in || null;
+            const ignoreNegativeExpectedHours = !!attendance.ignore_negative_expected_hours;
 
             // Show the dialog
             this.dialog.add(KioskActionChoice, {
@@ -754,6 +755,7 @@ export class HrDashboard extends Component{
                 attendanceId: attendance.id,
                 currentProjectName: currentProjectName,
                 checkInTime: checkInTime,
+                ignoreNegativeExpectedHours: ignoreNegativeExpectedHours,
                 onCheckOut: async () => {
                     await this.handleCheckOut();
                 },

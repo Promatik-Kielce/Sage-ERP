@@ -48,6 +48,10 @@ class HrAttendance(models.Model):
         store=True,
         help="Difference between timesheet hours and worked hours (positive = excess, negative = missing)"
     )
+    ignore_negative_expected_hours = fields.Boolean(
+        related='employee_id.ignore_negative_expected_hours',
+        readonly=True,
+    )
 
     @api.depends('active_timesheet_id', 'active_timesheet_id.project_id')
     def _compute_current_project(self):

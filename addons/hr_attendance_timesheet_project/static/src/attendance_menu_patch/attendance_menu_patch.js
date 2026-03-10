@@ -29,7 +29,7 @@ patch(ActivityMenu.prototype, {
             const attendanceRecords = await this.orm.searchRead(
                 "hr.attendance",
                 [["employee_id", "=", this.employee.id], ["check_out", "=", false]],
-                ["id", "current_project_id", "employee_id", "check_in"],
+                ["id", "current_project_id", "employee_id", "check_in", "ignore_negative_expected_hours"],
                 { limit: 1 }
             );
 
@@ -44,6 +44,7 @@ patch(ActivityMenu.prototype, {
             const currentProjectName = attendance.current_project_id ? attendance.current_project_id[1] : null;
             const employeeName = attendance.employee_id ? attendance.employee_id[1] : null;
             const checkInTime = attendance.check_in || null;
+            const ignoreNegativeExpectedHours = !!attendance.ignore_negative_expected_hours;
 
             console.log("[ActivityMenu] opening dialog with props", {
                 employeeId: this.employee.id,
@@ -52,6 +53,7 @@ patch(ActivityMenu.prototype, {
                 employeeName: employeeName,
                 currentProjectName: currentProjectName,
                 checkInTime: checkInTime,
+                ignoreNegativeExpectedHours: ignoreNegativeExpectedHours,
             });
 
             // Show the dialog
@@ -62,6 +64,7 @@ patch(ActivityMenu.prototype, {
                 employeeName: employeeName,
                 currentProjectName: currentProjectName,
                 checkInTime: checkInTime,
+                ignoreNegativeExpectedHours: ignoreNegativeExpectedHours,
                 onCheckOut: async () => {
                     await this.handleCheckOut();
                 },

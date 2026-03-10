@@ -59,6 +59,7 @@ patch(kioskAttendanceApp.prototype, {
                         checkResult.employee_name,
                         checkResult.current_project_name,
                         checkResult.check_in,
+                        checkResult.ignore_negative_expected_hours,
                         null,  // No PIN for barcode scans - barcode is the authentication
                         true   // barcode_authenticated flag
                     );
@@ -134,6 +135,7 @@ patch(kioskAttendanceApp.prototype, {
                         checkResult.employee_name,
                         checkResult.current_project_name,
                         checkResult.check_in,
+                        checkResult.ignore_negative_expected_hours,
                         enteredPin,  // Pass validated PIN
                         false        // Not barcode authenticated - this is manual selection
                     );
@@ -158,7 +160,7 @@ patch(kioskAttendanceApp.prototype, {
     /**
      * Show the action choice dialog (Check Out or Change Project)
      */
-    async _showActionChoiceDialog(employeeId, attendanceId, employeeName, currentProjectName, checkInTime, validatedPin, barcodeAuthenticated) {
+    async _showActionChoiceDialog(employeeId, attendanceId, employeeName, currentProjectName, checkInTime, ignoreNegativeExpectedHours, validatedPin, barcodeAuthenticated) {
         console.log("[ProjectPatch] Showing action choice dialog for employee:", employeeId);
         const self = this;
 
@@ -176,6 +178,7 @@ patch(kioskAttendanceApp.prototype, {
                         employeeName: employeeName,
                         currentProjectName: currentProjectName,
                         checkInTime: checkInTime || null,
+                        ignoreNegativeExpectedHours: !!ignoreNegativeExpectedHours,
                         inactivityTimeout: this.inactivityTimeout,
                         token: self.props.token,
                         mode: "kiosk",
