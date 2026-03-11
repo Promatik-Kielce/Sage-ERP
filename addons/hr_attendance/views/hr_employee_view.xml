@@ -96,11 +96,6 @@
                     name="ruleset_id" string="Overtime Ruleset"
                     placeholder="Select a ruleset to manage overtime."
                     />
-                  <field
-                        name="ignore_negative_expected_hours"
-                        string="Nie licz ujemnych godzin"
-                        groups="hr.group_hr_user"
-                    />
             </group>
             <!-- Add notebook page for adjustment history -->
             <!-- TEMPORARILY DISABLED - MODEL LOADING ISSUE -->

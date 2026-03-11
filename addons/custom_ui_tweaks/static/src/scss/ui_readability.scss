@@ -1,0 +1,193 @@
+/* =========================================================
+   Czytelniejsze ikony, pola i checkboxy w formularzach
+   ========================================================= */
+
+.o_form_view {
+    /* większe ikony */
+    .fa,
+    .oi,
+    .btn .fa,
+    .btn .oi,
+    .o_cp_buttons .fa,
+    .o_cp_buttons .oi,
+    .o_form_button_box .fa,
+    .o_form_button_box .oi,
+    .o_statusbar_status .fa,
+    .o_statusbar_status .oi,
+    .o_field_statusbar .fa,
+    .o_field_statusbar .oi,
+    .o_priority .fa,
+    .o_priority .oi {
+        font-size: 22px !important;
+        line-height: 1.2 !important;
+    }
+
+    /* =====================================================
+       Dropdown / many2one / select - większa strzałka
+       bez psucia układu i bez ucinania tekstu
+       ===================================================== */
+
+    .o_input_dropdown,
+    .o_field_many2one,
+    .o_field_selection,
+    .o_select_menu {
+        position: relative;
+        width: 100%;
+    }
+
+    /* input ma mieć miejsce na strzałkę */
+    .o_input_dropdown input,
+    .o_field_many2one input,
+    .o_autocomplete_input,
+    .o_select_menu_toggler,
+    select.o_input {
+        padding-right: 2.2rem !important;
+        min-height: 36px;
+        box-sizing: border-box;
+    }
+
+    /* przycisk strzałki - większy, ale nie rozwala layoutu */
+    .o_input_dropdown .o_dropdown_button,
+    .o_select_menu_toggler,
+    .o-dropdown--menu-toggle {
+        position: absolute;
+        right: 0.35rem;
+        top: 50%;
+        transform: translateY(-50%);
+        width: auto !important;
+        min-width: auto !important;
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        background: transparent !important;
+        border: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        z-index: 2;
+    }
+
+    .o_select_menu_toggler .fa,
+    .o_select_menu_toggler .oi,
+    .o-dropdown--menu-toggle .fa,
+    .o-dropdown--menu-toggle .oi,
+    .o_input_dropdown .o_dropdown_button .fa,
+    .o_input_dropdown .o_dropdown_button .oi,
+    .o_select_menu_toggler::after,
+    .o_input_dropdown .o_dropdown_button::after {
+        font-size: 22px !important;
+        font-weight: 700 !important;
+        line-height: 1 !important;
+    }
+
+    /* tekst w polu ma się nie ucinać przez wrapper */
+    .o_field_widget,
+    .o_input_dropdown,
+    .o_field_many2one {
+        overflow: visible !important;
+    }
+
+    /* lista rozwijana */
+    .o-autocomplete--dropdown-menu,
+    .dropdown-menu,
+    .o_select_menu_menu {
+        min-width: 260px !important;
+        max-width: 480px !important;
+        white-space: normal !important;
+    }
+
+    /* =====================================================
+       Podkreślenie tylko dla pól edytowalnych
+       ===================================================== */
+
+    .o_field_widget:not(.o_readonly_modifier) input:not([type="checkbox"]):not([type="radio"]),
+    .o_field_widget:not(.o_readonly_modifier) textarea,
+    .o_field_widget:not(.o_readonly_modifier) select,
+    input.o_input:not([type="checkbox"]):not([type="radio"]),
+    textarea.o_input,
+    .o_autocomplete_input,
+    .o_input_dropdown input:not([type="checkbox"]):not([type="radio"]) {
+        border: none !important;
+        border-bottom: 2px solid #5b7db1 !important;
+        border-radius: 0 !important;
+        background: #f8fbff !important;
+        box-shadow: none !important;
+    }
+
+    .o_field_widget:not(.o_readonly_modifier) input:not([type="checkbox"]):not([type="radio"]):focus,
+    .o_field_widget:not(.o_readonly_modifier) textarea:focus,
+    .o_field_widget:not(.o_readonly_modifier) select:focus,
+    input.o_input:not([type="checkbox"]):not([type="radio"]):focus,
+    textarea.o_input:focus,
+    .o_autocomplete_input:focus,
+    .o_input_dropdown input:not([type="checkbox"]):not([type="radio"]):focus {
+        border: none !important;
+        border-bottom: 3px solid #1f4094 !important;
+        outline: none !important;
+        box-shadow: none !important;
+        background: #ffffff !important;
+    }
+
+    /* =====================================================
+       Większe checkboxy i radio - bez underline
+       ===================================================== */
+
+    input[type="checkbox"],
+    input[type="radio"],
+    .form-check-input,
+    .o_boolean_toggle input,
+    .o_checkbox input {
+        transform: scale(1.15) !important;
+        -webkit-transform: scale(1.15) !important;
+        transform-origin: center !important;
+        margin: 0 0.3rem 0 0.15rem !important;
+        box-shadow: none !important;
+        border-bottom: none !important;
+    }
+}
+
+/* =========================================================
+   Control panel
+   ========================================================= */
+
+.o_control_panel {
+    .fa,
+    .oi {
+        font-size: 22px !important;
+        line-height: 1.2 !important;
+    }
+}
+
+/* =========================================================
+   Breadcrumb
+   ========================================================= */
+
+.o_breadcrumb,
+.breadcrumb {
+    .fa,
+    .oi {
+        font-size: 22px !important;
+    }
+}
+
+/* =========================================================
+   Statusbar / etapy
+   ========================================================= */
+
+.o_statusbar_status,
+.o_field_statusbar {
+    .fa,
+    .oi {
+        font-size: 22px !important;
+    }
+}
+
+/* =========================================================
+   Gwiazdki / priorytet
+   ========================================================= */
+
+.o_priority {
+    .fa,
+    .oi {
+        font-size: 22px !important;
+    }
+}

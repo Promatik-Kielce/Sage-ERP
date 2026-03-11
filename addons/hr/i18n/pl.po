@@ -2369,7 +2369,7 @@ msgstr "Zdjęcie pracownika"
 #. module: hr
 #: model:ir.model.fields,field_description:hr.field_hr_employee__name
 msgid "Employee Name"
-msgstr "Imię i nazwisko"
+msgstr "Nazwisko i Imię"
 
 #. module: hr
 #: model:ir.actions.act_window,name:hr.mail_activity_plan_action

@@ -90,7 +90,7 @@ msgstr "Pracownik"
 #. module: hr_homeworking_calendar
 #: model:ir.model.fields,field_description:hr_homeworking_calendar.field_homework_location_wizard__employee_name
 msgid "Employee Name"
-msgstr "Imię i nazwisko"
+msgstr "Nazwisko i Imię"
 
 #. module: hr_homeworking_calendar
 #: model:ir.model.fields,field_description:hr_homeworking_calendar.field_homework_location_wizard__id

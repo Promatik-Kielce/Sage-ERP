@@ -151,7 +151,7 @@ msgstr "Pracownik %s nie jest powiązany z pojazdem."
 #. module: hr_fleet
 #: model:ir.model.fields,field_description:hr_fleet.field_fleet_vehicle__driver_employee_name
 msgid "Employee Name"
-msgstr "Imię i nazwisko"
+msgstr "Nazwisko i Imię"
 
 #. module: hr_fleet
 #: model:ir.model.fields.selection,name:hr_fleet.selection__mail_activity_plan_template__responsible_type__fleet_manager

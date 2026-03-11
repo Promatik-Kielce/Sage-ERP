@@ -1812,7 +1812,7 @@ msgstr "Liczba pracowników"
 #. module: hr_recruitment
 #: model:ir.model.fields,field_description:hr_recruitment.field_hr_applicant__employee_name
 msgid "Employee Name"
-msgstr "Imię i nazwisko"
+msgstr "Nazwisko i Imię"
 
 #. module: hr_recruitment
 #: model_terms:ir.ui.view,arch_db:hr_recruitment.applicant_hired_template
