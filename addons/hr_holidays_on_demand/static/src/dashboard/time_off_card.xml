@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates xml:space="preserve">
+    <!-- Add on-demand info line below the main duration on the card -->
+    <t t-inherit="hr_holidays.TimeOffCard" t-inherit-mode="extension">
+        <xpath expr="//span[hasclass('o_timeoff_duration')]" position="after">
+            <span t-if="props.data.on_demand_limit !== undefined"
+                  class="text-muted o_timeoff_on_demand_info"
+                  style="font-size: 0.85em; display: block;">
+                w tym <strong><t t-esc="props.data.on_demand_remaining"/></strong> na żądanie
+            </span>
+        </xpath>
+    </t>
+
+    <!-- Add on-demand row in the popover breakdown -->
+    <t t-inherit="hr_holidays.TimeOffCardPopover" t-inherit-mode="extension">
+        <xpath expr="//li[last()]" position="after">
+            <li t-if="props.on_demand_limit !== undefined"
+                class="d-flex justify-content-between border-top pt-1 mt-1">
+                <span>Na żądanie:</span>
+                <span class="ps-1">
+                    <t t-esc="props.on_demand_remaining"/> / <t t-esc="props.on_demand_limit"/>
+                </span>
+            </li>
+        </xpath>
+    </t>
+</templates>

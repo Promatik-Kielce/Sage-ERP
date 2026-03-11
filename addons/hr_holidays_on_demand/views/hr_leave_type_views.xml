@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_hr_leave_type_form_on_demand" model="ir.ui.view">
+        <field name="name">hr.leave.type.form.on_demand</field>
+        <field name="model">hr.leave.type</field>
+        <field name="inherit_id" ref="hr_holidays.edit_holiday_status_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='allocation_validation']//field[@name='requires_allocation']" position="after">
+                <field name="allows_on_demand"
+                       widget="checkbox"
+                       invisible="not requires_allocation"/>
+                <field name="on_demand_limit"
+                       invisible="not allows_on_demand or not requires_allocation"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

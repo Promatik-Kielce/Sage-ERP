@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Leave request form: add On Demand checkbox -->
+    <record id="view_hr_leave_form_on_demand" model="ir.ui.view">
+        <field name="name">hr.leave.view.form.on_demand</field>
+        <field name="model">hr.leave</field>
+        <field name="inherit_id" ref="hr_holidays.hr_leave_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='holiday_status_id']" position="after">
+                <field name="holiday_status_allows_on_demand" invisible="1"/>
+                <field name="is_on_demand"
+                       string="On Demand (Na żądanie)"
+                       invisible="not holiday_status_allows_on_demand"
+                       readonly="state in ['cancel', 'refuse', 'validate', 'validate1']"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Leave request form for managers: allow editing on validated leaves -->
+    <record id="view_hr_leave_form_manager_on_demand" model="ir.ui.view">
+        <field name="name">hr.leave.view.form.manager.on_demand</field>
+        <field name="model">hr.leave</field>
+        <field name="inherit_id" ref="hr_holidays.hr_leave_view_form_manager"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='is_on_demand']" position="attributes">
+                <attribute name="readonly">state in ['cancel', 'refuse']</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Leave request list view: add On Demand column -->
+    <record id="view_hr_leave_list_on_demand" model="ir.ui.view">
+        <field name="name">hr.leave.view.list.on_demand</field>
+        <field name="model">hr.leave</field>
+        <field name="inherit_id" ref="hr_holidays.hr_leave_view_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='duration_display']" position="after">
+                <field name="is_on_demand"
+                       string="Na żądanie"
+                       optional="show"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

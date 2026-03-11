@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+        <record id="hr_holidays.leave_type_paid_time_off" model="hr.leave.type">
+            <field name="allows_on_demand">True</field>
+            <field name="on_demand_limit">4</field>
+        </record>
+    </data>
+</odoo>
