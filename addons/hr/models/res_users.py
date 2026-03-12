@@ -31,6 +31,7 @@ HR_WRITABLE_FIELDS = [
     'category_ids',
     'display_name',
     'km_home_work',
+    'pin',
     'visa_expire',
     'work_location_id',
 ]
@@ -78,7 +79,7 @@ class ResUsers(models.Model):
     birthday = fields.Date(related='employee_id.birthday', readonly=False, related_sudo=False)
     additional_note = fields.Text(related='employee_id.additional_note', readonly=False, related_sudo=False)
     barcode = fields.Char(related='employee_id.barcode', readonly=False, related_sudo=False)
-    pin = fields.Char(related='employee_id.pin', readonly=False, related_sudo=False)
+    pin = fields.Char(related='employee_id.pin', readonly=False, related_sudo=True)
     employee_count = fields.Integer(compute='_compute_employee_count')
     employee_resource_calendar_id = fields.Many2one(related='employee_id.resource_calendar_id', string="Employee's Working Hours", readonly=True)
     bank_account_ids = fields.Many2many(related="employee_id.bank_account_ids")
