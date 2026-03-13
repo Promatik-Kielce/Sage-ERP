@@ -548,7 +548,7 @@ class HrEmployee(models.Model):
             'type': 'ir.actions.act_window',
             'name': f'Balance Adjustments - {self.name}',
             'res_model': 'hr.hours.balance.adjustment',
-            'view_mode': 'tree,form',
+            'view_mode': 'list,form',
             'domain': [('employee_id', '=', self.id)],
             'context': {'default_employee_id': self.id}
         }

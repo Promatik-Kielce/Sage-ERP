@@ -5,7 +5,7 @@
         <field name="name">hr.hours.balance.adjustment.form</field>
         <field name="model">hr.hours.balance.adjustment</field>
         <field name="arch" type="xml">
-            <form string="Hours Balance Adjustment" create="false" edit="false" delete="false">
+            <form string="Hours Balance Adjustment" create="false">
                 <sheet>
                     <group>
                         <group>
@@ -33,7 +33,7 @@
         <field name="name">hr.hours.balance.adjustment.list</field>
         <field name="model">hr.hours.balance.adjustment</field>
         <field name="arch" type="xml">
-            <list string="Hours Balance Adjustments" create="false" delete="false">
+            <list string="Hours Balance Adjustments" create="false">
                 <field name="date"/>
                 <field name="employee_id"/>
                 <field name="adjustment_amount" widget="float_time" decoration-success="adjustment_amount > 0" decoration-danger="adjustment_amount &lt; 0"/>
@@ -50,7 +50,7 @@
     <record id="action_hr_hours_balance_adjustment" model="ir.actions.act_window">
         <field name="name">Hours Balance Adjustments</field>
         <field name="res_model">hr.hours.balance.adjustment</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">list,form</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
                 No manual adjustments yet
