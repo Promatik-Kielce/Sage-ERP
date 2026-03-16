@@ -75,7 +75,6 @@ class HrBusinessTrip(models.Model):
         store=True,
     )
 
-    # Bez store=True -> brak kolumny w bazie
     calendar_color = fields.Integer(
         string="Calendar Color",
         compute="_compute_calendar_color",
@@ -173,7 +172,6 @@ class HrBusinessTrip(models.Model):
             "attendance_id": attendance.id,
         })
 
-        # Wymuś przeliczenie pól podsumowania na attendance
         attendance._compute_timesheet_hours()
         attendance._compute_main_project()
         attendance._compute_current_project()
@@ -194,6 +192,23 @@ class HrBusinessTrip(models.Model):
         self._unlink_trip_attendances()
         return super().unlink()
 
+    def write(self, vals):
+        """
+        Jeśli edytowana jest już zatwierdzona delegacja, zsynchronizuj attendance
+        i timesheety z nowymi danymi.
+        """
+        sync_fields = {"employee_id", "project_id", "date_from", "date_to", "note"}
+
+        needs_sync = any(field in vals for field in sync_fields)
+        approved_before = self.filtered(lambda r: r.state == "approved")
+
+        result = super().write(vals)
+
+        if needs_sync and approved_before:
+            approved_before._sync_approved_trip_attendances()
+
+        return result
+
     def action_approve(self):
         for rec in self:
             if rec.state == "approved":
@@ -211,6 +226,54 @@ class HrBusinessTrip(models.Model):
             rec._unlink_trip_attendances()
             rec.state = "draft"
 
+    def _get_trip_workdays(self):
+        """Zwróć zbiór dni roboczych delegacji."""
+        self.ensure_one()
+        workdays = set()
+        current = self.date_from
+        while current <= self.date_to:
+            if current.weekday() < 5:
+                workdays.add(current)
+            current += timedelta(days=1)
+        return workdays
+
+    def _sync_approved_trip_attendances(self):
+        """
+        Synchronizuje attendance/timesheety dla już zatwierdzonej delegacji:
+        - usuwa nieaktualne dni,
+        - aktualizuje istniejące,
+        - dodaje brakujące.
+        """
+        Attendance = self.env["hr.attendance"]
+        Timesheet = self.env["account.analytic.line"]
+
+        for rec in self:
+            if rec.state != "approved":
+                continue
+            if not rec.employee_id or not rec.date_from or not rec.date_to:
+                continue
+
+            tz_name = self.env.user.tz or "UTC"
+            tz = pytz.timezone(tz_name)
+
+            valid_workdays = rec._get_trip_workdays()
+
+            existing_attendances = Attendance.search([
+                ("business_trip_id", "=", rec.id),
+                ("is_business_trip", "=", True),
+            ])
+
+            # Usuń attendance, które nie należą już do nowego zakresu / pracownika
+            for att in existing_attendances:
+                att_local_date = pytz.utc.localize(att.check_in).astimezone(tz).date() if att.check_in.tzinfo is None else att.check_in.astimezone(tz).date()
+
+                if att.employee_id != rec.employee_id or att_local_date not in valid_workdays:
+                    Timesheet.search([("attendance_id", "=", att.id)]).unlink()
+                    att.unlink()
+
+            # Wygeneruj / zaktualizuj aktualny zestaw attendance
+            rec._generate_attendances()
+
     def _generate_attendances(self):
         self.ensure_one()
 
@@ -226,11 +289,21 @@ class HrBusinessTrip(models.Model):
             if current.weekday() < 5:  # Mon-Fri
                 check_in_utc, check_out_utc = self._get_utc_datetimes_for_day(current, tz)
 
+                # Najpierw szukaj attendance tej konkretnej delegacji dla tego dnia
                 existing = self.env["hr.attendance"].search([
-                    ("employee_id", "=", employee.id),
-                    ("check_in", "<", check_out_utc),
-                    ("check_out", ">", check_in_utc),
+                    ("business_trip_id", "=", self.id),
+                    ("is_business_trip", "=", True),
+                    ("check_in", "=", check_in_utc),
+                    ("check_out", "=", check_out_utc),
                 ], limit=1)
+
+                # Fallback: jeśli nie ma, szukaj kolidującego attendance pracownika
+                if not existing:
+                    existing = self.env["hr.attendance"].search([
+                        ("employee_id", "=", employee.id),
+                        ("check_in", "<", check_out_utc),
+                        ("check_out", ">", check_in_utc),
+                    ], limit=1)
 
                 vals = {
                     "employee_id": employee.id,
@@ -245,7 +318,6 @@ class HrBusinessTrip(models.Model):
 
                 if existing:
                     if existing.is_business_trip:
-                        # usuń stare timesheety tej attendance i nadpisz attendance
                         old_timesheets = self.env["account.analytic.line"].search([
                             ("attendance_id", "=", existing.id),
                         ])
