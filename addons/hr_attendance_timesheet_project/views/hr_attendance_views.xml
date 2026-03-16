@@ -1,19 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <!-- Extend hr.attendance form view -->
     <record id="view_hr_attendance_form_inherit" model="ir.ui.view">
         <field name="name">hr.attendance.form.inherit</field>
         <field name="model">hr.attendance</field>
         <field name="inherit_id" ref="hr_attendance.hr_attendance_view_form"/>
         <field name="arch" type="xml">
 
-            <!-- Add current project field after employee (computed from active timesheet) -->
             <xpath expr="//field[@name='employee_id']" position="after">
                 <field name="current_project_id" readonly="1"/>
             </xpath>
 
-            <!-- Add change project button in header -->
             <xpath expr="//header" position="inside">
                 <button name="action_change_project"
                         string="Change Project"
@@ -22,11 +19,9 @@
                         invisible="check_out"/>
             </xpath>
 
-            <!-- Add timesheets section after all groups -->
             <xpath expr="//group[@name='check_out_group']" position="after">
                 <separator string="Timesheets" colspan="2"/>
 
-                <!-- Timesheet hour summary -->
                 <group string="Hour Summary" colspan="2" col="4">
                     <field name="worked_hours" readonly="1" widget="float_time"/>
                     <field name="total_timesheet_hours" readonly="1" widget="float_time"/>
@@ -36,13 +31,11 @@
                            decoration-success="timesheet_hours_diff == 0"/>
                 </group>
 
-                <!-- Timesheet entries -->
                 <group colspan="2">
                     <field name="timesheet_ids" nolabel="1"
                            context="{'default_attendance_id': id, 'default_employee_id': employee_id, 'tree_view_ref': 'hr_attendance_timesheet_project.view_timesheet_tree_attendance'}"/>
                 </group>
 
-                <!-- Active timesheet info -->
                 <group>
                     <field name="active_timesheet_id" readonly="1"/>
                 </group>
@@ -51,7 +44,6 @@
         </field>
     </record>
 
-    <!-- Custom timesheet list view for attendance form (editable) -->
     <record id="view_timesheet_tree_attendance" model="ir.ui.view">
         <field name="name">account.analytic.line.list.attendance</field>
         <field name="model">account.analytic.line</field>
@@ -69,21 +61,23 @@
         </field>
     </record>
 
-    <!-- Extend hr.attendance list view -->
     <record id="view_hr_attendance_list_inherit" model="ir.ui.view">
         <field name="name">hr.attendance.list.inherit</field>
         <field name="model">hr.attendance</field>
         <field name="inherit_id" ref="hr_attendance.view_attendance_tree"/>
         <field name="arch" type="xml">
+
             <xpath expr="//field[@name='employee_id']" position="after">
                 <field name="ignore_negative_expected_hours" column_invisible="1"/>
+                <field name="project_id" optional="hide"/>
                 <field name="main_project_id"/>
             </xpath>
-            <!-- Add color decoration to worked_hours field -->
+
             <xpath expr="//field[@name='worked_hours']" position="attributes">
                 <attribute name="decoration-success">worked_hours &gt; 8.5</attribute>
                 <attribute name="decoration-danger">worked_hours &lt; 7.9 and not ignore_negative_expected_hours</attribute>
             </xpath>
+
             <xpath expr="//field[@name='worked_hours']" position="after">
                 <field name="total_timesheet_hours" widget="float_time" optional="show"/>
                 <field name="timesheet_hours_diff" widget="float_time" optional="show"
@@ -93,23 +87,5 @@
             </xpath>
         </field>
     </record>
-
-    <!-- Kiosk mode view extension - commented out for now, will be added later with proper template structure -->
-    <!-- TODO: Add kiosk mode support for project selection using QWeb templates -->
-    <!--
-    <record id="view_hr_attendance_kiosk_inherit" model="ir.ui.view">
-        <field name="name">hr.attendance.kiosk.inherit</field>
-        <field name="model">hr.attendance</field>
-        <field name="inherit_id" ref="hr_attendance.hr_attendance_view_kiosk_confirm"/>
-        <field name="arch" type="xml">
-            <xpath expr="//div[hasclass('o_hr_attendance_employee')]" position="after">
-                <div class="o_hr_attendance_project mt-3">
-                    <h5>Current Project</h5>
-                    <div>Project info and change button will be added here</div>
-                </div>
-            </xpath>
-        </field>
-    </record>
-    -->
 
 </odoo>

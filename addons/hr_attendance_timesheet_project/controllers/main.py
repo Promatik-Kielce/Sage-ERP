@@ -39,6 +39,8 @@ class HrAttendanceTimesheetProject(http.Controller):
             if is_checked_in and current_attendance.active_timesheet_id:
                 if current_attendance.active_timesheet_id.project_id:
                     current_project_name = current_attendance.active_timesheet_id.project_id.display_name
+            elif is_checked_in and current_attendance.is_business_trip and current_attendance.project_id:
+                current_project_name = current_attendance.project_id.display_name
 
             # Return minimal data using STORED fields only - no expensive computed fields
             response = {
@@ -111,11 +113,11 @@ class HrAttendanceTimesheetProject(http.Controller):
         is_checked_in = bool(current_attendance and not current_attendance.check_out)
 
         if is_checked_in:
-            # Employee is checked in
             attendance_id = current_attendance.id
-            # Get project from active timesheet
             if current_attendance.active_timesheet_id and current_attendance.active_timesheet_id.project_id:
                 current_project_name = current_attendance.active_timesheet_id.project_id.display_name
+            elif current_attendance.is_business_trip and current_attendance.project_id:
+                current_project_name = current_attendance.project_id.display_name
 
         result = {
             'employee_id': employee.id,

@@ -57,6 +57,7 @@ Workflow:
             'hr_attendance_timesheet_project/static/src/components/kiosk_action_choice/kiosk_action_choice.scss',
             # Patch ActivityMenu to add project selection dialog on check-out
             ('append', 'hr_attendance_timesheet_project/static/src/attendance_menu_patch/attendance_menu_patch.js'),
+
         ],
     },
     'installable': True,

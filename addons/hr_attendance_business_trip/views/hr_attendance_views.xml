@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_hr_attendance_list_business_trip_inherit" model="ir.ui.view">
+        <field name="name">hr.attendance.list.business.trip.inherit</field>
+        <field name="model">hr.attendance</field>
+        <field name="inherit_id" ref="hr_attendance.view_attendance_list"/>
+        <field name="arch" type="xml">
+            <xpath expr="//list" position="attributes">
+                <attribute name="decoration-primary">is_business_trip</attribute>
+            </xpath>
+            <xpath expr="//list" position="inside">
+                <field name="is_business_trip" optional="show"/>
+                <field name="business_trip_id" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
