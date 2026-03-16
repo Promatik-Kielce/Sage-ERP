@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- LIST -->
+    <record id="view_hr_business_trip_list" model="ir.ui.view">
+        <field name="name">hr.business.trip.list</field>
+        <field name="model">hr.business.trip</field>
+        <field name="arch" type="xml">
+            <list string="Business Trips"
+                  decoration-success="state == 'approved'"
+                  decoration-danger="state == 'refused'">
+                <field name="name"/>
+                <field name="employee_id"/>
+                <field name="project_id"/>
+                <field name="date_from"/>
+                <field name="date_to"/>
+                <field name="working_days_count"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- FORM -->
+    <record id="view_hr_business_trip_form" model="ir.ui.view">
+        <field name="name">hr.business.trip.form</field>
+        <field name="model">hr.business.trip</field>
+        <field name="arch" type="xml">
+            <form string="Business Trip">
+                <header>
+                    <button name="action_approve"
+                            string="Approve"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_refuse"
+                            string="Refuse"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="state == 'refused'"/>
+                    <button name="action_reset_to_draft"
+                            string="Reset to Draft"
+                            type="object"
+                            invisible="state == 'draft'"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="employee_id"/>
+                            <field name="project_id"/>
+                            <field name="date_from"/>
+                            <field name="date_to"/>
+                            <field name="working_days_count" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="company_id" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Description">
+                            <field name="note" placeholder="Business trip description..."/>
+                        </page>
+                        <page string="Generated Attendances">
+                            <field name="attendance_ids" readonly="1">
+                                <list decoration-primary="is_business_trip">
+                                    <field name="is_business_trip" column_invisible="1"/>
+                                    <field name="employee_id"/>
+                                    <field name="check_in"/>
+                                    <field name="check_out"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- CALENDAR -->
+    <record id="view_hr_business_trip_calendar" model="ir.ui.view">
+        <field name="name">hr.business.trip.calendar</field>
+        <field name="model">hr.business.trip</field>
+        <field name="arch" type="xml">
+            <calendar string="Business Trips"
+                      date_start="date_from"
+                      date_stop="date_to"
+                      color="calendar_color"
+                      mode="year"
+                      quick_create="false"
+                      event_open_popup="true">
+                <field name="name"/>
+                <field name="employee_id"/>
+                <field name="project_id"/>
+                <field name="state"/>
+            </calendar>
+        </field>
+    </record>
+
+    <!-- SEARCH -->
+    <record id="view_hr_business_trip_search" model="ir.ui.view">
+        <field name="name">hr.business.trip.search</field>
+        <field name="model">hr.business.trip</field>
+        <field name="arch" type="xml">
+            <search string="Business Trips">
+                <field name="employee_id"/>
+                <field name="project_id"/>
+                <filter name="filter_draft" string="Draft" domain="[('state', '=', 'draft')]"/>
+                <filter name="filter_approved" string="Approved" domain="[('state', '=', 'approved')]"/>
+                <filter name="filter_refused" string="Refused" domain="[('state', '=', 'refused')]"/>
+                <separator/>
+                <filter name="group_by_employee" string="Employee" context="{'group_by': 'employee_id'}"/>
+                <filter name="group_by_project" string="Project" context="{'group_by': 'project_id'}"/>
+                <filter name="group_by_state" string="State" context="{'group_by': 'state'}"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- ACTION -->
+    <record id="action_hr_business_trip" model="ir.actions.act_window">
+        <field name="name">Business Trip</field>
+        <field name="res_model">hr.business.trip</field>
+        <field name="view_mode">calendar,list,form</field>
+        <field name="search_view_id" ref="view_hr_business_trip_search"/>
+        <field name="context">{}</field>
+        <field name="help" type="html">
+            <p>Create and approve business trips.</p>
+        </field>
+    </record>
+
+    <record id="view_hr_attendance_tree_business_trip_decoration" model="ir.ui.view">
+        <field name="name">hr.attendance.tree.business.trip.decoration</field>
+        <field name="model">hr.attendance</field>
+        <field name="inherit_id" ref="hr_attendance_timesheet_project.view_hr_attendance_list_inherit"/>
+        <field name="priority" eval="99"/>
+        <field name="arch" type="xml">
+            <xpath expr="//list" position="attributes">
+                <attribute name="decoration-primary">is_business_trip</attribute>
+            </xpath>
+
+            <xpath expr="//field[@name='employee_id']" position="after">
+                <field name="is_business_trip" column_invisible="1"/>
+                <field name="business_trip_id" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- MENUS -->
+    <menuitem id="menu_hr_business_trip_root"
+              name="Business Trip"
+              parent="hr_attendance.menu_hr_attendance_root"
+              action="action_hr_business_trip"
+              sequence="25"/>
+</odoo>

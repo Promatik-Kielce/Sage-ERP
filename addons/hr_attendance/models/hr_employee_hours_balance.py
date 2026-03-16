@@ -22,8 +22,8 @@ class HrEmployeeHoursBalanceLine(models.Model):
     employee_id = fields.Many2one('hr.employee', string='Employee', required=True)
     date = fields.Date(string='Date', required=True)
     day_of_week = fields.Char(string='Day')
-    check_in_time = fields.Char(string='Wejście')
-    check_out_time = fields.Char(string='Wyjście')
+    check_in_time = fields.Char(string='In Time')
+    check_out_time = fields.Char(string='Out Time')
     worked_hours = fields.Float(string='Worked Hours')
     expected_hours = fields.Float(string='Expected Hours')
     is_weekend = fields.Boolean(string='Weekend')
@@ -45,7 +45,7 @@ class HrEmployeeHoursBalanceLine(models.Model):
     notes = fields.Text(string='Calculation Notes')
     attendance_count = fields.Integer(string='# Attendances')
     month = fields.Char(string='Month', search='_search_month')
-
+    is_business_trip = fields.Boolean(string='Business Trip')
     # Split fields for chart coloring
     balance_delta_positive = fields.Float(string='Daily + (Surplus)', compute='_compute_split_values', store=False, group_operator='sum')
     balance_delta_negative = fields.Float(string='Daily - (Deficit)', compute='_compute_split_values', store=False, group_operator='sum')
@@ -255,23 +255,6 @@ class HrEmployeeHoursBalanceLine(models.Model):
                 weekday = prior_date.weekday()
                 is_weekend = weekday >= 5
 
-                # if is_weekend:
-                #     expected_hours = 0.0
-                # else:
-                #     # Calculate expected hours for this date
-                #     datetime_start = datetime.combine(prior_date, datetime.min.time())
-                #     datetime_end = datetime.combine(prior_date, datetime.max.time())
-                #     datetime_start_utc = tz.localize(datetime_start).astimezone(pytz.utc)
-                #     datetime_end_utc = tz.localize(datetime_end).astimezone(pytz.utc)
-                #
-                #     work_intervals = calendar._work_intervals_batch(
-                #         datetime_start_utc, datetime_end_utc,
-                #         resources=employee.resource_id
-                #     )[employee.resource_id.id]
-                #     expected_hours = sum(
-                #         (stop - start).total_seconds() / 3600.0
-                #         for start, stop, meta in work_intervals
-                #     )
                 if is_weekend:
                     expected_hours = 0.0
                 else:
@@ -323,19 +306,6 @@ class HrEmployeeHoursBalanceLine(models.Model):
             has_approved_leave = current_date in leave_dates
             leave_name = leave_dates.get(current_date, '')
 
-            # Get expected hours from calendar for this day
-            # if is_public_holiday or has_approved_leave or is_weekend:
-            #     expected_hours = 0.0
-            # else:
-            #     # Get work intervals for this day (requires timezone-aware datetimes)
-            #     work_intervals = calendar._work_intervals_batch(
-            #         datetime_start_utc, datetime_end_utc,
-            #         resources=employee.resource_id
-            #     )[employee.resource_id.id]
-            #     expected_hours = sum(
-            #         (stop - start).total_seconds() / 3600.0
-            #         for start, stop, meta in work_intervals
-            #     )
             if is_public_holiday or has_approved_leave or is_weekend:
                 expected_hours = 0.0
             else:
@@ -389,6 +359,10 @@ class HrEmployeeHoursBalanceLine(models.Model):
             # Check if any attendance is technical (absence detection)
             has_technical_attendance = any(att.in_mode == 'technical' for att in day_attendances)
 
+            business_trip_attendances = [att for att in day_attendances if att.is_business_trip]
+            has_business_trip = bool(business_trip_attendances)
+            business_trip = business_trip_attendances[0].business_trip_id if has_business_trip else False
+
             # Calculate balance delta based on rules
             if is_public_holiday:
                 # Public holidays: worked hours count as bonus
@@ -397,6 +371,7 @@ class HrEmployeeHoursBalanceLine(models.Model):
                     notes = _('Praca w święto: bonus %s') % self._format_hours_to_hhmm(worked_hours, signed=True)
                 else:
                     notes = _('Święto - brak oczekiwanej pracy')
+
             elif has_approved_leave:
                 # Approved leave: worked hours count as bonus
                 balance_delta = worked_hours
@@ -407,6 +382,7 @@ class HrEmployeeHoursBalanceLine(models.Model):
                     )
                 else:
                     notes = _('Zatwierdzony urlop: %s') % leave_name
+
             elif is_weekend:
                 # Weekend: all worked hours are bonus
                 balance_delta = worked_hours
@@ -414,6 +390,46 @@ class HrEmployeeHoursBalanceLine(models.Model):
                     notes = _('Praca w weekend: bonus %s') % self._format_hours_to_hhmm(worked_hours, signed=True)
                 else:
                     notes = _('Weekend - brak oczekiwanej pracy')
+
+            elif has_business_trip:
+                # Business trip: treat like normal worked day, but show dedicated note
+                raw_balance_delta = worked_hours - expected_hours
+                balance_delta = raw_balance_delta
+
+                trip_parts = [_('Delegacja')]
+                if business_trip:
+                    if business_trip.project_id:
+                        trip_parts.append(_('projekt: %s') % business_trip.project_id.display_name)
+                    if business_trip.note:
+                        trip_parts.append(_('opis: %s') % business_trip.note)
+
+                trip_label = ' | '.join(trip_parts)
+
+                if employee.ignore_negative_expected_hours and balance_delta < 0:
+                    balance_delta = 0.0
+                    notes = _('%(trip)s | przepracowano %(worked)s, oczekiwano %(expected)s: ujemne godziny pominięto') % {
+                        'trip': trip_label,
+                        'worked': self._format_hours_to_hhmm(worked_hours),
+                        'expected': self._format_hours_to_hhmm(expected_hours),
+                    }
+                else:
+                    if worked_hours >= expected_hours:
+                        overtime = worked_hours - expected_hours
+                        notes = _('%(trip)s | przepracowano %(worked)s, oczekiwano %(expected)s: nadgodziny %(overtime)s') % {
+                            'trip': trip_label,
+                            'worked': self._format_hours_to_hhmm(worked_hours),
+                            'expected': self._format_hours_to_hhmm(expected_hours),
+                            'overtime': self._format_hours_to_hhmm(overtime, signed=True),
+                        }
+                    else:
+                        undertime = expected_hours - worked_hours
+                        notes = _('%(trip)s | przepracowano %(worked)s, oczekiwano %(expected)s: niedoczas %(undertime)s') % {
+                            'trip': trip_label,
+                            'worked': self._format_hours_to_hhmm(worked_hours),
+                            'expected': self._format_hours_to_hhmm(expected_hours),
+                            'undertime': self._format_hours_to_hhmm(-undertime),
+                        }
+
             else:
                 # Weekday (Mon-Fri): difference between worked and expected
                 raw_balance_delta = worked_hours - expected_hours
@@ -489,6 +505,7 @@ class HrEmployeeHoursBalanceLine(models.Model):
                 'balance_cumulative': cumulative_balance,
                 'notes': notes,
                 'attendance_count': attendance_count,
+                'is_business_trip': has_business_trip,
             })
 
             # Add any manual adjustments for this date
@@ -529,6 +546,7 @@ class HrEmployeeHoursBalanceLine(models.Model):
                         'balance_cumulative': cumulative_balance,
                         'notes': adjustment_notes,
                         'attendance_count': 0,
+                        'is_business_trip': False,
                     })
 
             current_date += timedelta(days=1)
@@ -573,6 +591,7 @@ class HrEmployeeHoursBalanceLine(models.Model):
                         'balance_cumulative': cumulative_balance,
                         'notes': adjustment_notes,
                         'attendance_count': 0,
+                        'is_business_trip': False,
                     })
 
         return balance_lines

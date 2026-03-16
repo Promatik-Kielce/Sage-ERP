@@ -3,13 +3,18 @@
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError, ValidationError
 
-# Tolerance for timesheet vs attendance hour discrepancies (in hours)
-# 15 minutes = 0.25 hours
 TIMESHEET_TOLERANCE_HOURS = 0.25
 
 
 class HrAttendance(models.Model):
     _inherit = 'hr.attendance'
+
+    project_id = fields.Many2one(
+        'project.project',
+        string='Business Trip Project',
+        index=True,
+        help="Project assigned to this attendance.",
+    )
 
     timesheet_ids = fields.One2many(
         'account.analytic.line',
@@ -55,19 +60,16 @@ class HrAttendance(models.Model):
 
     @api.depends('active_timesheet_id', 'active_timesheet_id.project_id')
     def _compute_current_project(self):
-        """Get current project from active timesheet"""
         for attendance in self:
             attendance.current_project_id = attendance.active_timesheet_id.project_id if attendance.active_timesheet_id else False
 
     @api.depends('timesheet_ids.unit_amount', 'timesheet_ids.project_id')
     def _compute_main_project(self):
-        """Calculate the project with the most timesheet hours for each attendance."""
         for attendance in self:
             if not attendance.timesheet_ids:
                 attendance.main_project_id = False
                 continue
 
-            # Group hours by project
             hours_by_project = {}
             for timesheet in attendance.timesheet_ids:
                 project = timesheet.project_id
@@ -81,12 +83,10 @@ class HrAttendance(models.Model):
                 attendance.main_project_id = False
                 continue
 
-            # Find project with maximum hours
             attendance.main_project_id = max(hours_by_project, key=hours_by_project.get)
 
     @api.depends('timesheet_ids.unit_amount', 'worked_hours')
     def _compute_timesheet_hours(self):
-        """Calculate total timesheet hours and difference with worked hours"""
         for attendance in self:
             total = sum(attendance.timesheet_ids.mapped('unit_amount'))
             attendance.total_timesheet_hours = total
@@ -97,7 +97,6 @@ class HrAttendance(models.Model):
 
     @api.model
     def create(self, vals):
-        """Override create to automatically start timesheet on check-in"""
         attendance = super().create(vals)
 
         # Only create timesheet on check-in (check_out is empty)
@@ -107,8 +106,6 @@ class HrAttendance(models.Model):
         return attendance
 
     def write(self, vals):
-        """Override write to handle check-out, timesheet closing, and validation"""
-        # Store old values for validation and adjustment
         old_values = {}
         if 'check_in' in vals or 'check_out' in vals:
             for attendance in self:
@@ -118,44 +115,33 @@ class HrAttendance(models.Model):
                     'worked_hours': attendance.worked_hours,
                 }
 
-        # If timesheet_ids are being modified via One2many commands, skip individual
-        # timesheet validation to avoid checking intermediate states during batch edits.
-        # The attendance-level validation will run after all changes are applied.
         if 'timesheet_ids' in vals:
             result = super(HrAttendance, self.with_context(skip_timesheet_attendance_constraint=True)).write(vals)
         else:
             result = super().write(vals)
 
-        # If check_out is being set, close active timesheets and handle gaps
         if 'check_out' in vals and vals['check_out']:
             for attendance in self:
                 old_val = old_values.get(attendance.id, {})
-                # Only fill gaps on INITIAL checkout (not manual edits)
                 if not old_val.get('check_out'):
                     if attendance.active_timesheet_id:
                         attendance._close_active_timesheet()
-                    # Auto-fill any gaps after closing timesheets
                     attendance._auto_fill_timesheet_gaps()
 
-        # Auto-adjust timesheets when manually editing check_in/check_out times
         if ('check_in' in vals or 'check_out' in vals) and old_values:
             for attendance in self:
                 old_val = old_values.get(attendance.id, {})
-                # Only adjust if attendance was already checked out (manual edit scenario)
                 if old_val.get('check_out') and attendance.timesheet_ids:
                     old_worked_hours = old_val.get('worked_hours', 0.0)
                     new_worked_hours = attendance.worked_hours
-                    # Only adjust if there's a significant change
                     if abs(new_worked_hours - old_worked_hours) > 0.01:
                         attendance._adjust_timesheets_to_worked_hours(
                             old_hours=old_worked_hours,
                             new_hours=new_worked_hours
                         )
 
-        # Validate manual edits to check_in/check_out times
         if ('check_in' in vals or 'check_out' in vals) and old_values:
             for attendance in self:
-                # Only validate if attendance was already checked out (manual edit scenario)
                 old_val = old_values.get(attendance.id, {})
                 if old_val.get('check_out') and attendance.timesheet_ids:
                     attendance._validate_timesheet_hours_on_edit()
@@ -163,53 +149,41 @@ class HrAttendance(models.Model):
         return result
 
     def _create_initial_timesheet(self):
-        """Create initial timesheet entry when checking in"""
         self.ensure_one()
 
         if not self.employee_id:
             return
 
-        # Get project: last project, or default project
         project = self.employee_id.last_project_id or self._get_default_project()
 
         if not project:
             raise UserError(_("No default project found. Please configure a default project in Settings."))
 
-        # Create timesheet entry (project is stored on timesheet, not attendance)
         timesheet = self.env['account.analytic.line'].create({
             'employee_id': self.employee_id.id,
             'user_id': self.employee_id.user_id.id if self.employee_id.user_id else self.env.user.id,
             'project_id': project.id,
             'date': self.check_in.date(),
             'name': _('Work on %s') % project.name,
-            'unit_amount': 0.0,  # Will be calculated on check-out or project change
+            'unit_amount': 0.0,
             'attendance_id': self.id,
         })
 
         self.active_timesheet_id = timesheet
-
-        # Remember this project for next time
         self.employee_id.last_project_id = project
 
     def _close_active_timesheet(self):
-        """Close active timesheet by calculating worked hours"""
         self.ensure_one()
 
         if not self.active_timesheet_id:
             return
 
-        # Calculate hours from timesheet start to now (or check_out)
         end_time = self.check_out or fields.Datetime.now()
         start_time = self.check_in
-
-        # Find when this timesheet started (it might not be at check_in if project was changed)
         timesheet_start = start_time
 
-        # Get all timesheets for this attendance ordered by creation
         all_timesheets = self.timesheet_ids.sorted('create_date')
         if len(all_timesheets) > 1:
-            # Find the start time of active timesheet
-            # It's either check_in or the end of previous timesheet
             active_index = None
             for idx, ts in enumerate(all_timesheets):
                 if ts.id == self.active_timesheet_id.id:
@@ -217,13 +191,10 @@ class HrAttendance(models.Model):
                     break
 
             if active_index is not None and active_index > 0:
-                # Get accumulated hours from previous timesheets
                 previous_hours = sum(all_timesheets[:active_index].mapped('unit_amount'))
-                # Calculate start time based on previous hours
                 from datetime import timedelta
                 timesheet_start = start_time + timedelta(hours=previous_hours)
 
-        # Calculate hours
         duration = end_time - timesheet_start
         hours = duration.total_seconds() / 3600.0
 
@@ -234,13 +205,11 @@ class HrAttendance(models.Model):
         self.active_timesheet_id = False
 
     def action_change_project(self):
-        """Open wizard to change project during work"""
         self.ensure_one()
 
         if self.check_out:
             raise UserError(_("Cannot change project after check-out."))
 
-        # Get current project from active timesheet
         current_project_id = self.active_timesheet_id.project_id.id if self.active_timesheet_id and self.active_timesheet_id.project_id else False
 
         return {
@@ -256,7 +225,6 @@ class HrAttendance(models.Model):
         }
 
     def change_project_to(self, new_project_id):
-        """Change to a new project, closing current timesheet and starting new one"""
         self.ensure_one()
 
         if self.check_out:
@@ -267,11 +235,9 @@ class HrAttendance(models.Model):
         if not new_project.allow_timesheets:
             raise UserError(_("Selected project does not allow timesheets."))
 
-        # Close current active timesheet
         if self.active_timesheet_id:
             self._close_active_timesheet()
 
-        # Create new timesheet for new project (project stored on timesheet, not attendance)
         timesheet = self.env['account.analytic.line'].create({
             'employee_id': self.employee_id.id,
             'user_id': self.employee_id.user_id.id if self.employee_id.user_id else self.env.user.id,
@@ -283,16 +249,12 @@ class HrAttendance(models.Model):
         })
 
         self.active_timesheet_id = timesheet
-
-        # Remember this project for next time
         self.employee_id.last_project_id = new_project
 
     def _get_default_project(self):
-        """Get default project '0 - Koszty Stałe'"""
         default_project = self.env.ref('hr_attendance_timesheet_project.project_koszty_stale', raise_if_not_found=False)
 
         if not default_project:
-            # Fallback: find any project named "0 - Koszty Stałe"
             default_project = self.env['project.project'].search([
                 ('name', '=', '0 - Koszty Stałe'),
                 ('allow_timesheets', '=', True),
@@ -301,30 +263,24 @@ class HrAttendance(models.Model):
         return default_project
 
     def _auto_fill_timesheet_gaps(self):
-        """Auto-fill timesheet gaps at checkout with tolerance handling"""
         self.ensure_one()
 
         if not self.worked_hours or not self.check_out:
             return
 
-        # Calculate gap (can be negative if timesheets exceed attendance)
         gap_hours = self.worked_hours - self.total_timesheet_hours
 
-        # If gap is within tolerance (±15 minutes), adjust last timesheet
         if abs(gap_hours) <= TIMESHEET_TOLERANCE_HOURS:
             if gap_hours != 0 and self.timesheet_ids:
-                # Find the last timesheet and adjust it
                 last_timesheet = self.timesheet_ids.sorted('create_date', reverse=True)[0]
                 new_amount = last_timesheet.unit_amount + gap_hours
-                if new_amount > 0:  # Don't create negative hours
+                if new_amount > 0:
                     last_timesheet.write({'unit_amount': new_amount})
             return
 
-        # If gap is significant (> 15 minutes), create "0 - Koszty Stałe" entry
         if gap_hours > TIMESHEET_TOLERANCE_HOURS:
             default_project = self._get_default_project()
             if not default_project:
-                # Show warning but don't block checkout
                 return {
                     'type': 'ir.actions.client',
                     'tag': 'display_notification',
@@ -336,7 +292,6 @@ class HrAttendance(models.Model):
                     }
                 }
 
-            # Create auto-fill timesheet entry
             self.env['account.analytic.line'].create({
                 'employee_id': self.employee_id.id,
                 'user_id': self.employee_id.user_id.id if self.employee_id.user_id else self.env.user.id,
@@ -347,7 +302,6 @@ class HrAttendance(models.Model):
                 'attendance_id': self.id,
             })
 
-            # Show notification
             return {
                 'type': 'ir.actions.client',
                 'tag': 'display_notification',
@@ -360,12 +314,6 @@ class HrAttendance(models.Model):
             }
 
     def _reduce_timesheet_hours(self, timesheets, hours_to_remove):
-        """Remove hours from timesheets using LIFO (most recent first).
-        Delete timesheets that reach 0 hours.
-
-        :param timesheets: Recordset of timesheets sorted by create_date DESC
-        :param hours_to_remove: Total hours to remove
-        """
         remaining_to_remove = hours_to_remove
         timesheets_to_delete = self.env['account.analytic.line']
 
@@ -376,85 +324,55 @@ class HrAttendance(models.Model):
             current_hours = timesheet.unit_amount
 
             if current_hours <= remaining_to_remove:
-                # Delete this entire timesheet
                 timesheets_to_delete |= timesheet
                 remaining_to_remove -= current_hours
             else:
-                # Reduce this timesheet and we're done
                 new_hours = current_hours - remaining_to_remove
                 timesheet.write({'unit_amount': new_hours})
                 remaining_to_remove = 0
 
-        # Delete timesheets that were fully consumed
         if timesheets_to_delete:
             timesheets_to_delete.unlink()
 
     def _increase_timesheet_hours(self, timesheets, hours_to_add):
-        """Add hours to the most recent timesheet.
-
-        :param timesheets: Recordset of timesheets sorted by create_date DESC
-        :param hours_to_add: Total hours to add
-        """
         if not timesheets:
             return
 
-        # Add to the most recent (first in sorted list)
         most_recent = timesheets[0]
         new_hours = most_recent.unit_amount + hours_to_add
         most_recent.write({'unit_amount': new_hours})
 
     def _adjust_timesheets_to_worked_hours(self, old_hours, new_hours):
-        """Adjust timesheets when attendance worked_hours changes.
-
-        Strategy:
-        - Reduction: Remove hours from most recent timesheets first (LIFO)
-        - Increase: Add hours to most recent timesheet
-        - Skip active_timesheet_id (employee still checked in)
-
-        :param old_hours: Original worked hours before correction
-        :param new_hours: New worked hours after correction
-        """
         self.ensure_one()
 
-        # Get all closed timesheets (exclude active_timesheet_id)
+        active_ts_id = self.active_timesheet_id.id if self.active_timesheet_id else False
         timesheets = self.timesheet_ids.filtered(
-            lambda t: t.id != self.active_timesheet_id.id
-        ).sorted(key=lambda t: t.create_date, reverse=True)  # Most recent first
+            lambda t: t.id != active_ts_id
+        ).sorted(key=lambda t: t.create_date, reverse=True)
 
         if not timesheets:
-            return  # No timesheets to adjust
+            return
 
-        # Calculate adjustment needed
         adjustment = new_hours - old_hours
 
         if abs(adjustment) < 0.01:
-            return  # No significant change
+            return
 
         if adjustment < 0:
-            # REDUCTION: Remove hours from most recent first
             self._reduce_timesheet_hours(timesheets, abs(adjustment))
         else:
-            # INCREASE: Add hours to most recent timesheet
             self._increase_timesheet_hours(timesheets, adjustment)
 
     def _validate_timesheet_hours_on_edit(self):
-        """Validate timesheet hours when manually editing attendance times
-
-        This validation applies to everyone, including administrators.
-        """
         self.ensure_one()
 
         if not self.worked_hours:
             return
 
-        # Calculate from current timesheet_ids to include pending changes in transaction
-        # (e.g., deleted or modified timesheets in the form that haven't been committed yet)
         total_timesheet_hours = sum(self.timesheet_ids.mapped('unit_amount'))
         max_allowed = self.worked_hours + TIMESHEET_TOLERANCE_HOURS
 
-        # Check if timesheets exceed new attendance hours
         if total_timesheet_hours > max_allowed:
-            # Block for everyone (no admin bypass)
             raise ValidationError(_(
                 "Cannot save attendance changes: Total timesheet hours (%(timesheet)s h) exceed the new worked hours (%(worked)s h) by more than %(tolerance)s minutes.\n\n"
                 "Current timesheets total: %(timesheet)s h\n"
