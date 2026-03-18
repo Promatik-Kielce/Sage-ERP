@@ -3,3 +3,17 @@
 {
     color: #53188c !important;
 }
+
+// Ensure the background container stays below the foreground container (z-index: 5)
+.vis-itemset > .vis-background {
+    z-index: 0 !important;
+}
+
+// Leave items in the attendance Gantt view (type: 'background').
+// Colors come from gantt-color-N classes (background-color, border-color).
+// Background items fill the full row height and are never repositioned.
+.vis-item.vis-background.vis-leave-background {
+    opacity: 0.25 !important;
+    border: none !important;
+    border-left: 4px solid !important;
+}

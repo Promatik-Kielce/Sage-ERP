@@ -17,7 +17,8 @@
     ],
     "assets": {
         "web.assets_backend": [
-            "hr_attendance_business_trip/static/src/scss/business_trip.scss"
+            "hr_attendance_business_trip/static/src/scss/business_trip.scss",
+            "hr_attendance_business_trip/static/src/js/attendance_gantt_patch.js",
         ],
     },
     "installable": True,
