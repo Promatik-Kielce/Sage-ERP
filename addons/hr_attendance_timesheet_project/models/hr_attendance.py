@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from collections import defaultdict
+
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError, ValidationError
 
@@ -48,7 +50,7 @@ class HrAttendance(models.Model):
         help="Sum of all timesheet hours for this attendance"
     )
     timesheet_hours_diff = fields.Float(
-        string='Hours Difference',
+        string='Timesheet Hours Difference',
         compute='_compute_timesheet_hours',
         store=True,
         help="Difference between timesheet hours and worked hours (positive = excess, negative = missing)"
@@ -57,11 +59,69 @@ class HrAttendance(models.Model):
         related='employee_id.ignore_negative_expected_hours',
         readonly=True,
     )
+    scheduled_daily_hours = fields.Float(
+        string='Scheduled Daily Hours',
+        compute='_compute_worked_hours_diff',
+        store=True,
+    )
+    worked_hours_diff = fields.Float(
+        string='Worked Hours Difference',
+        compute='_compute_worked_hours_diff',
+        store=True,
+        help="Total daily worked hours minus scheduled hours (positive = overtime, negative = undertime)"
+    )
 
     @api.depends('active_timesheet_id', 'active_timesheet_id.project_id')
     def _compute_current_project(self):
         for attendance in self:
             attendance.current_project_id = attendance.active_timesheet_id.project_id if attendance.active_timesheet_id else False
+
+    @api.depends('worked_hours', 'employee_id', 'date')
+    def _compute_worked_hours_diff(self):
+        attendances_by_day = defaultdict(lambda: self.env['hr.attendance'])
+        for attendance in self:
+            if attendance.employee_id and attendance.date:
+                key = (attendance.employee_id.id, attendance.date)
+                attendances_by_day[key] |= attendance
+
+        if self:
+            dates = list(set(self.mapped('date')))
+            employees = self.mapped('employee_id')
+            other_attendances = self.env['hr.attendance'].search([
+                ('employee_id', 'in', employees.ids),
+                ('date', 'in', dates),
+                ('id', 'not in', self.ids),
+            ])
+            for att in other_attendances:
+                key = (att.employee_id.id, att.date)
+                attendances_by_day[key] |= att
+
+        for (emp_id, date), attendances in attendances_by_day.items():
+            employee = attendances[:1].employee_id
+            calendar = employee.resource_calendar_id or employee.company_id.resource_calendar_id
+
+            scheduled = 0.0
+            if calendar:
+                if calendar.flexible_hours:
+                    scheduled = calendar.hours_per_day
+                else:
+                    day_of_week = str(date.weekday())
+                    calendar_attendances = calendar.attendance_ids.filtered(
+                        lambda a, dow=day_of_week: a.dayofweek == dow
+                        and a.day_period != 'lunch'
+                        and not a.display_type
+                        and (not calendar.two_weeks_calendar
+                             or a.week_type == str(a.get_week_type(date)))
+                    )
+                    scheduled = sum(calendar_attendances.mapped('duration_hours'))
+
+            total_worked = sum(att.worked_hours for att in attendances if att.worked_hours)
+            diff = total_worked - scheduled
+
+            for att in attendances:
+                if att in self:
+                    att.scheduled_daily_hours = scheduled
+                    att.worked_hours_diff = diff
 
     @api.depends('timesheet_ids.unit_amount', 'timesheet_ids.project_id')
     def _compute_main_project(self):
