@@ -24,6 +24,11 @@
 
                 <group string="Hour Summary" colspan="2" col="4">
                     <field name="worked_hours" readonly="1" widget="float_time"/>
+                    <field name="scheduled_daily_hours" readonly="1" widget="float_time"/>
+                    <field name="worked_hours_diff" readonly="1" widget="float_time"
+                           decoration-success="worked_hours_diff &gt;= -0.25 and worked_hours_diff &lt;= 0.25"
+                           decoration-warning="worked_hours_diff &gt; 0.25"
+                           decoration-danger="worked_hours_diff &lt; -0.25 and not ignore_negative_expected_hours"/>
                     <field name="total_timesheet_hours" readonly="1" widget="float_time"/>
                     <field name="timesheet_hours_diff" readonly="1" widget="float_time"
                            decoration-danger="timesheet_hours_diff &gt; 0.25 or timesheet_hours_diff &lt; -0.25"
@@ -79,7 +84,11 @@
             </xpath>
 
             <xpath expr="//field[@name='worked_hours']" position="after">
-                <field name="total_timesheet_hours" widget="float_time" optional="show"/>
+                <field name="worked_hours_diff" widget="float_time" optional="show"
+                       decoration-success="worked_hours_diff &gt;= -0.25 and worked_hours_diff &lt;= 0.25"
+                       decoration-warning="worked_hours_diff &gt; 0.25"
+                       decoration-danger="worked_hours_diff &lt; -0.25 and not ignore_negative_expected_hours"/>
+                <field name="total_timesheet_hours" widget="float_time" optional="hide"/>
                 <field name="timesheet_hours_diff" widget="float_time" optional="show"
                        decoration-danger="(timesheet_hours_diff &gt; 0.25 or timesheet_hours_diff &lt; -0.25) and not ignore_negative_expected_hours"
                        decoration-warning="timesheet_hours_diff != 0 and timesheet_hours_diff &lt;= 0.25 and timesheet_hours_diff &gt;= -0.25"

@@ -16,3 +16,9 @@ class HrAttendance(models.Model):
         ondelete='set null',
         index=True,
     )
+
+    def _compute_color(self):
+        super()._compute_color()
+        for attendance in self:
+            if attendance.is_business_trip:
+                attendance.color = 5
