@@ -1,0 +1,40 @@
+<odoo>
+    <record id="group_timeoff_multi_approver" model="res.groups">
+        <field name="name">Time Off Multi Approver</field>
+        <field name="implied_ids" eval="[(5, 0, 0)]"/>
+    </record>
+
+    <record id="hr_leave_rule_multi_approver_read_own_scope" model="ir.rule">
+        <field name="name">HR Leave: multi approver read assigned employees only</field>
+        <field name="model_id" ref="hr_holidays.model_hr_leave"/>
+        <field name="groups" eval="[(4, ref('custom_hr_leave_multi_approver.group_timeoff_multi_approver'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+        <field name="domain_force">
+            [
+                '|',
+                ('employee_id.leave_manager_id', '=', user.id),
+                ('employee_id.leave_manager_ids', 'in', [user.id])
+            ]
+        </field>
+    </record>
+
+    <record id="hr_leave_rule_multi_approver_write_own_scope" model="ir.rule">
+        <field name="name">HR Leave: multi approver write assigned employees only</field>
+        <field name="model_id" ref="hr_holidays.model_hr_leave"/>
+        <field name="groups" eval="[(4, ref('custom_hr_leave_multi_approver.group_timeoff_multi_approver'))]"/>
+        <field name="perm_read" eval="False"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+        <field name="domain_force">
+            [
+                '|',
+                ('employee_id.leave_manager_id', '=', user.id),
+                ('employee_id.leave_manager_ids', 'in', [user.id])
+            ]
+        </field>
+    </record>
+</odoo>

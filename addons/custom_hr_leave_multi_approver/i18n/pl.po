@@ -1,0 +1,102 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+#  * custom_hr_leave_multi_approver
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-03-18 00:00+0000\n"
+"PO-Revision-Date: 2026-03-18 00:00+0000\n"
+"Last-Translator: \n"
+"Language-Team: Polish\n"
+"Language: pl\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: nplurals=4; plural=(n==1 ? 0 : (n%10>=2 && n%10<=4) && (n%100<12 || n%100>14) ? 1 : n!=1 && (n%10>=0 && n%10<=1) || (n%10>=5 && n%10<=9) || (n%100>=12 && n%100<=14) ? 2 : 3);\n"
+
+#. module: custom_hr_leave_multi_approver
+#: model:ir.model.fields,field_description:custom_hr_leave_multi_approver.field_hr_employee__leave_manager_ids
+msgid "Time Off Approvers"
+msgstr "Akceptujący dni wolne"
+
+#. module: custom_hr_leave_multi_approver
+#: model:ir.model.fields,help:custom_hr_leave_multi_approver.field_hr_employee__leave_manager_ids
+msgid "All users allowed to approve this employee's time off."
+msgstr "Wszyscy użytkownicy uprawnieni do zatwierdzania dni wolnych tego pracownika."
+
+#. module: custom_hr_leave_multi_approver
+#: code:addons/custom_hr_leave_multi_approver/models/hr_employee.py:0
+#, python-format
+msgid "Primary Time Off Approver must also be included in Time Off Approvers."
+msgstr "Główny akceptujący dni wolne musi również znajdować się na liście akceptujących dni wolne."
+
+#. module: custom_hr_leave_multi_approver
+#: code:addons/custom_hr_leave_multi_approver/models/hr_leave.py:0
+#, python-format
+msgid "You can only manage time off requests for employees assigned to you as Time Off Approver."
+msgstr "Możesz zarządzać wnioskami o dni wolne wyłącznie dla pracowników przypisanych do Ciebie jako akceptujący dni wolne."
+
+#. module: custom_hr_leave_multi_approver
+#: code:addons/custom_hr_leave_multi_approver/models/hr_leave.py:0
+#, python-format
+msgid "You are not allowed to manage this time off request."
+msgstr "Nie masz uprawnień do zarządzania tym wnioskiem o dni wolne."
+
+#. module: custom_hr_leave_multi_approver
+#: code:addons/custom_hr_leave_multi_approver/models/hr_leave.py:0
+#, python-format
+msgid "Only a Time Off Officer can apply final approval on a time off request."
+msgstr "Tylko opiekun dni wolnych może dokonać końcowego zatwierdzenia wniosku o dni wolne."
+
+#. module: custom_hr_leave_multi_approver
+#: code:addons/custom_hr_leave_multi_approver/models/hr_leave.py:0
+#, python-format
+msgid "You cannot first approve a time off for %s, because you are not the employee's time off manager"
+msgstr "Nie możesz wykonać pierwszego zatwierdzenia dni wolnych dla %s, ponieważ nie jesteś opiekunem dni wolnych tego pracownika"
+
+#. module: custom_hr_leave_multi_approver
+#: code:addons/custom_hr_leave_multi_approver/models/hr_leave.py:0
+#, python-format
+msgid "You don't have the rights to apply second approval on a time off request"
+msgstr "Nie masz uprawnień do wykonania drugiego zatwierdzenia wniosku o dni wolne"
+
+#. module: custom_hr_leave_multi_approver
+#: code:addons/custom_hr_leave_multi_approver/models/hr_leave.py:0
+#, python-format
+msgid "You cannot refuse a time off request after final approval."
+msgstr "Nie możesz odrzucić wniosku o dni wolne po jego końcowym zatwierdzeniu."
+
+#. module: custom_hr_leave_multi_approver
+#: code:addons/custom_hr_leave_multi_approver/models/hr_leave.py:0
+#, python-format
+msgid "You must have manager rights to modify/validate a time off that already begun"
+msgstr "Musisz mieć uprawnienia menedżera, aby zmienić lub zatwierdzić dni wolne, które już się rozpoczęły"
+
+#. module: custom_hr_leave_multi_approver
+#: code:addons/custom_hr_leave_multi_approver/models/hr_leave.py:0
+#, python-format
+msgid "Only a manager can modify a canceled leave."
+msgstr "Tylko menedżer może modyfikować anulowany urlop."
+
+#. module: custom_hr_leave_multi_approver
+#: model:res.groups,name:custom_hr_leave_multi_approver.group_timeoff_multi_approver
+msgid "Time Off Multi Approver"
+msgstr "Wielu akceptujących dni wolne"
+
+#. module: custom_hr_leave_multi_approver
+#: model:ir.rule,name:custom_hr_leave_multi_approver.hr_leave_rule_multi_approver_read_own_scope
+msgid "HR Leave: multi approver read assigned employees only"
+msgstr "Nieobecności HR: wielu akceptujących widzi tylko przypisanych pracowników"
+
+#. module: custom_hr_leave_multi_approver
+#: model:ir.rule,name:custom_hr_leave_multi_approver.hr_leave_rule_multi_approver_write_own_scope
+msgid "HR Leave: multi approver write assigned employees only"
+msgstr "Nieobecności HR: wielu akceptujących może edytować tylko przypisanych pracowników"
+
+#. module: custom_hr_leave_multi_approver
+#: model:ir.actions.act_window,name:custom_hr_leave_multi_approver.action_my_team_time_off_multi_approver
+#: model:ir.ui.menu,name:custom_hr_leave_multi_approver.menu_my_team_time_off_multi_approver
+msgid "My Team Time Off"
+msgstr "Dni wolne mojego zespołu"

@@ -398,6 +398,8 @@ class HrEmployee(models.Model):
         """Calculate employee worked hours/day details"""
         resource = self.resource_id
         calendar = calendar or self.resource_calendar_id
+        if not calendar:
+            return 0
         if not from_datetime.tzinfo:
             from_datetime = from_datetime.replace(tzinfo=utc)
         if not to_datetime.tzinfo:
