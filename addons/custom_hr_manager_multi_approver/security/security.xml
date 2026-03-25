@@ -1,0 +1,7 @@
+<odoo>
+    <record id="group_hr_multi_manager_admin" model="res.groups">
+        <field name="name">HR Multi Manager Admin</field>
+        <field name="category" ref="base.module_category_human_resources"/>
+        <field name="implied_ids" eval="[(4, ref('hr.group_hr_manager'))]"/>
+    </record>
+</odoo>

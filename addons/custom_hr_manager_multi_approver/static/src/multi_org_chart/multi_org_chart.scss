@@ -1,0 +1,68 @@
+.o_multi_org_chart {
+    padding: 16px;
+
+    .o_multi_org_chart_tree {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .o_multi_org_node {
+        margin-left: 24px;
+        padding-left: 16px;
+        border-left: 2px solid #d9d9d9;
+    }
+
+    .o_multi_org_card {
+        background: #ffffff;
+        border: 1px solid #d9d9d9;
+        border-radius: 8px;
+        padding: 14px 16px;
+        min-width: 320px;
+        max-width: 520px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    }
+
+    .o_multi_org_name {
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 4px;
+    }
+
+    .o_multi_org_job {
+        font-size: 13px;
+        color: #666;
+        margin-bottom: 10px;
+    }
+
+    .o_multi_org_managers {
+        margin-top: 8px;
+    }
+
+    .o_multi_org_managers_title {
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 6px;
+    }
+
+    .o_multi_org_managers ul {
+        margin: 0;
+        padding-left: 18px;
+    }
+
+    .o_multi_org_managers li {
+        margin-bottom: 4px;
+    }
+
+    .o_multi_org_children {
+        margin-top: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .o_multi_org_loading,
+    .o_multi_org_empty {
+        padding: 16px;
+    }
+}

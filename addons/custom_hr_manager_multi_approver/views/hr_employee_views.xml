@@ -1,0 +1,42 @@
+<odoo>
+    <record id="view_employee_form_multi_manager_inherit" model="ir.ui.view">
+        <field name="name">hr.employee.form.multi.manager.inherit</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//field[@name='parent_id']" position="attributes">
+                <attribute name="string">Primary Manager</attribute>
+                <attribute name="readonly">1</attribute>
+            </xpath>
+
+            <xpath expr="//notebook" position="inside">
+                <page string="Managers">
+                    <group col="2">
+                        <group string="Summary">
+                            <field name="x_primary_manager_id" readonly="1"/>
+                            <field name="x_manager_ids" widget="many2many_tags" readonly="1"/>
+                        </group>
+                        <group string="Info">
+                            <div class="o_form_label">Use the list below to assign many managers.</div>
+                            <div class="o_form_label">Mark exactly one row as Primary Manager.</div>
+                            <div class="o_form_label">Changing the primary row updates the main Manager field automatically.</div>
+                        </group>
+                    </group>
+
+                    <separator string="Manager Relations"/>
+
+                    <field name="manager_relation_ids" context="{'default_employee_id': id}" nolabel="1">
+                        <list editable="bottom" create="1" delete="1">
+                            <field name="sequence" widget="handle"/>
+                            <field name="manager_id"/>
+                            <field name="is_primary"/>
+                            <field name="active"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+
+        </field>
+    </record>
+</odoo>

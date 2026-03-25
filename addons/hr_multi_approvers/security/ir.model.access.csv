@@ -1,3 +1,0 @@
-id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_hr_employee_manager_rel_hr_user,hr.employee.manager.rel hr user,model_hr_employee_manager_rel,hr.group_hr_user,1,1,1,1
-access_hr_employee_leave_approver_rel_hr_user,hr.employee.leave.approver.rel hr user,model_hr_employee_leave_approver_rel,hr.group_hr_user,1,1,1,1

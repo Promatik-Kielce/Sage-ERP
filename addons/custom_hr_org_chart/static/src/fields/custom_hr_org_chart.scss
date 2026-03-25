@@ -1,0 +1,90 @@
+#o_employee_org_chart {
+    .o_org_chart_group_up {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: flex-start;
+        justify-content: flex-start;
+        gap: 6px;
+        flex-wrap: wrap;
+        overflow-x: visible !important;
+        overflow-y: visible !important;
+        padding-right: 0;
+    }
+
+    .o_org_chart_group_up .o_org_chart_more {
+        display: none !important;
+    }
+
+    .o_org_chart_group_up .o_org_chart_entry_manager {
+        min-width: 0;
+        width: 170px;
+        max-width: 170px;
+        flex: 0 0 170px;
+        margin-bottom: 0 !important;
+    }
+
+    .o_org_chart_group_up .o_org_chart_entry {
+        margin-bottom: 0 !important;
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+    }
+
+    .o_org_chart_group_up .o_employee_redirect {
+        min-width: 0;
+    }
+
+    .o_org_chart_group_up .o_media_object {
+        width: 44px !important;
+        height: 44px !important;
+        background-size: cover;
+        background-position: center;
+    }
+
+    .o_org_chart_group_up .o_media_heading {
+        font-size: 13px !important;
+        line-height: 1.1;
+        margin-bottom: 2px;
+    }
+
+    .o_org_chart_group_up .o_employee_job {
+        font-size: 11px !important;
+        line-height: 1.1;
+        white-space: normal;
+        word-break: break-word;
+    }
+
+    .o_org_chart_entry_self_container.o_org_chart_has_managers {
+        margin-top: 6px;
+    }
+
+    .o_org_chart_entry_self_container.o_org_chart_has_managers::before {
+        top: -10px;
+    }
+
+    .o_org_chart_entry_self {
+        max-width: 220px;
+    }
+
+    .o_org_chart_entry_self .o_media_object {
+        width: 48px !important;
+        height: 48px !important;
+        background-size: cover;
+        background-position: center;
+    }
+
+    .o_org_chart_entry_self .o_media_heading {
+        font-size: 14px !important;
+        line-height: 1.1;
+    }
+
+    .o_org_chart_entry_self .o_employee_job {
+        font-size: 12px !important;
+        line-height: 1.1;
+    }
+
+    // lekko skróć poziomą linię, żeby nie wyglądała na "scrollbar"
+    .o_org_chart_entry_self_container.o_org_chart_has_managers + .o_org_chart_group_down,
+    .o_org_chart_entry_self_container.o_org_chart_has_managers::after {
+        max-width: 100%;
+    }
+}

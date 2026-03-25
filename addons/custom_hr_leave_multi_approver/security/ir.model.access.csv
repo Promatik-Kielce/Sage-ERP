@@ -1,3 +1,6 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_hr_leave_multi_approver,access.hr.leave.multi.approver,hr_holidays.model_hr_leave,custom_hr_leave_multi_approver.group_timeoff_multi_approver,1,1,0,0
-access_hr_employee_multi_approver,access.hr.employee.multi.approver,hr.model_hr_employee,custom_hr_leave_multi_approver.group_timeoff_multi_approver,1,0,0,0
+access_hr_leave_multi_approver,access.hr.leave.multi.approver,hr_holidays.model_hr_leave,custom_hr_leave_multi_approver.group_timeoff_multi_approver,1,1,1,1
+access_hr_employee_multi_approver,access.hr.employee.multi.approver,hr.model_hr_employee,custom_hr_leave_multi_approver.group_timeoff_multi_approver,1,1,1,1
+access_hr_employee_leave_approver_rel_hr_user,access.hr.employee.leave.approver.rel.hr.user,model_hr_employee_leave_approver_rel,hr.group_hr_user,1,1,1,1
+access_hr_employee_leave_approver_rel_hr_manager,access.hr.employee.leave.approver.rel.hr.manager,model_hr_employee_leave_approver_rel,hr.group_hr_manager,1,1,1,1
+access_hr_employee_leave_approver_rel_multi_approver,access.hr.employee.leave.approver.rel.multi.approver,model_hr_employee_leave_approver_rel,custom_hr_leave_multi_approver.group_timeoff_multi_approver,1,1,1,1

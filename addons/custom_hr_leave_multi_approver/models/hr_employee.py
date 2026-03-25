@@ -1,73 +1,76 @@
-from odoo import api, fields, models, _
-from odoo.exceptions import ValidationError
+from odoo import api, fields, models
 
 
 class HrEmployee(models.Model):
     _inherit = "hr.employee"
+
+    leave_approver_relation_ids = fields.One2many(
+        "hr.employee.leave.approver.rel",
+        "employee_id",
+        string="Leave Approver Relations",
+    )
 
     leave_manager_ids = fields.Many2many(
         "res.users",
         "hr_employee_leave_manager_rel",
         "employee_id",
         "user_id",
+        compute="_compute_leave_manager_ids",
         string="Time Off Approvers",
-        domain="[('share', '=', False), ('company_ids', 'in', company_id)]",
-        help="All users allowed to approve this employee's time off.",
+        compute_sudo=True,
+        store=True,
     )
 
-    @api.onchange("leave_manager_id")
-    def _onchange_leave_manager_id_sync_multi(self):
-        """
-        Gdy w formularzu ustawisz głównego approvera, dopisz go też do listy M2M.
-        """
-        for employee in self:
-            if employee.leave_manager_id and employee.leave_manager_id not in employee.leave_manager_ids:
-                employee.leave_manager_ids |= employee.leave_manager_id
+    x_primary_leave_approver_id = fields.Many2one(
+        "res.users",
+        compute="_compute_x_primary_leave_approver_id",
+        string="Primary Time Off Approver",
+        compute_sudo=True,
+        store=True,
+    )
 
-    @api.constrains("leave_manager_id", "leave_manager_ids")
-    def _check_primary_leave_manager_in_multi(self):
-        """
-        Standardowy leave_manager_id musi należeć do leave_manager_ids.
-        Dzięki temu core nadal ma 'głównego' approvera, a rozszerzenie ma pełną listę.
-        """
+    @api.depends("leave_approver_relation_ids.active", "leave_approver_relation_ids.user_id")
+    def _compute_leave_manager_ids(self):
         for employee in self:
-            if employee.leave_manager_id and employee.leave_manager_id not in employee.leave_manager_ids:
-                raise ValidationError(
-                    _("Primary Time Off Approver must also be included in Time Off Approvers.")
-                )
+            employee.leave_manager_ids = employee.leave_approver_relation_ids.filtered(
+                lambda r: r.active and r.user_id
+            ).mapped("user_id")
 
-    @api.model_create_multi
-    def create(self, vals_list):
-        """
-        Po utworzeniu pracownika pilnujemy spójności:
-        jeśli ustawiono leave_manager_id, to dopisujemy go także do leave_manager_ids.
-        """
-        employees = super().create(vals_list)
-        for employee in employees:
-            if employee.leave_manager_id and employee.leave_manager_id not in employee.leave_manager_ids:
-                employee.write({
-                    "leave_manager_ids": [(4, employee.leave_manager_id.id)],
-                })
-        return employees
-
-    def write(self, vals):
-        """
-        Po zapisie pilnujemy spójności danych:
-        leave_manager_id zawsze ma być też obecny w leave_manager_ids.
-        """
-        res = super().write(vals)
+    @api.depends(
+        "leave_approver_relation_ids.active",
+        "leave_approver_relation_ids.is_primary",
+        "leave_approver_relation_ids.user_id",
+    )
+    def _compute_x_primary_leave_approver_id(self):
         for employee in self:
-            if employee.leave_manager_id and employee.leave_manager_id not in employee.leave_manager_ids:
-                employee.write({
-                    "leave_manager_ids": [(4, employee.leave_manager_id.id)],
-                })
-        return res
+            rel = employee.leave_approver_relation_ids.filtered(
+                lambda r: r.active and r.is_primary and r.user_id
+            )[:1]
+            employee.x_primary_leave_approver_id = rel.user_id or False
+
+    def get_leave_approver_relations(self):
+        self.ensure_one()
+        return self.leave_approver_relation_ids.filtered(lambda r: r.active and r.user_id)
+
+    def get_leave_approver_users(self):
+        self.ensure_one()
+        return self.get_leave_approver_relations().mapped("user_id")
+
+    def get_primary_leave_approver(self):
+        self.ensure_one()
+        rel = self.get_leave_approver_relations().filtered(lambda r: r.is_primary)[:1]
+        return rel.user_id or False
 
     def _is_user_leave_approver(self, user=None):
-        """
-        Centralny helper: sprawdza, czy user jest approverem urlopów dla tego pracownika.
-        Uwzględnia zarówno standardowe leave_manager_id, jak i nowe leave_manager_ids.
-        """
         self.ensure_one()
         user = user or self.env.user
-        return user == self.leave_manager_id or user in self.leave_manager_ids
+        return user in self.get_leave_approver_users()
+
+    def _sync_leave_manager_id_from_relations(self):
+        for employee in self:
+            primary_user = employee.get_primary_leave_approver()
+            new_user_id = primary_user.id if primary_user else False
+
+            super(HrEmployee, employee.with_context(skip_leave_rel_sync=True)).write({
+                "leave_manager_id": new_user_id,
+            })

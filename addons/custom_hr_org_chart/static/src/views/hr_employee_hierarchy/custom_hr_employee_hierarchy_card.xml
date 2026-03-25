@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<templates xml:space="preserve">
+
+    <t t-name="custom_hr_org_chart.HrEmployeeHierarchyCard"
+       t-inherit="hr_org_chart.HrEmployeeHierarchyCard">
+
+        <xpath expr="//div[hasclass('d-flex')][field[@name='hr_icon_display']]" position="after">
+            <div class="x_hierarchy_managers mt-1">
+                <t t-if="props.node.data.x_manager_ids and props.node.data.x_manager_ids.length">
+                    <div class="x_hierarchy_managers_label">Managers</div>
+                    <div class="x_hierarchy_manager_tags">
+                        <t t-foreach="props.node.data.x_manager_ids" t-as="mgr" t-key="mgr[0]">
+                            <span t-attf-class="x_hierarchy_manager_tag #{props.node.data.x_primary_manager_id and props.node.data.x_primary_manager_id[0] === mgr[0] ? 'x_primary' : ''}">
+                                <t t-esc="mgr[1]"/>
+                            </span>
+                        </t>
+                    </div>
+                </t>
+            </div>
+        </xpath>
+
+    </t>
+
+</templates>

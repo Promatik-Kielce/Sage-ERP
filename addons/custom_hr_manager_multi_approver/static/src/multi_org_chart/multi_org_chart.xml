@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="custom_hr_manager_multi_approver.MultiOrgChart">
+        <div class="o_multi_org_chart p-3">
+            <t t-if="state.loading">
+                <div class="o_multi_org_loading">Loading...</div>
+            </t>
+            <t t-elif="!state.data">
+                <div class="o_multi_org_empty">No data available.</div>
+            </t>
+            <t t-else="">
+                <div class="o_multi_org_chart_tree">
+                    <t t-call="custom_hr_manager_multi_approver.MultiOrgChartNode">
+                        <t t-set="node" t-value="state.data"/>
+                    </t>
+                </div>
+            </t>
+        </div>
+    </t>
+
+    <t t-name="custom_hr_manager_multi_approver.MultiOrgChartNode">
+        <div class="o_multi_org_node">
+            <div class="o_multi_org_card">
+                <div class="o_multi_org_name">
+                    <t t-esc="node.name"/>
+                </div>
+
+                <t t-if="node.job_title">
+                    <div class="o_multi_org_job">
+                        <t t-esc="node.job_title"/>
+                    </div>
+                </t>
+
+                <t t-if="node.managers and node.managers.length">
+                    <div class="o_multi_org_managers">
+                        <div class="o_multi_org_managers_title">Managers</div>
+                        <ul>
+                            <t t-foreach="node.managers" t-as="manager" t-key="manager.id">
+                                <li>
+                                    <strong><t t-esc="manager.name"/></strong>
+                                    <t t-if="manager.id === node.primary_manager_id">
+                                        <span> (Primary)</span>
+                                    </t>
+                                    <t t-if="manager.job_title">
+                                        <span> — <t t-esc="manager.job_title"/></span>
+                                    </t>
+                                </li>
+                            </t>
+                        </ul>
+                    </div>
+                </t>
+            </div>
+
+            <t t-if="node.children and node.children.length">
+                <div class="o_multi_org_children">
+                    <t t-foreach="node.children" t-as="child" t-key="child.id">
+                        <t t-call="custom_hr_manager_multi_approver.MultiOrgChartNode">
+                            <t t-set="node" t-value="child"/>
+                        </t>
+                    </t>
+                </div>
+            </t>
+        </div>
+    </t>
+</templates>
