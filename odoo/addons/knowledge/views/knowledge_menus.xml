@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ================================================================ -->
+    <!-- Menu Items under existing Knowledge top-level menu                -->
+    <!-- ================================================================ -->
+
+    <!-- Main Knowledge entry point (client action with sidebar) -->
+    <menuitem id="menu_knowledge_articles_main"
+              name="Articles"
+              parent="document_knowledge.menu_document_root"
+              action="knowledge_article_action_client"
+              sequence="1"
+              groups="group_knowledge_user"/>
+
+    <!-- Articles list/form fallback -->
+    <menuitem id="menu_knowledge_articles_list"
+              name="All Articles"
+              parent="document_knowledge.menu_document_root"
+              action="knowledge_article_action"
+              sequence="3"
+              groups="group_knowledge_user"/>
+
+    <!-- Templates -->
+    <menuitem id="menu_knowledge_templates"
+              name="Templates"
+              parent="document_knowledge.menu_document_root"
+              action="knowledge_article_action_templates"
+              sequence="15"
+              groups="group_knowledge_user"/>
+
+    <!-- Trash -->
+    <menuitem id="menu_knowledge_trash"
+              name="Trash"
+              parent="document_knowledge.menu_document_root"
+              action="knowledge_article_action_trash"
+              sequence="180"
+              groups="group_knowledge_manager"/>
+
+</odoo>

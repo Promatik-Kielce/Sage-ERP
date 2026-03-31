@@ -1,0 +1,366 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <!-- ================================================================ -->
+    <!-- Sidebar Tree Item (recursive)                                     -->
+    <!-- ================================================================ -->
+
+    <t t-name="knowledge.SidebarItem">
+        <div class="o_knowledge_sidebar_item"
+             t-att-class="{'active': isActive}"
+             t-att-style="paddingStyle"
+             t-on-click="onClickArticle">
+            <span t-if="hasChildren"
+                  class="o_knowledge_toggle me-1"
+                  t-on-click="onClickToggle">
+                <i t-att-class="isExpanded ? 'fa fa-caret-down' : 'fa fa-caret-right'"/>
+            </span>
+            <span t-else="" class="o_knowledge_toggle_placeholder me-1"/>
+            <span t-if="props.article.icon" class="me-1"
+                  t-out="props.article.icon"/>
+            <span t-else="" class="fa fa-file-text-o text-muted me-1"/>
+            <span class="o_knowledge_sidebar_item_name text-truncate"
+                  t-out="props.article.name"/>
+        </div>
+        <t t-if="isExpanded and props.article.children">
+            <t t-foreach="props.article.children" t-as="child" t-key="child.id">
+                <KnowledgeSidebarItem
+                    article="child"
+                    depth="depth + 1"
+                    activeId="props.activeId"
+                    onSelect="props.onSelect"
+                    onToggle="props.onToggle"/>
+            </t>
+        </t>
+    </t>
+
+    <!-- ================================================================ -->
+    <!-- Main Client Action Layout                                         -->
+    <!-- ================================================================ -->
+
+    <t t-name="knowledge.ClientAction">
+        <div class="o_knowledge d-flex h-100 overflow-hidden">
+
+            <!-- Sidebar -->
+            <div t-att-class="'o_knowledge_sidebar border-end d-flex flex-column ' +
+                             (state.sidebarCollapsed ? 'd-none' : '')"
+                 style="width: 280px; min-width: 280px;">
+
+                <!-- Sidebar Header -->
+                <div class="o_knowledge_sidebar_header p-2 border-bottom d-flex align-items-center justify-content-between">
+                    <strong>Knowledge</strong>
+                    <div class="d-flex gap-1">
+                        <button class="btn btn-sm btn-outline-primary"
+                                title="New workspace article"
+                                t-on-click="() => this.onCreateArticle('workspace')">
+                            <i class="fa fa-plus"/>
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary"
+                                title="Collapse sidebar"
+                                t-on-click="toggleSidebar">
+                            <i class="fa fa-chevron-left"/>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Sidebar Content (scrollable) -->
+                <div class="o_knowledge_sidebar_content flex-grow-1 overflow-auto py-2">
+
+                    <!-- Favorites Section -->
+                    <t t-if="state.sidebar.favorites.length">
+                        <div class="o_knowledge_section_header px-2 py-1">
+                            <small class="text-uppercase text-muted fw-bold">
+                                <i class="fa fa-star me-1"/>Favorites
+                            </small>
+                        </div>
+                        <t t-foreach="state.sidebar.favorites" t-as="fav" t-key="fav.id">
+                            <div class="o_knowledge_sidebar_item px-2 py-1"
+                                 t-att-class="{'active': state.activeArticle and state.activeArticle.id === fav.id}"
+                                 t-on-click="() => this.onSelectArticle(fav.id)">
+                                <span t-if="fav.icon" class="me-1" t-out="fav.icon"/>
+                                <span t-else="" class="fa fa-file-text-o text-muted me-1"/>
+                                <span class="text-truncate" t-out="fav.name"/>
+                            </div>
+                        </t>
+                        <hr class="my-1"/>
+                    </t>
+
+                    <!-- Workspace Section -->
+                    <div class="o_knowledge_section_header px-2 py-1 d-flex align-items-center justify-content-between">
+                        <small class="text-uppercase text-muted fw-bold">
+                            <i class="fa fa-globe me-1"/>Workspace
+                        </small>
+                        <button class="btn btn-sm p-0 text-muted"
+                                title="New workspace article"
+                                t-on-click="() => this.onCreateArticle('workspace')">
+                            <i class="fa fa-plus" style="font-size: 10px;"/>
+                        </button>
+                    </div>
+                    <t t-foreach="state.sidebar.workspace" t-as="article" t-key="article.id">
+                        <KnowledgeSidebarItem
+                            article="article"
+                            depth="0"
+                            activeId="state.activeArticle?.id"
+                            onSelect.bind="onSelectArticle"
+                            onToggle.bind="onToggleExpand"/>
+                    </t>
+                    <div t-if="!state.sidebar.workspace.length"
+                         class="px-3 py-1 text-muted small fst-italic">
+                        No workspace articles
+                    </div>
+
+                    <hr class="my-1"/>
+
+                    <!-- Shared Section -->
+                    <div class="o_knowledge_section_header px-2 py-1 d-flex align-items-center justify-content-between">
+                        <small class="text-uppercase text-muted fw-bold">
+                            <i class="fa fa-share-alt me-1"/>Shared
+                        </small>
+                        <button class="btn btn-sm p-0 text-muted"
+                                title="New shared article"
+                                t-on-click="() => this.onCreateArticle('shared')">
+                            <i class="fa fa-plus" style="font-size: 10px;"/>
+                        </button>
+                    </div>
+                    <t t-foreach="state.sidebar.shared" t-as="article" t-key="article.id">
+                        <KnowledgeSidebarItem
+                            article="article"
+                            depth="0"
+                            activeId="state.activeArticle?.id"
+                            onSelect.bind="onSelectArticle"
+                            onToggle.bind="onToggleExpand"/>
+                    </t>
+                    <div t-if="!state.sidebar.shared.length"
+                         class="px-3 py-1 text-muted small fst-italic">
+                        No shared articles
+                    </div>
+
+                    <hr class="my-1"/>
+
+                    <!-- Private Section -->
+                    <div class="o_knowledge_section_header px-2 py-1 d-flex align-items-center justify-content-between">
+                        <small class="text-uppercase text-muted fw-bold">
+                            <i class="fa fa-lock me-1"/>Private
+                        </small>
+                        <button class="btn btn-sm p-0 text-muted"
+                                title="New private article"
+                                t-on-click="() => this.onCreateArticle('private')">
+                            <i class="fa fa-plus" style="font-size: 10px;"/>
+                        </button>
+                    </div>
+                    <t t-foreach="state.sidebar.private" t-as="article" t-key="article.id">
+                        <KnowledgeSidebarItem
+                            article="article"
+                            depth="0"
+                            activeId="state.activeArticle?.id"
+                            onSelect.bind="onSelectArticle"
+                            onToggle.bind="onToggleExpand"/>
+                    </t>
+                    <div t-if="!state.sidebar.private.length"
+                         class="px-3 py-1 text-muted small fst-italic">
+                        No private articles
+                    </div>
+
+                </div>
+
+                <!-- Sidebar Footer -->
+                <div class="o_knowledge_sidebar_footer border-top p-2">
+                    <div class="text-muted small">
+                        <i class="fa fa-trash me-1"/>
+                        Trash (<t t-out="state.sidebar.trash_count"/>)
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content Area -->
+            <div class="o_knowledge_content flex-grow-1 d-flex flex-column overflow-hidden">
+
+                <!-- Content Header -->
+                <div class="o_knowledge_content_header border-bottom px-3 py-2 d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center gap-2">
+                        <button t-if="state.sidebarCollapsed"
+                                class="btn btn-sm btn-outline-secondary"
+                                t-on-click="toggleSidebar">
+                            <i class="fa fa-bars"/>
+                        </button>
+                        <t t-if="state.activeArticle">
+                            <span t-if="state.activeArticle.parent_name"
+                                  class="text-muted small">
+                                <t t-out="state.activeArticle.parent_name"/>
+                                <i class="fa fa-angle-right mx-1"/>
+                            </span>
+                            <span class="fw-bold" t-out="state.activeArticle.name"/>
+                        </t>
+                        <span t-else="" class="text-muted">Select an article</span>
+                    </div>
+                    <div t-if="state.activeArticle" class="d-flex gap-1">
+                        <span t-if="state.saving" class="text-muted small me-2">
+                            <i class="fa fa-spinner fa-spin"/> Saving...
+                        </span>
+                        <button class="btn btn-sm"
+                                t-att-class="state.activeArticle.is_favorite ? 'btn-warning' : 'btn-outline-secondary'"
+                                title="Toggle favorite"
+                                t-on-click="onToggleFavorite">
+                            <i class="fa fa-star"/>
+                        </button>
+                        <button class="btn btn-sm"
+                                t-att-class="state.activeArticle.is_locked ? 'btn-danger' : 'btn-outline-secondary'"
+                                title="Toggle lock"
+                                t-on-click="onToggleLock">
+                            <i t-att-class="state.activeArticle.is_locked ? 'fa fa-lock' : 'fa fa-unlock-alt'"/>
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary"
+                                title="Attach PDF"
+                                t-on-click="onUploadPdf">
+                            <i class="fa fa-file-pdf-o"/>
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary"
+                                title="Share article"
+                                t-on-click="onShareArticle">
+                            <i class="fa fa-share-alt"/>
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary"
+                                title="Add sub-article"
+                                t-on-click="onCreateChildArticle">
+                            <i class="fa fa-plus"/>
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary"
+                                title="Open full form"
+                                t-on-click="onOpenForm">
+                            <i class="fa fa-external-link"/>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Content Body -->
+                <div class="o_knowledge_content_body flex-grow-1 overflow-auto">
+                    <t t-if="state.loading">
+                        <div class="d-flex align-items-center justify-content-center h-100">
+                            <div class="text-muted">
+                                <i class="fa fa-spinner fa-spin fa-2x"/>
+                            </div>
+                        </div>
+                    </t>
+                    <t t-elif="state.activeArticle">
+                        <div t-att-class="'o_knowledge_article_view p-4 mx-auto ' +
+                                         (state.activeArticle.full_width ? '' : 'o_knowledge_narrow')">
+                            <!-- Cover image -->
+                            <div t-if="state.activeArticle.cover_image"
+                                 class="o_knowledge_cover mb-3">
+                                <img t-att-src="'data:image/png;base64,' + state.activeArticle.cover_image"
+                                     class="w-100 rounded"
+                                     style="max-height: 200px; object-fit: cover;"/>
+                            </div>
+
+                            <!-- Title -->
+                            <div class="o_knowledge_title mb-3">
+                                <h1 class="d-flex align-items-center gap-2">
+                                    <span t-if="state.activeArticle.icon"
+                                          class="o_knowledge_icon"
+                                          t-out="state.activeArticle.icon"/>
+                                    <span t-att-contenteditable="state.activeArticle.user_has_write_access and !state.activeArticle.is_locked ? 'true' : 'false'"
+                                          class="outline-0 flex-grow-1"
+                                          t-on-input="onTitleInput"
+                                          t-out="state.activeArticle.name"
+                                          t-key="wysiwygKey"/>
+                                </h1>
+                            </div>
+
+                            <!-- Metadata badges -->
+                            <div class="o_knowledge_meta mb-3 d-flex gap-2">
+                                <span t-if="state.activeArticle.is_locked"
+                                      class="badge text-bg-warning">
+                                    <i class="fa fa-lock me-1"/>
+                                    Locked by <t t-out="state.activeArticle.locked_by?.name"/>
+                                </span>
+                                <span t-if="state.activeArticle.is_template"
+                                      class="badge text-bg-info">
+                                    <i class="fa fa-copy me-1"/>Template
+                                </span>
+                                <span class="badge text-bg-light">
+                                    <t t-out="state.activeArticle.category"/>
+                                </span>
+                                <span class="badge text-bg-light">
+                                    <i class="fa fa-user me-1"/>
+                                    <t t-out="state.activeArticle.owner_name"/>
+                                </span>
+                                <span t-if="state.activeArticle.member_count"
+                                      class="badge text-bg-light">
+                                    <i class="fa fa-users me-1"/>
+                                    <t t-out="state.activeArticle.member_count"/> members
+                                </span>
+                            </div>
+
+                            <!-- Body content — Wysiwyg editor or readonly viewer -->
+                            <div class="o_knowledge_body">
+                                <t t-if="isReadonly">
+                                    <HtmlViewer config="getReadonlyConfig()" t-key="wysiwygKey"/>
+                                </t>
+                                <t t-else="">
+                                    <Wysiwyg
+                                        config="getWysiwygConfig()"
+                                        onLoad.bind="onLoadWysiwyg"
+                                        contentClass="'o_knowledge_body_content'"
+                                        t-key="wysiwygKey"/>
+                                </t>
+                            </div>
+                        </div>
+
+                        <!-- PDF Attachments — outside narrow container so viewer spans full width -->
+                        <t t-if="state.activeArticle.pdf_attachments and state.activeArticle.pdf_attachments.length">
+                            <div class="o_knowledge_pdf_section px-4 mt-2">
+                                <h5 class="d-flex align-items-center gap-2 mb-3">
+                                    <i class="fa fa-file-pdf-o text-danger"/>
+                                    Attached Documents
+                                </h5>
+                                <t t-foreach="state.activeArticle.pdf_attachments" t-as="pdf" t-key="pdf.id">
+                                    <div class="o_knowledge_pdf_item mb-3 border rounded overflow-hidden">
+                                        <div class="d-flex align-items-center justify-content-between px-3 py-2 bg-light border-bottom">
+                                            <span>
+                                                <i class="fa fa-file-pdf-o text-danger me-2"/>
+                                                <t t-out="pdf.name"/>
+                                            </span>
+                                            <div class="d-flex gap-1">
+                                                <button t-if="!isReadonly"
+                                                        class="btn btn-sm btn-outline-primary"
+                                                        title="Convert to article content"
+                                                        t-on-click="() => this.onConvertPdfToArticle(pdf.id)">
+                                                    <i class="fa fa-magic me-1"/>Convert
+                                                </button>
+                                                <a t-att-href="'/web/content/' + pdf.id + '?download=true'"
+                                                   class="btn btn-sm btn-outline-secondary" title="Download">
+                                                    <i class="fa fa-download"/>
+                                                </a>
+                                                <button t-if="!isReadonly"
+                                                        class="btn btn-sm btn-outline-danger"
+                                                        title="Remove"
+                                                        t-on-click="() => this.onDeletePdf(pdf.id)">
+                                                    <i class="fa fa-trash"/>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <iframe class="w-100"
+                                                style="height: calc(100vh - 150px); border: none;"
+                                                t-att-src="getPdfViewerUrl(pdf.id)"/>
+                                    </div>
+                                </t>
+                            </div>
+                        </t>
+                    </t>
+                    <t t-else="">
+                        <div class="d-flex flex-column align-items-center justify-content-center h-100 text-muted">
+                            <i class="fa fa-book fa-4x mb-3"/>
+                            <h4>Welcome to Knowledge</h4>
+                            <p>Select an article from the sidebar or create a new one.</p>
+                            <button class="btn btn-primary"
+                                    t-on-click="() => this.onCreateArticle('private')">
+                                <i class="fa fa-plus me-1"/>Create Article
+                            </button>
+                        </div>
+                    </t>
+                </div>
+            </div>
+        </div>
+    </t>
+
+</templates>
