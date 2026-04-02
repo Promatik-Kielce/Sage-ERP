@@ -1,0 +1,40 @@
+<odoo>
+    <!-- Widoki korekt -->
+    <record id="hr_attendance.view_hr_hours_balance_adjustment_form" model="ir.ui.view">
+        <field name="active">False</field>
+    </record>
+
+    <record id="hr_attendance.view_hr_hours_balance_adjustment_tree" model="ir.ui.view">
+        <field name="active">False</field>
+    </record>
+
+    <record id="hr_attendance.view_hr_hours_balance_adjustment_wizard_form" model="ir.ui.view">
+        <field name="active">False</field>
+    </record>
+
+    <!-- Widoki detail hours balance -->
+    <record id="hr_attendance.hr_employee_hours_balance_line_view_list" model="ir.ui.view">
+        <field name="active">False</field>
+    </record>
+
+    <record id="hr_attendance.hr_employee_hours_balance_line_view_graph_daily" model="ir.ui.view">
+        <field name="active">False</field>
+    </record>
+
+    <record id="hr_attendance.hr_employee_hours_balance_line_view_graph_cumulative" model="ir.ui.view">
+        <field name="active">False</field>
+    </record>
+
+    <record id="hr_attendance.hr_employee_hours_balance_line_view_graph_comparison" model="ir.ui.view">
+        <field name="active">False</field>
+    </record>
+
+    <record id="hr_attendance.hr_employee_hours_balance_line_view_pivot" model="ir.ui.view">
+        <field name="active">False</field>
+    </record>
+
+    <!-- Menu -->
+    <record id="hr_attendance.menu_hr_hours_balance_adjustment" model="ir.ui.menu">
+        <field name="active">False</field>
+    </record>
+</odoo>
