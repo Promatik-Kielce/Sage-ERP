@@ -2,24 +2,27 @@
 <odoo>
 
     <!-- ================================================================ -->
-    <!-- Menu Items under existing Knowledge top-level menu                -->
+    <!-- Root menu: navigate directly to the Knowledge client action       -->
     <!-- ================================================================ -->
 
-    <!-- Main Knowledge entry point (client action with sidebar) -->
-    <menuitem id="menu_knowledge_articles_main"
-              name="Articles"
-              parent="document_knowledge.menu_document_root"
-              action="knowledge_article_action_client"
-              sequence="1"
-              groups="group_knowledge_user"/>
+    <record id="document_knowledge.menu_document_root" model="ir.ui.menu">
+        <field name="action" ref="knowledge_article_action_client"/>
+    </record>
 
-    <!-- Articles list/form fallback -->
-    <menuitem id="menu_knowledge_articles_list"
-              name="All Articles"
-              parent="document_knowledge.menu_document_root"
-              action="knowledge_article_action"
-              sequence="3"
-              groups="group_knowledge_user"/>
+    <!-- Deactivate "Pages" parent menu from document_page -->
+    <record id="document_page.menu_wiki" model="ir.ui.menu">
+        <field name="active" eval="False"/>
+    </record>
+
+    <!-- Redirect "Browse Wiki Content" to the knowledge article browse action -->
+    <record id="document_page.menu_browse_content" model="ir.ui.menu">
+        <field name="action" ref="knowledge_article_action_browse"/>
+    </record>
+
+    <!-- ================================================================ -->
+    <!-- Menu Items under the Knowledge top-level menu                     -->
+    <!-- (Articles submenu removed — root menu now opens client action)    -->
+    <!-- ================================================================ -->
 
     <!-- Templates -->
     <menuitem id="menu_knowledge_templates"

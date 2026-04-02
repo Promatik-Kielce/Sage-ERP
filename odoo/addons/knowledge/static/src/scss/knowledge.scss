@@ -58,6 +58,55 @@
                 letter-spacing: 0.5px;
             }
         }
+
+        // Category folder nodes
+        .o_knowledge_category_node {
+            cursor: pointer;
+            font-size: 13px;
+
+            .fa-folder {
+                font-size: 13px;
+            }
+        }
+
+        // Drag-and-drop
+        .o_knowledge_sidebar_item[draggable="true"] {
+            cursor: grab;
+
+            &:active {
+                cursor: grabbing;
+                opacity: 0.7;
+            }
+        }
+
+        .o_knowledge_drop_target {
+            background-color: #cff4fc !important;
+            border: 1px dashed #0dcaf0 !important;
+            border-radius: 4px;
+        }
+
+        // Shared with me row — keeps remove button tight to the item
+        .o_knowledge_shared_with_me_row {
+            margin: 1px 4px;
+
+            > .flex-grow-1 {
+                min-width: 0;
+
+                .o_knowledge_sidebar_item {
+                    margin: 0;
+                }
+            }
+
+            > .btn-link {
+                font-size: 11px;
+                line-height: 1;
+                opacity: 0.5;
+
+                &:hover {
+                    opacity: 1;
+                }
+            }
+        }
     }
 
     // --- Content Area ---

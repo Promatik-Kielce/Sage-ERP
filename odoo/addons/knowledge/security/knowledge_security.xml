@@ -42,7 +42,7 @@
             </field>
         </record>
 
-        <!-- Workspace articles visible to all knowledge users -->
+        <!-- Workspace articles visible/writable to all knowledge users -->
         <record id="knowledge_article_rule_workspace" model="ir.rule">
             <field name="name">Knowledge Article: workspace visible</field>
             <field name="model_id" ref="model_knowledge_article"/>
@@ -52,6 +52,20 @@
             </field>
             <field name="perm_read" eval="True"/>
             <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- Shared articles readable by all knowledge users -->
+        <record id="knowledge_article_rule_shared_read" model="ir.rule">
+            <field name="name">Knowledge Article: shared readable by all</field>
+            <field name="model_id" ref="model_knowledge_article"/>
+            <field name="groups" eval="[(4, ref('group_knowledge_user'))]"/>
+            <field name="domain_force">
+                [('category', '=', 'shared')]
+            </field>
+            <field name="perm_read"   eval="True"/>
+            <field name="perm_write"  eval="False"/>
             <field name="perm_create" eval="False"/>
             <field name="perm_unlink" eval="False"/>
         </record>
@@ -79,6 +93,18 @@
             <field name="model_id" ref="model_knowledge_article"/>
             <field name="groups" eval="[(4, ref('group_knowledge_manager'))]"/>
             <field name="domain_force">[(1, '=', 1)]</field>
+        </record>
+
+        <!-- Article owners can delete their own articles -->
+        <record id="knowledge_article_rule_owner_unlink" model="ir.rule">
+            <field name="name">Knowledge Article: owner can delete</field>
+            <field name="model_id" ref="model_knowledge_article"/>
+            <field name="groups" eval="[(4, ref('group_knowledge_user'))]"/>
+            <field name="domain_force">[('owner_id', '=', user.id)]</field>
+            <field name="perm_read"   eval="False"/>
+            <field name="perm_write"  eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="True"/>
         </record>
 
         <!-- Member model: multi-company via article -->

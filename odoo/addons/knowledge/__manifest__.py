@@ -21,6 +21,7 @@ Provides a full-featured knowledge base with:
     "license": "LGPL-3",
     "depends": [
         "document_knowledge",
+        "document_page",
         "mail",
         "html_editor",
         "document_url",
@@ -31,6 +32,7 @@ Provides a full-featured knowledge base with:
         "security/ir.model.access.csv",
         "wizard/knowledge_article_share_views.xml",
         "views/knowledge_article_views.xml",
+        "views/knowledge_category_views.xml",
         "views/knowledge_menus.xml",
         "views/res_config_settings_views.xml",
         "data/knowledge_data.xml",

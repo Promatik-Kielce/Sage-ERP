@@ -67,9 +67,16 @@ class KnowledgeArticle(models.Model):
             ("shared", "Shared"),
             ("private", "Private"),
         ],
-        string="Category",
+        string="Section",
         default="private",
         required=True,
+        tracking=True,
+    )
+    knowledge_category_id = fields.Many2one(
+        "knowledge.category",
+        string="Shared Category",
+        help="Topic category within the Shared section",
+        index=True,
         tracking=True,
     )
 
@@ -188,8 +195,11 @@ class KnowledgeArticle(models.Model):
 
             permission = article._resolve_member_permission(user)
 
-            if not permission and article.category == "workspace":
-                permission = "write"
+            if not permission:
+                if article.category == "workspace":
+                    permission = "write"
+                elif article.category == "shared":
+                    permission = "read"
 
             article.user_permission = permission or "none"
             article.user_has_write_access = permission in ("write", "admin")
@@ -436,23 +446,22 @@ class KnowledgeArticle(models.Model):
             + [("category", "=", "workspace"), ("parent_id", "=", False)],
             order="sequence, id",
         )
-        shared_roots = self.search(
-            domain_base
-            + [
-                ("category", "=", "shared"),
-                ("parent_id", "=", False),
-                "|",
-                ("owner_id", "=", user.id),
-                ("member_ids.partner_id", "=", user.partner_id.id),
-            ],
-            order="sequence, id",
-        )
         private_roots = self.search(
             domain_base
             + [
                 ("category", "=", "private"),
                 ("parent_id", "=", False),
                 ("owner_id", "=", user.id),
+            ],
+            order="sequence, id",
+        )
+        # Articles shared directly with the user (any category, not owned by user)
+        shared_with_me_roots = self.search(
+            domain_base
+            + [
+                ("parent_id", "=", False),
+                ("owner_id", "!=", user.id),
+                ("member_ids.partner_id", "=", user.partner_id.id),
             ],
             order="sequence, id",
         )
@@ -477,12 +486,14 @@ class KnowledgeArticle(models.Model):
                 lambda c: not c.is_trashed and not c.is_template
             ).sorted("sequence")
             return {
+                "type": "article",
                 "id": article.id,
                 "name": article.name,
                 "icon": article.icon or "",
                 "has_children": bool(children),
                 "is_favorite": user in article.favorite_user_ids,
                 "category": article.category,
+                "knowledge_category_id": article.knowledge_category_id.id or False,
                 "children": (
                     [_article_to_dict(c, depth + 1) for c in children]
                     if article.id in expanded_ids or depth == 0
@@ -491,10 +502,68 @@ class KnowledgeArticle(models.Model):
                 "is_expanded": article.id in expanded_ids,
             }
 
+        def _article_to_dict_shared_with_me(article):
+            member = article.member_ids.filtered(
+                lambda m: m.partner_id == user.partner_id
+            )
+            return {
+                "type": "article",
+                "id": article.id,
+                "name": article.name,
+                "icon": article.icon or "",
+                "has_children": False,
+                "category": article.category,
+                "knowledge_category_id": article.knowledge_category_id.id or False,
+                "member_id": member[0].id if member else False,
+            }
+
+        # Build Shared section: category folder nodes + uncategorized articles
+        def _category_to_dict(cat):
+            cat_articles = self.search(
+                domain_base + [
+                    ("category", "=", "shared"),
+                    ("knowledge_category_id", "=", cat.id),
+                    ("parent_id", "=", False),
+                ],
+                order="sequence, id",
+            )
+            sub_cats = self.env["knowledge.category"].search(
+                [("parent_id", "=", cat.id)], order="sequence, name"
+            )
+            return {
+                "type": "category",
+                "id": cat.id,
+                "name": cat.name,
+                "is_expanded": False,
+                "children": (
+                    [_category_to_dict(c) for c in sub_cats]
+                    + [_article_to_dict(a) for a in cat_articles]
+                ),
+            }
+
+        root_categories = self.env["knowledge.category"].search(
+            [("parent_id", "=", False)], order="sequence, name"
+        )
+        shared_uncategorized = self.search(
+            domain_base + [
+                ("category", "=", "shared"),
+                ("parent_id", "=", False),
+                ("knowledge_category_id", "=", False),
+            ],
+            order="sequence, id",
+        )
+        shared_data = (
+            [_category_to_dict(c) for c in root_categories]
+            + [_article_to_dict(a) for a in shared_uncategorized]
+        )
+
         return {
             "workspace": [_article_to_dict(a) for a in workspace_roots],
-            "shared": [_article_to_dict(a) for a in shared_roots],
+            "shared": shared_data,
             "private": [_article_to_dict(a) for a in private_roots],
+            "shared_with_me": [
+                _article_to_dict_shared_with_me(a) for a in shared_with_me_roots
+            ],
             "favorites": [
                 {"id": a.id, "name": a.name, "icon": a.icon or ""}
                 for a in favorites
@@ -568,14 +637,24 @@ class KnowledgeArticle(models.Model):
                                 user=article.locked_by.name,
                             )
                         )
-        # Permission enforcement for sensitive fields
-        permission_fields = {"member_ids", "category", "owner_id"}
-        if permission_fields.intersection(vals.keys()):
+        # Admin-only fields: membership and ownership transfer
+        admin_only_fields = {"member_ids", "owner_id"}
+        if admin_only_fields.intersection(vals.keys()):
             for article in self:
                 if not article.user_has_admin_access:
                     raise AccessError(
                         _(
                             "You need admin permission to change access settings on this article."
+                        )
+                    )
+        # Owner-or-admin fields: moving between sections / categories
+        move_fields = {"category", "knowledge_category_id", "parent_id"}
+        if move_fields.intersection(vals.keys()):
+            for article in self:
+                if not article.user_has_admin_access and article.owner_id != self.env.user:
+                    raise AccessError(
+                        _(
+                            "Only the article owner or an admin can move this article."
                         )
                     )
         return super().write(vals)
@@ -597,10 +676,10 @@ class KnowledgeArticle(models.Model):
     def unlink(self):
         if not self.env.context.get("force_unlink"):
             for article in self:
-                if not article.user_has_admin_access:
+                if not article.user_has_admin_access and article.owner_id != self.env.user:
                     raise AccessError(
                         _(
-                            "You need admin permission to delete this article."
+                            "Only the article owner or an admin can delete this article."
                         )
                     )
         return super().unlink()

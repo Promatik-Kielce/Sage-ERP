@@ -92,6 +92,32 @@ class KnowledgeController(http.Controller):
             article.write(safe_vals)
         return True
 
+    # --- Move article to section / category (drag-and-drop) ---
+
+    @http.route("/knowledge/article/move_to_section", type="json", auth="user")
+    def move_to_section(self, article_id, category, knowledge_category_id=False):
+        """Change article section and/or shared category (called from DnD)."""
+        article = request.env["knowledge.article"].browse(int(article_id))
+        if not article.exists():
+            return False
+        vals = {"category": category}
+        if knowledge_category_id:
+            vals["knowledge_category_id"] = int(knowledge_category_id)
+        else:
+            vals["knowledge_category_id"] = False
+        article.write(vals)
+        return True
+
+    # --- Remove self from article member list ---
+
+    @http.route("/knowledge/article/remove_member", type="json", auth="user")
+    def remove_member(self, member_id):
+        """Remove the current user's membership from a shared article."""
+        member = request.env["knowledge.article.member"].browse(int(member_id))
+        if member.exists() and member.partner_id == request.env.user.partner_id:
+            member.unlink()
+        return True
+
     # --- PDF endpoints ---
 
     @http.route("/knowledge/article/upload_pdf", type="json", auth="user")

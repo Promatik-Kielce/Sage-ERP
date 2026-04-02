@@ -2,14 +2,16 @@
 <templates xml:space="preserve">
 
     <!-- ================================================================ -->
-    <!-- Sidebar Tree Item (recursive)                                     -->
+    <!-- Article sidebar item (recursive)                                  -->
     <!-- ================================================================ -->
 
     <t t-name="knowledge.SidebarItem">
         <div class="o_knowledge_sidebar_item"
              t-att-class="{'active': isActive}"
              t-att-style="paddingStyle"
-             t-on-click="onClickArticle">
+             draggable="true"
+             t-on-click="onClickArticle"
+             t-on-dragstart="onDragStartItem">
             <span t-if="hasChildren"
                   class="o_knowledge_toggle me-1"
                   t-on-click="onClickToggle">
@@ -29,7 +31,54 @@
                     depth="depth + 1"
                     activeId="props.activeId"
                     onSelect="props.onSelect"
-                    onToggle="props.onToggle"/>
+                    onToggle="props.onToggle"
+                    onDragStart="props.onDragStart"/>
+            </t>
+        </t>
+    </t>
+
+    <!-- ================================================================ -->
+    <!-- Category folder item (recursive — contains sub-cats + articles)  -->
+    <!-- ================================================================ -->
+
+    <t t-name="knowledge.CategoryItem">
+        <div class="o_knowledge_sidebar_item o_knowledge_category_node"
+             t-att-style="paddingStyle"
+             t-on-click="onClickToggle"
+             t-on-dragover="onDragOverCategory"
+             t-on-dragleave="onDragLeaveCategory"
+             t-on-drop="onDropOnCategory">
+            <span class="o_knowledge_toggle me-1">
+                <i t-att-class="isExpanded ? 'fa fa-caret-down' : 'fa fa-caret-right'"/>
+            </span>
+            <span class="fa fa-folder me-1 text-warning"/>
+            <span class="o_knowledge_sidebar_item_name text-truncate fw-semibold"
+                  t-out="props.node.name"/>
+        </div>
+        <t t-if="isExpanded and props.node.children">
+            <t t-foreach="props.node.children" t-as="child"
+               t-key="(child.type || 'article') + '_' + child.id">
+                <t t-if="child.type === 'category'">
+                    <KnowledgeCategoryItem
+                        node="child"
+                        depth="depth + 1"
+                        activeId="props.activeId"
+                        onSelect="props.onSelect"
+                        onToggle="props.onToggle"
+                        onToggleCategory="props.onToggleCategory"
+                        onDragStart="props.onDragStart"
+                        onDragOver="props.onDragOver"
+                        onDrop="props.onDrop"/>
+                </t>
+                <t t-else="">
+                    <KnowledgeSidebarItem
+                        article="child"
+                        depth="depth + 1"
+                        activeId="props.activeId"
+                        onSelect="props.onSelect"
+                        onToggle="props.onToggle"
+                        onDragStart="props.onDragStart"/>
+                </t>
             </t>
         </t>
     </t>
@@ -86,7 +135,11 @@
                     </t>
 
                     <!-- Workspace Section -->
-                    <div class="o_knowledge_section_header px-2 py-1 d-flex align-items-center justify-content-between">
+                    <div class="o_knowledge_section_header px-2 py-1 d-flex align-items-center justify-content-between"
+                         t-on-dragover="onDragOver"
+                         t-on-dragenter="onDragEnterSection"
+                         t-on-dragleave="onDragLeaveSection"
+                         t-on-drop="(ev) => this.onDrop(ev, 'workspace')">
                         <small class="text-uppercase text-muted fw-bold">
                             <i class="fa fa-globe me-1"/>Workspace
                         </small>
@@ -102,7 +155,8 @@
                             depth="0"
                             activeId="state.activeArticle?.id"
                             onSelect.bind="onSelectArticle"
-                            onToggle.bind="onToggleExpand"/>
+                            onToggle.bind="onToggleExpand"
+                            onDragStart.bind="onDragStart"/>
                     </t>
                     <div t-if="!state.sidebar.workspace.length"
                          class="px-3 py-1 text-muted small fst-italic">
@@ -111,8 +165,12 @@
 
                     <hr class="my-1"/>
 
-                    <!-- Shared Section -->
-                    <div class="o_knowledge_section_header px-2 py-1 d-flex align-items-center justify-content-between">
+                    <!-- Shared Section (categories + uncategorized articles) -->
+                    <div class="o_knowledge_section_header px-2 py-1 d-flex align-items-center justify-content-between"
+                         t-on-dragover="onDragOver"
+                         t-on-dragenter="onDragEnterSection"
+                         t-on-dragleave="onDragLeaveSection"
+                         t-on-drop="(ev) => this.onDrop(ev, 'shared')">
                         <small class="text-uppercase text-muted fw-bold">
                             <i class="fa fa-share-alt me-1"/>Shared
                         </small>
@@ -122,13 +180,29 @@
                             <i class="fa fa-plus" style="font-size: 10px;"/>
                         </button>
                     </div>
-                    <t t-foreach="state.sidebar.shared" t-as="article" t-key="article.id">
-                        <KnowledgeSidebarItem
-                            article="article"
-                            depth="0"
-                            activeId="state.activeArticle?.id"
-                            onSelect.bind="onSelectArticle"
-                            onToggle.bind="onToggleExpand"/>
+                    <t t-foreach="state.sidebar.shared" t-as="node"
+                       t-key="(node.type || 'article') + '_' + node.id">
+                        <t t-if="node.type === 'category'">
+                            <KnowledgeCategoryItem
+                                node="node"
+                                depth="0"
+                                activeId="state.activeArticle?.id"
+                                onSelect.bind="onSelectArticle"
+                                onToggle.bind="onToggleExpand"
+                                onToggleCategory.bind="onToggleCategory"
+                                onDragStart.bind="onDragStart"
+                                onDragOver.bind="onDragOver"
+                                onDrop.bind="onDrop"/>
+                        </t>
+                        <t t-else="">
+                            <KnowledgeSidebarItem
+                                article="node"
+                                depth="0"
+                                activeId="state.activeArticle?.id"
+                                onSelect.bind="onSelectArticle"
+                                onToggle.bind="onToggleExpand"
+                                onDragStart.bind="onDragStart"/>
+                        </t>
                     </t>
                     <div t-if="!state.sidebar.shared.length"
                          class="px-3 py-1 text-muted small fst-italic">
@@ -137,10 +211,14 @@
 
                     <hr class="my-1"/>
 
-                    <!-- Private Section -->
-                    <div class="o_knowledge_section_header px-2 py-1 d-flex align-items-center justify-content-between">
+                    <!-- My Articles Section (private / owned) -->
+                    <div class="o_knowledge_section_header px-2 py-1 d-flex align-items-center justify-content-between"
+                         t-on-dragover="onDragOver"
+                         t-on-dragenter="onDragEnterSection"
+                         t-on-dragleave="onDragLeaveSection"
+                         t-on-drop="(ev) => this.onDrop(ev, 'private')">
                         <small class="text-uppercase text-muted fw-bold">
-                            <i class="fa fa-lock me-1"/>Private
+                            <i class="fa fa-user me-1"/>My Articles
                         </small>
                         <button class="btn btn-sm p-0 text-muted"
                                 title="New private article"
@@ -154,12 +232,41 @@
                             depth="0"
                             activeId="state.activeArticle?.id"
                             onSelect.bind="onSelectArticle"
-                            onToggle.bind="onToggleExpand"/>
+                            onToggle.bind="onToggleExpand"
+                            onDragStart.bind="onDragStart"/>
                     </t>
                     <div t-if="!state.sidebar.private.length"
                          class="px-3 py-1 text-muted small fst-italic">
                         No private articles
                     </div>
+
+                    <!-- Shared with me Section (hidden when empty) -->
+                    <t t-if="state.sidebar.shared_with_me and state.sidebar.shared_with_me.length">
+                        <hr class="my-1"/>
+                        <div class="o_knowledge_section_header px-2 py-1">
+                            <small class="text-uppercase text-muted fw-bold">
+                                <i class="fa fa-users me-1"/>Shared with me
+                            </small>
+                        </div>
+                        <t t-foreach="state.sidebar.shared_with_me" t-as="article" t-key="article.id">
+                            <div class="o_knowledge_shared_with_me_row d-flex align-items-center pe-1">
+                                <div class="flex-grow-1 overflow-hidden">
+                                    <KnowledgeSidebarItem
+                                        article="article"
+                                        depth="0"
+                                        activeId="state.activeArticle?.id"
+                                        onSelect.bind="onSelectArticle"
+                                        onToggle.bind="onToggleExpand"
+                                        onDragStart.bind="onDragStart"/>
+                                </div>
+                                <button class="btn btn-sm btn-link text-danger p-0 flex-shrink-0"
+                                        title="Remove share"
+                                        t-on-click="() => this.onRemoveShare(article.member_id)">
+                                    <i class="fa fa-times"/>
+                                </button>
+                            </div>
+                        </t>
+                    </t>
 
                 </div>
 
@@ -306,7 +413,7 @@
                             </div>
                         </div>
 
-                        <!-- PDF Attachments — outside narrow container so viewer spans full width -->
+                        <!-- PDF Attachments -->
                         <t t-if="state.activeArticle.pdf_attachments and state.activeArticle.pdf_attachments.length">
                             <div class="o_knowledge_pdf_section px-4 mt-2">
                                 <h5 class="d-flex align-items-center gap-2 mb-3">

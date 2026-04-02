@@ -139,6 +139,8 @@
                         <group>
                             <field name="parent_id"/>
                             <field name="category"/>
+                            <field name="knowledge_category_id"
+                                   invisible="category != 'shared'"/>
                             <field name="owner_id" widget="many2one_avatar_user"/>
                             <field name="is_template"/>
                         </group>
@@ -173,20 +175,6 @@
                                 <field name="article_properties"
                                        invisible="not article_properties"/>
                             </group>
-                        </page>
-                        <page string="Child Articles" name="children">
-                            <field name="child_ids">
-                                <list>
-                                    <field name="sequence" widget="handle"/>
-                                    <field name="icon"/>
-                                    <field name="name"/>
-                                    <field name="category"/>
-                                    <field name="owner_id"
-                                           widget="many2one_avatar_user"/>
-                                    <field name="write_date"
-                                           string="Last Modified"/>
-                                </list>
-                            </field>
                         </page>
                     </notebook>
                 </sheet>
@@ -286,6 +274,25 @@
             <p>
                 Templates allow you to quickly create articles with
                 pre-defined content and structure.
+            </p>
+        </field>
+    </record>
+
+    <!-- Browse action (replaces document_page's Browse Wiki Content) -->
+    <!-- No search_default_my_articles filter — shows all accessible articles -->
+    <record id="knowledge_article_action_browse" model="ir.actions.act_window">
+        <field name="name">Browse Articles</field>
+        <field name="res_model">knowledge.article</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="search_view_id" ref="knowledge_article_view_search"/>
+        <field name="domain">[('is_trashed', '=', False), ('is_template', '=', False)]</field>
+        <field name="context">{'default_category': 'private'}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No articles found
+            </p>
+            <p>
+                Create your first article or adjust the search filters.
             </p>
         </field>
     </record>

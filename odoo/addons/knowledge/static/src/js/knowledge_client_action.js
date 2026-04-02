@@ -10,6 +10,10 @@ import { Wysiwyg } from "@html_editor/wysiwyg";
 import { MAIN_PLUGINS } from "@html_editor/plugin_sets";
 import { HtmlViewer } from "@html_editor/components/html_viewer/html_viewer";
 
+// ---------------------------------------------------------------------------
+// KnowledgeSidebarItem — renders a single article node (recursive)
+// ---------------------------------------------------------------------------
+
 class KnowledgeSidebarItem extends Component {
     static template = "knowledge.SidebarItem";
     static props = {
@@ -18,6 +22,7 @@ class KnowledgeSidebarItem extends Component {
         activeId: { type: Number, optional: true },
         onSelect: Function,
         onToggle: Function,
+        onDragStart: { type: Function, optional: true },
     };
 
     get isActive() {
@@ -49,13 +54,78 @@ class KnowledgeSidebarItem extends Component {
         ev.stopPropagation();
         this.props.onToggle(this.props.article.id);
     }
+
+    onDragStartItem(ev) {
+        if (this.props.onDragStart) {
+            this.props.onDragStart(
+                ev,
+                this.props.article.id,
+                this.props.article.category,
+                this.props.article.knowledge_category_id || false,
+            );
+        }
+    }
 }
-// Self-referencing for recursive rendering
 KnowledgeSidebarItem.components = { KnowledgeSidebarItem };
+
+// ---------------------------------------------------------------------------
+// KnowledgeCategoryItem — renders a category folder node (recursive)
+// ---------------------------------------------------------------------------
+
+class KnowledgeCategoryItem extends Component {
+    static template = "knowledge.CategoryItem";
+    static props = {
+        node: Object,
+        depth: { type: Number, optional: true },
+        activeId: { type: Number, optional: true },
+        onSelect: Function,
+        onToggle: Function,
+        onToggleCategory: Function,
+        onDragStart: Function,
+        onDragOver: Function,
+        onDrop: Function,
+    };
+
+    get isExpanded() {
+        return this.props.node.is_expanded;
+    }
+
+    get depth() {
+        return this.props.depth || 0;
+    }
+
+    get paddingStyle() {
+        return `padding-left: ${this.depth * 20 + 8}px`;
+    }
+
+    onClickToggle(ev) {
+        ev.stopPropagation();
+        this.props.onToggleCategory(this.props.node.id);
+    }
+
+    onDragOverCategory(ev) {
+        this.props.onDragOver(ev);
+        ev.currentTarget.classList.add("o_knowledge_drop_target");
+    }
+
+    onDragLeaveCategory(ev) {
+        ev.currentTarget.classList.remove("o_knowledge_drop_target");
+    }
+
+    onDropOnCategory(ev) {
+        ev.currentTarget.classList.remove("o_knowledge_drop_target");
+        this.props.onDrop(ev, "shared", this.props.node.id);
+    }
+}
+KnowledgeCategoryItem.components = { KnowledgeCategoryItem, KnowledgeSidebarItem };
+
+// ---------------------------------------------------------------------------
+// KnowledgeClientAction — main component
+// ---------------------------------------------------------------------------
 
 class KnowledgeClientAction extends Component {
     static template = "knowledge.ClientAction";
-    static components = { KnowledgeSidebarItem, Wysiwyg, HtmlViewer };
+    static components = { KnowledgeSidebarItem, KnowledgeCategoryItem, Wysiwyg, HtmlViewer };
     static props = { ...standardActionServiceProps };
     static path = "knowledge";
     static displayName = _t("Knowledge");
@@ -66,7 +136,14 @@ class KnowledgeClientAction extends Component {
         this.editor = null;
 
         this.state = useState({
-            sidebar: { workspace: [], shared: [], private: [], favorites: [], trash_count: 0 },
+            sidebar: {
+                workspace: [],
+                shared: [],
+                private: [],
+                shared_with_me: [],
+                favorites: [],
+                trash_count: 0,
+            },
             activeArticle: null,
             loading: true,
             saving: false,
@@ -133,7 +210,6 @@ class KnowledgeClientAction extends Component {
     // --- Article selection ---
 
     async onSelectArticle(articleId) {
-        // Flush pending save before switching
         if (this._saveTimeout) {
             clearTimeout(this._saveTimeout);
             this._saveTimeout = null;
@@ -150,25 +226,33 @@ class KnowledgeClientAction extends Component {
         }
     }
 
+    // --- Expand/collapse article children ---
+
     async onToggleExpand(articleId) {
-        // Find the article in the sidebar tree and toggle expansion
         const toggleInList = async (list) => {
-            for (const article of list) {
-                if (article.id === articleId) {
-                    if (article.is_expanded) {
-                        article.is_expanded = false;
-                        article.children = [];
+            for (const node of list) {
+                if (node.type === "category") {
+                    if (node.children?.length) {
+                        const found = await toggleInList(node.children);
+                        if (found) return true;
+                    }
+                    continue;
+                }
+                if (node.id === articleId) {
+                    if (node.is_expanded) {
+                        node.is_expanded = false;
+                        node.children = [];
                     } else {
                         const children = await rpc("/knowledge/article/children", {
                             article_id: articleId,
                         });
-                        article.children = children;
-                        article.is_expanded = true;
+                        node.children = children;
+                        node.is_expanded = true;
                     }
                     return true;
                 }
-                if (article.children?.length) {
-                    const found = await toggleInList(article.children);
+                if (node.children?.length) {
+                    const found = await toggleInList(node.children);
                     if (found) return true;
                 }
             }
@@ -178,6 +262,24 @@ class KnowledgeClientAction extends Component {
         await toggleInList(this.state.sidebar.workspace);
         await toggleInList(this.state.sidebar.shared);
         await toggleInList(this.state.sidebar.private);
+    }
+
+    // --- Expand/collapse category folders ---
+
+    onToggleCategory(categoryId) {
+        const toggleInList = (list) => {
+            for (const node of list) {
+                if (node.type === "category" && node.id === categoryId) {
+                    node.is_expanded = !node.is_expanded;
+                    return true;
+                }
+                if (node.type === "category" && node.children?.length) {
+                    if (toggleInList(node.children)) return true;
+                }
+            }
+            return false;
+        };
+        toggleInList(this.state.sidebar.shared);
     }
 
     // --- Article actions ---
@@ -271,6 +373,55 @@ class KnowledgeClientAction extends Component {
 
     toggleSidebar() {
         this.state.sidebarCollapsed = !this.state.sidebarCollapsed;
+    }
+
+    // --- Drag-and-drop ---
+
+    onDragStart(ev, articleId, fromSection, fromCategoryId) {
+        ev.dataTransfer.setData(
+            "text/plain",
+            JSON.stringify({ articleId, fromSection, fromCategoryId }),
+        );
+        ev.dataTransfer.effectAllowed = "move";
+    }
+
+    onDragOver(ev) {
+        ev.preventDefault();
+        ev.dataTransfer.dropEffect = "move";
+    }
+
+    onDragEnterSection(ev) {
+        ev.currentTarget.classList.add("o_knowledge_drop_target");
+    }
+
+    onDragLeaveSection(ev) {
+        ev.currentTarget.classList.remove("o_knowledge_drop_target");
+    }
+
+    async onDrop(ev, toSection, toCategoryId = false) {
+        ev.preventDefault();
+        ev.currentTarget.classList.remove("o_knowledge_drop_target");
+        let payload;
+        try {
+            payload = JSON.parse(ev.dataTransfer.getData("text/plain"));
+        } catch {
+            return;
+        }
+        if (!payload?.articleId) return;
+        await rpc("/knowledge/article/move_to_section", {
+            article_id: payload.articleId,
+            category: toSection,
+            knowledge_category_id: toCategoryId || false,
+        });
+        await this.loadSidebar(this.state.activeArticle?.id);
+    }
+
+    // --- Remove share (Shared with me section) ---
+
+    async onRemoveShare(memberId) {
+        if (!memberId) return;
+        await rpc("/knowledge/article/remove_member", { member_id: memberId });
+        await this.loadSidebar(this.state.activeArticle?.id);
     }
 
     // --- PDF ---

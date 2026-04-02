@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ================================================================ -->
+    <!-- List View                                                         -->
+    <!-- ================================================================ -->
+
+    <record id="knowledge_category_view_list" model="ir.ui.view">
+        <field name="name">knowledge.category.list</field>
+        <field name="model">knowledge.category</field>
+        <field name="arch" type="xml">
+            <list string="Knowledge Categories" default_order="sequence, name">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="parent_id" optional="show"/>
+                <field name="article_count" string="Articles"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ================================================================ -->
+    <!-- Form View                                                         -->
+    <!-- ================================================================ -->
+
+    <record id="knowledge_category_view_form" model="ir.ui.view">
+        <field name="name">knowledge.category.form</field>
+        <field name="model">knowledge.category</field>
+        <field name="arch" type="xml">
+            <form string="Knowledge Category">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" placeholder="Category Name"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="parent_id"/>
+                            <field name="sequence"/>
+                        </group>
+                        <group>
+                            <field name="article_count" string="Articles" readonly="1"/>
+                        </group>
+                    </group>
+                    <field name="description" placeholder="Description (optional)"/>
+                    <separator string="Sub-categories"/>
+                    <field name="child_ids">
+                        <list editable="bottom">
+                            <field name="sequence" widget="handle"/>
+                            <field name="name"/>
+                            <field name="article_count" string="Articles"/>
+                        </list>
+                    </field>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ================================================================ -->
+    <!-- Action                                                            -->
+    <!-- ================================================================ -->
+
+    <record id="knowledge_category_action" model="ir.actions.act_window">
+        <field name="name">Categories</field>
+        <field name="res_model">knowledge.category</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first shared category
+            </p>
+            <p>
+                Categories help organize articles in the Shared section
+                into topics and sub-topics.
+            </p>
+        </field>
+    </record>
+
+    <!-- ================================================================ -->
+    <!-- Menu Item (managers only)                                         -->
+    <!-- ================================================================ -->
+
+    <menuitem id="menu_knowledge_categories"
+              name="Categories"
+              parent="document_knowledge.menu_document_root"
+              action="knowledge_category_action"
+              sequence="10"
+              groups="knowledge.group_knowledge_manager"/>
+
+</odoo>
