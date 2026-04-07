@@ -1,0 +1,32 @@
+.o_form_view,
+.o_list_view,
+.o_kanban_view,
+.o_graph_view,
+.o_pivot_view {
+    button[name="action_view_hours_balance_detail"],
+    button[name="action_adjust_hours_balance"],
+    button[name="action_view_hours_balance_adjustments"] {
+        display: none !important;
+    }
+
+    .o_field_widget[name="hours_balance"],
+    .o_field_widget[name="hours_balance_start_date"],
+    .o_field_widget[name="hours_balance_adjustment_ids"],
+    .o_field_widget[name="hours_balance_adjustment_count"],
+    [name="hours_balance"],
+    [name="hours_balance_start_date"],
+    [name="hours_balance_adjustment_ids"],
+    [name="hours_balance_adjustment_count"] {
+        display: none !important;
+    }
+}
+
+.o-dropdown--menu {
+    div[t-esc="this.lastAttendanceWorkedHours"],
+    .fs-3.text-info {
+        text-align: left !important;
+        justify-content: flex-start !important;
+        margin-left: 0 !important;
+        padding-left: 0 !important;
+    }
+}

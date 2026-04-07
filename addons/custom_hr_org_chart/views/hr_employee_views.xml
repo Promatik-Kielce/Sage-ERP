@@ -1,0 +1,23 @@
+<odoo>
+    <record id="custom_hr_employee_view_form_inherit_org_chart" model="ir.ui.view">
+        <field name="name">custom.hr.employee.view.form.inherit.org.chart</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr_org_chart.hr_employee_view_form_inherit_org_chart"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='child_ids']" position="attributes">
+                <attribute name="widget">custom_hr_org_chart</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="custom_hr_employee_public_view_form_inherit_org_chart" model="ir.ui.view">
+        <field name="name">custom.hr.employee.public.view.form.inherit.org.chart</field>
+        <field name="model">hr.employee.public</field>
+        <field name="inherit_id" ref="hr_org_chart.hr_employee_public_view_form_inherit_org_chart"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='child_ids']" position="attributes">
+                <attribute name="widget">custom_hr_org_chart</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>

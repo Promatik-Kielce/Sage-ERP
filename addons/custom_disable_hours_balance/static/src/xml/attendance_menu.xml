@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <!-- ukryj kartę Hours Balance -->
+    <t t-inherit="hr_attendance.attendance_menu" t-inherit-mode="extension">
+        <xpath expr="//div[@t-if='this.displayExtraHours' and contains(@class, 'att_container') and contains(@class, 'bg-100')]" position="replace"/>
+    </t>
+
+    <!-- ukryj blok Before -->
+    <t t-inherit="hr_attendance.attendance_menu" t-inherit-mode="extension">
+        <xpath expr="//div[@t-if='!this.isFirstAttendance' and contains(@class, 'att_container') and contains(@class, 'flex-shrink-0')]" position="replace"/>
+    </t>
+
+    <!-- wyłącz prawostronne wyrównanie czasu Since -->
+    <t t-inherit="hr_attendance.attendance_menu" t-inherit-mode="extension">
+        <xpath expr="//div[@t-esc='this.lastAttendanceWorkedHours']" position="attributes">
+            <attribute name="t-attf-class">fs-3 text-info</attribute>
+        </xpath>
+    </t>
+
+    <!-- ukryj wiersz Total today, zostaw sam przycisk Check out -->
+    <t t-inherit="hr_attendance.attendance_menu" t-inherit-mode="extension">
+        <xpath expr="//small[normalize-space()='Total today']/ancestor::div[contains(@class, 'd-flex')][1]" position="replace"/>
+    </t>
+</templates>

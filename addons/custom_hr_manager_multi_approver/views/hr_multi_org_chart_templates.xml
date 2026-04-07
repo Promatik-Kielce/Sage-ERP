@@ -1,0 +1,5 @@
+<odoo>
+    <template id="multi_org_chart_action_template" name="Multi Org Chart Action Template">
+        <div class="o_custom_hr_multi_org_chart_root"/>
+    </template>
+</odoo>
