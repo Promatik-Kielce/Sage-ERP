@@ -1,6 +1,6 @@
 /** @odoo-module **/
 
-import { Component, onWillStart, useState, markup } from "@odoo/owl";
+import { Component, onWillStart, useState, markup, useRef, useEffect } from "@odoo/owl";
 import { _t } from "@web/core/l10n/translation";
 import { rpc } from "@web/core/network/rpc";
 import { registry } from "@web/core/registry";
@@ -151,6 +151,16 @@ class KnowledgeClientAction extends Component {
         });
 
         this._saveTimeout = null;
+
+        this.titleSpanRef = useRef("titleSpan");
+        useEffect(
+            () => {
+                if (this.titleSpanRef.el) {
+                    this.titleSpanRef.el.textContent = this.state.activeArticle?.name || "";
+                }
+            },
+            () => [this.state.activeArticle?.id]
+        );
 
         onWillStart(async () => {
             await this.loadSidebar();

@@ -368,7 +368,7 @@
                                     <span t-att-contenteditable="state.activeArticle.user_has_write_access and !state.activeArticle.is_locked ? 'true' : 'false'"
                                           class="outline-0 flex-grow-1"
                                           t-on-input="onTitleInput"
-                                          t-out="state.activeArticle.name"
+                                          t-ref="titleSpan"
                                           t-key="wysiwygKey"/>
                                 </h1>
                             </div>
