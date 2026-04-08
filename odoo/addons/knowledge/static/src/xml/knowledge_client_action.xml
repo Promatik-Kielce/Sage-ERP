@@ -362,9 +362,31 @@
                             <!-- Title -->
                             <div class="o_knowledge_title mb-3">
                                 <h1 class="d-flex align-items-center gap-2">
-                                    <span t-if="state.activeArticle.icon"
-                                          class="o_knowledge_icon"
-                                          t-out="state.activeArticle.icon"/>
+                                    <span class="o_knowledge_icon_area position-relative">
+                                        <t t-if="state.activeArticle.user_has_write_access and !state.activeArticle.is_locked">
+                                            <!-- Editable icon / placeholder trigger -->
+                                            <span class="o_knowledge_icon_trigger"
+                                                  t-att-class="{'o_knowledge_icon_empty': !state.activeArticle.icon}"
+                                                  t-on-mousedown.stop=""
+                                                  t-on-click="onIconClick">
+                                                <t t-if="state.activeArticle.icon">
+                                                    <span class="o_knowledge_icon" t-out="state.activeArticle.icon"/>
+                                                </t>
+                                                <t t-else="">
+                                                    <span class="o_knowledge_icon_placeholder">+ icon</span>
+                                                </t>
+                                            </span>
+                                            <EmojiPicker t-if="state.showIconPicker"
+                                                         value="state.activeArticle.icon || ''"
+                                                         onSelect.bind="onPickEmoji"
+                                                         onClose="() => { this.state.showIconPicker = false; }"/>
+                                        </t>
+                                        <t t-else="">
+                                            <span t-if="state.activeArticle.icon"
+                                                  class="o_knowledge_icon"
+                                                  t-out="state.activeArticle.icon"/>
+                                        </t>
+                                    </span>
                                     <span t-att-contenteditable="state.activeArticle.user_has_write_access and !state.activeArticle.is_locked ? 'true' : 'false'"
                                           class="outline-0 flex-grow-1"
                                           t-on-input="onTitleInput"

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <!-- ================================================================ -->
+    <!-- EmojiPicker popover                                               -->
+    <!-- ================================================================ -->
+
+    <t t-name="knowledge.EmojiPicker">
+        <div class="o_knowledge_emoji_picker" t-ref="picker">
+            <!-- Category tabs -->
+            <div class="o_knowledge_emoji_tabs">
+                <t t-foreach="categories" t-as="cat" t-key="cat_index">
+                    <button class="o_knowledge_emoji_tab"
+                            t-att-class="{'active': state.activeTab === cat_index}"
+                            t-on-click="() => this.setTab(cat_index)"
+                            t-att-title="cat.label">
+                        <t t-out="cat.label.split(' ')[0]"/>
+                    </button>
+                </t>
+            </div>
+            <!-- Emoji grid -->
+            <div class="o_knowledge_emoji_grid">
+                <t t-foreach="categories[state.activeTab].emojis" t-as="emoji" t-key="emoji">
+                    <button class="o_knowledge_emoji_btn"
+                            t-att-class="{'selected': props.value === emoji}"
+                            t-on-click="() => this.selectEmoji(emoji)">
+                        <t t-out="emoji"/>
+                    </button>
+                </t>
+            </div>
+            <!-- Footer: remove icon -->
+            <div class="o_knowledge_emoji_footer">
+                <button class="o_knowledge_emoji_remove" t-on-click="removeIcon">
+                    Remove icon
+                </button>
+            </div>
+        </div>
+    </t>
+
+    <!-- ================================================================ -->
+    <!-- KnowledgeIconWidget — backend form view field widget              -->
+    <!-- ================================================================ -->
+
+    <t t-name="knowledge.IconWidget">
+        <div class="o_knowledge_icon_widget position-relative d-inline-block">
+            <t t-if="props.readonly">
+                <span class="o_knowledge_icon_display"
+                      t-out="currentValue"/>
+            </t>
+            <t t-else="">
+                <span class="o_knowledge_icon_trigger"
+                      t-att-class="{'o_knowledge_icon_empty': !currentValue}"
+                      t-on-mousedown.stop=""
+                      t-on-click="togglePicker">
+                    <t t-if="currentValue">
+                        <t t-out="currentValue"/>
+                    </t>
+                    <t t-else="">
+                        <span class="o_knowledge_icon_placeholder">+ icon</span>
+                    </t>
+                </span>
+                <EmojiPicker t-if="state.open"
+                             value="currentValue"
+                             onSelect.bind="onPickEmoji"
+                             onClose.bind="closePicker"/>
+            </t>
+        </div>
+    </t>
+
+</templates>

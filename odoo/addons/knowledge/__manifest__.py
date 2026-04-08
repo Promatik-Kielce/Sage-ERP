@@ -44,6 +44,9 @@ Provides a full-featured knowledge base with:
     "assets": {
         "web.assets_backend": [
             "knowledge/static/src/scss/knowledge.scss",
+            "knowledge/static/src/js/emoji_picker.js",
+            "knowledge/static/src/xml/emoji_picker.xml",
+            "knowledge/static/src/js/knowledge_icon_widget.js",
             "knowledge/static/src/js/knowledge_client_action.js",
             "knowledge/static/src/xml/knowledge_client_action.xml",
         ],

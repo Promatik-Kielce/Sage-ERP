@@ -9,6 +9,7 @@ import { standardActionServiceProps } from "@web/webclient/actions/action_servic
 import { Wysiwyg } from "@html_editor/wysiwyg";
 import { MAIN_PLUGINS } from "@html_editor/plugin_sets";
 import { HtmlViewer } from "@html_editor/components/html_viewer/html_viewer";
+import { EmojiPicker } from "./emoji_picker";
 
 // ---------------------------------------------------------------------------
 // KnowledgeSidebarItem — renders a single article node (recursive)
@@ -125,7 +126,7 @@ KnowledgeCategoryItem.components = { KnowledgeCategoryItem, KnowledgeSidebarItem
 
 class KnowledgeClientAction extends Component {
     static template = "knowledge.ClientAction";
-    static components = { KnowledgeSidebarItem, KnowledgeCategoryItem, Wysiwyg, HtmlViewer };
+    static components = { KnowledgeSidebarItem, KnowledgeCategoryItem, Wysiwyg, HtmlViewer, EmojiPicker };
     static props = { ...standardActionServiceProps };
     static path = "knowledge";
     static displayName = _t("Knowledge");
@@ -148,6 +149,7 @@ class KnowledgeClientAction extends Component {
             loading: true,
             saving: false,
             sidebarCollapsed: false,
+            showIconPicker: false,
         });
 
         this._saveTimeout = null;
@@ -316,6 +318,19 @@ class KnowledgeClientAction extends Component {
         if (!this.state.activeArticle) return;
         this.state.activeArticle.name = ev.target.textContent;
         this._debouncedSave({ name: ev.target.textContent });
+    }
+
+    onIconClick() {
+        if (!this.state.activeArticle) return;
+        if (!this.state.activeArticle.user_has_write_access || this.state.activeArticle.is_locked) return;
+        this.state.showIconPicker = !this.state.showIconPicker;
+    }
+
+    async onPickEmoji(emoji) {
+        if (!this.state.activeArticle) return;
+        this.state.activeArticle.icon = emoji;
+        this.state.showIconPicker = false;
+        await this._saveArticle({ icon: emoji });
     }
 
     // --- Save ---

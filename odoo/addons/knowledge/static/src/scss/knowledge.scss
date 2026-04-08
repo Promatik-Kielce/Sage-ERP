@@ -198,6 +198,131 @@
     }
 }
 
+// --- Emoji Picker ---
+.o_knowledge_emoji_picker {
+    position: absolute;
+    top: 110%;
+    left: 0;
+    z-index: 1000;
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    padding: 8px;
+    width: 272px;
+    user-select: none;
+
+    .o_knowledge_emoji_tabs {
+        display: flex;
+        gap: 4px;
+        margin-bottom: 8px;
+
+        .o_knowledge_emoji_tab {
+            flex: 1;
+            background: none;
+            border: 1px solid transparent;
+            border-radius: 6px;
+            padding: 4px 0;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.1s;
+
+            &:hover {
+                background-color: #f1f3f5;
+            }
+
+            &.active {
+                background-color: #e9ecef;
+                border-color: #ced4da;
+            }
+        }
+    }
+
+    .o_knowledge_emoji_grid {
+        display: grid;
+        grid-template-columns: repeat(8, 1fr);
+        gap: 2px;
+        margin-bottom: 8px;
+
+        .o_knowledge_emoji_btn {
+            background: none;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            padding: 3px;
+            font-size: 18px;
+            line-height: 1;
+            cursor: pointer;
+            text-align: center;
+            transition: background-color 0.1s;
+
+            &:hover {
+                background-color: #f1f3f5;
+            }
+
+            &.selected {
+                background-color: #d8f5e1;
+                border-color: #51cf66;
+            }
+        }
+    }
+
+    .o_knowledge_emoji_footer {
+        border-top: 1px solid #f1f3f5;
+        padding-top: 6px;
+        text-align: center;
+
+        .o_knowledge_emoji_remove {
+            background: none;
+            border: none;
+            color: #dc3545;
+            font-size: 12px;
+            cursor: pointer;
+            padding: 2px 8px;
+            border-radius: 4px;
+
+            &:hover {
+                background-color: #fff5f5;
+            }
+        }
+    }
+}
+
+// --- Icon trigger (client action + form widget) ---
+.o_knowledge_icon_area {
+    display: inline-block;
+}
+
+.o_knowledge_icon_trigger {
+    cursor: pointer;
+    border-radius: 4px;
+    padding: 2px 4px;
+    display: inline-block;
+    transition: background-color 0.15s;
+
+    &:hover {
+        background-color: #f1f3f5;
+    }
+
+    .o_knowledge_icon_placeholder {
+        font-size: 0.75rem;
+        color: #adb5bd;
+        font-weight: 400;
+        white-space: nowrap;
+    }
+}
+
+// --- Icon widget (form view) ---
+.o_knowledge_icon_widget {
+    .o_knowledge_icon_trigger {
+        font-size: 1.5rem;
+        line-height: 1;
+    }
+
+    &.o_knowledge_icon_empty .o_knowledge_icon_trigger {
+        font-size: 0.875rem;
+    }
+}
+
 // Kanban card styles
 .o_knowledge_article_kanban {
     .o_kanban_record {

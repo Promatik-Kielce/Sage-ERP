@@ -131,7 +131,7 @@
                     <div class="oe_title">
                         <label for="name"/>
                         <h1>
-                            <field name="icon" placeholder="📄" class="d-inline w-auto me-1"/>
+                            <field name="icon" widget="knowledge_icon_picker"/>
                             <field name="name" placeholder="Article Title"/>
                         </h1>
                     </div>
