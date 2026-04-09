@@ -323,7 +323,45 @@
     }
 }
 
-// Kanban card styles
+// --- Comments Panel chatter overrides ---
+.o_knowledge_comments_panel {
+    // Fix hover actions bar rendering on top of message text in the narrow panel.
+    // o-mail-Message-core is position-relative, so absolute positioning here keeps
+    // the toolbar inside the message row without displacing text.
+    .o-mail-Message-actions {
+        position: absolute;
+        top: 2px;
+        right: 4px;
+        margin: 0 !important;
+        padding: 2px 4px;
+        background-color: #fff;
+        border-radius: 4px;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+        z-index: 2;
+    }
+
+    // Give messages enough right padding so text doesn't hide behind the
+    // action bar when it appears (action bar is ~80px wide).
+    .o-mail-Message-body {
+        padding-right: 88px !important;
+    }
+
+    // Tighten the chatter's own internal padding — it adds too much blank space
+    // in a side panel at 320px.
+    .o-mail-Chatter {
+        > .o-mail-Chatter-content {
+            padding-left: 4px;
+            padding-right: 4px;
+        }
+    }
+
+    // Reduce excessive bottom padding Odoo adds to the thread list.
+    .o-mail-Thread {
+        padding-bottom: 1rem !important;
+    }
+}
+
+// --- Kanban card styles ---
 .o_knowledge_article_kanban {
     .o_kanban_record {
         border-radius: 8px;

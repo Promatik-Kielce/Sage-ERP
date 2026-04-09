@@ -515,7 +515,8 @@
                                 threadModel="'knowledge.article'"
                                 threadId="state.activeArticle.id"
                                 composer="!state.activeArticle.is_trashed"
-                                isChatterAside="true"/>
+                                isChatterAside="true"
+                                has_activities="false"/>
                         </div>
                     </div>
 
