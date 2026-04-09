@@ -26,6 +26,7 @@ class KnowledgeArticle(models.Model):
     _order = "sequence, id"
     _parent_store = True
     _check_company_auto = True
+    _mail_post_access = "read"
 
     # === Identity ===
     name = fields.Char(
@@ -154,6 +155,21 @@ class KnowledgeArticle(models.Model):
         default=lambda self: self.env.company,
         index=True,
     )
+
+    # === Comments ===
+    message_count = fields.Integer(
+        "Comments",
+        compute="_compute_message_count",
+    )
+
+    @api.depends("message_ids")
+    def _compute_message_count(self):
+        for article in self:
+            article.message_count = len(
+                article.message_ids.filtered(
+                    lambda m: m.message_type in ("comment", "email")
+                )
+            )
 
     # === Constraints ===
     @api.constrains("parent_id")
