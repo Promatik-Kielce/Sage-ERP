@@ -331,6 +331,13 @@
                                 t-on-click="onCreateChildArticle">
                             <i class="fa fa-plus"/>
                         </button>
+                        <button class="btn btn-sm"
+                                t-att-class="state.showComments ? 'btn-secondary' : 'btn-outline-secondary'"
+                                title="Toggle comments panel"
+                                t-on-click="toggleComments">
+                            <i class="fa fa-comments me-1"/>
+                            Comments (<t t-out="state.activeArticle.message_count || 0"/>)
+                        </button>
                         <button class="btn btn-sm btn-outline-secondary"
                                 title="Open full form"
                                 t-on-click="onOpenForm">
@@ -338,6 +345,9 @@
                         </button>
                     </div>
                 </div>
+
+                <!-- Content Body + Comments Panel -->
+                <div class="o_knowledge_content_with_panel d-flex flex-grow-1 overflow-hidden">
 
                 <!-- Content Body -->
                 <div class="o_knowledge_content_body flex-grow-1 overflow-auto">
@@ -487,7 +497,29 @@
                             </button>
                         </div>
                     </t>
-                </div>
+                </div><!-- /.o_knowledge_content_body -->
+
+                    <!-- Comments Panel (right drawer) -->
+                    <div t-if="state.showComments"
+                         class="o_knowledge_comments_panel border-start d-flex flex-column overflow-hidden"
+                         style="width: 320px; min-width: 320px;">
+                        <div class="o_knowledge_comments_header border-bottom px-3 py-2 d-flex align-items-center justify-content-between flex-shrink-0">
+                            <strong>Comments</strong>
+                            <button class="btn btn-sm btn-link p-0 text-muted"
+                                    t-on-click="toggleComments">
+                                <i class="fa fa-times"/>
+                            </button>
+                        </div>
+                        <div class="flex-grow-1 overflow-auto">
+                            <Chatter
+                                threadModel="'knowledge.article'"
+                                threadId="state.activeArticle.id"
+                                composer="!state.activeArticle.is_trashed"
+                                isChatterAside="true"/>
+                        </div>
+                    </div>
+
+                </div><!-- /.o_knowledge_content_with_panel -->
             </div>
         </div>
     </t>
