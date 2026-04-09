@@ -51,6 +51,7 @@ class KnowledgeController(http.Controller):
             "parent_name": article.parent_id.name if article.parent_id else "",
             "has_children": bool(article.child_ids),
             "member_count": len(article.member_ids),
+            "message_count": article.message_count,
             "pdf_attachments": [
                 {"id": a.id, "name": a.name}
                 for a in request.env["ir.attachment"].search([
