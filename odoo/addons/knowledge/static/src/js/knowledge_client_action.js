@@ -10,6 +10,7 @@ import { Wysiwyg } from "@html_editor/wysiwyg";
 import { MAIN_PLUGINS } from "@html_editor/plugin_sets";
 import { HtmlViewer } from "@html_editor/components/html_viewer/html_viewer";
 import { EmojiPicker } from "./emoji_picker";
+import { Chatter } from "@mail/chatter/web_portal/chatter";
 
 // ---------------------------------------------------------------------------
 // KnowledgeSidebarItem — renders a single article node (recursive)
@@ -126,7 +127,7 @@ KnowledgeCategoryItem.components = { KnowledgeCategoryItem, KnowledgeSidebarItem
 
 class KnowledgeClientAction extends Component {
     static template = "knowledge.ClientAction";
-    static components = { KnowledgeSidebarItem, KnowledgeCategoryItem, Wysiwyg, HtmlViewer, EmojiPicker };
+    static components = { KnowledgeSidebarItem, KnowledgeCategoryItem, Wysiwyg, HtmlViewer, EmojiPicker, Chatter };
     static props = { ...standardActionServiceProps };
     static path = "knowledge";
     static displayName = _t("Knowledge");
@@ -150,6 +151,7 @@ class KnowledgeClientAction extends Component {
             saving: false,
             sidebarCollapsed: false,
             showIconPicker: false,
+            showComments: false,
         });
 
         this._saveTimeout = null;
@@ -230,6 +232,7 @@ class KnowledgeClientAction extends Component {
             }
         }
         this.editor = null;
+        this.state.showComments = false;
         const data = await rpc("/knowledge/article/data", {
             article_id: articleId,
         });
@@ -398,6 +401,10 @@ class KnowledgeClientAction extends Component {
 
     toggleSidebar() {
         this.state.sidebarCollapsed = !this.state.sidebarCollapsed;
+    }
+
+    toggleComments() {
+        this.state.showComments = !this.state.showComments;
     }
 
     // --- Drag-and-drop ---
