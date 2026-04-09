@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- ============================================================ -->
+        <!-- Default Article Templates                                     -->
+        <!-- ============================================================ -->
+
+        <record id="template_meeting_notes" model="knowledge.article">
+            <field name="name">Meeting Notes</field>
+            <field name="icon">📋</field>
+            <field name="is_template">True</field>
+            <field name="category">workspace</field>
+            <field name="owner_id" ref="base.user_admin"/>
+            <field name="body" type="html">
+                <div>
+                    <h2>Meeting Notes</h2>
+                    <p><strong>Date:</strong> </p>
+                    <p><strong>Attendees:</strong> </p>
+                    <p><strong>Facilitator:</strong> </p>
+                    <hr/>
+                    <h3>Agenda</h3>
+                    <ol>
+                        <li>Item 1</li>
+                        <li>Item 2</li>
+                        <li>Item 3</li>
+                    </ol>
+                    <h3>Discussion Notes</h3>
+                    <p></p>
+                    <h3>Action Items</h3>
+                    <ul class="o_checklist">
+                        <li>Action item 1 — Owner: </li>
+                        <li>Action item 2 — Owner: </li>
+                    </ul>
+                    <h3>Next Steps</h3>
+                    <p></p>
+                </div>
+            </field>
+        </record>
+
+        <record id="template_project_brief" model="knowledge.article">
+            <field name="name">Project Brief</field>
+            <field name="icon">🎯</field>
+            <field name="is_template">True</field>
+            <field name="category">workspace</field>
+            <field name="owner_id" ref="base.user_admin"/>
+            <field name="body" type="html">
+                <div>
+                    <h2>Project Brief</h2>
+                    <h3>Overview</h3>
+                    <p>Brief description of the project, its purpose, and expected outcomes.</p>
+                    <h3>Objectives</h3>
+                    <ul>
+                        <li>Objective 1</li>
+                        <li>Objective 2</li>
+                        <li>Objective 3</li>
+                    </ul>
+                    <h3>Scope</h3>
+                    <p><strong>In scope:</strong></p>
+                    <ul><li></li></ul>
+                    <p><strong>Out of scope:</strong></p>
+                    <ul><li></li></ul>
+                    <h3>Timeline</h3>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Milestone</th>
+                                <th>Target Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Kickoff</td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>Delivery</td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <h3>Team</h3>
+                    <p><strong>Project Lead:</strong> </p>
+                    <p><strong>Stakeholders:</strong> </p>
+                    <h3>Resources</h3>
+                    <p></p>
+                </div>
+            </field>
+        </record>
+
+        <record id="template_howto_guide" model="knowledge.article">
+            <field name="name">How-To Guide</field>
+            <field name="icon">📖</field>
+            <field name="is_template">True</field>
+            <field name="category">workspace</field>
+            <field name="owner_id" ref="base.user_admin"/>
+            <field name="body" type="html">
+                <div>
+                    <h2>How-To Guide</h2>
+                    <h3>Purpose</h3>
+                    <p>What this guide helps you accomplish.</p>
+                    <h3>Prerequisites</h3>
+                    <ul>
+                        <li>Prerequisite 1</li>
+                        <li>Prerequisite 2</li>
+                    </ul>
+                    <h3>Steps</h3>
+                    <h4>Step 1: Title</h4>
+                    <p>Description of the first step.</p>
+                    <h4>Step 2: Title</h4>
+                    <p>Description of the second step.</p>
+                    <h4>Step 3: Title</h4>
+                    <p>Description of the third step.</p>
+                    <h3>Troubleshooting</h3>
+                    <p><strong>Common Issue:</strong> Description and solution.</p>
+                    <h3>Related Resources</h3>
+                    <ul>
+                        <li>Link to related article or documentation</li>
+                    </ul>
+                </div>
+            </field>
+        </record>
+
+    </data>
+</odoo>

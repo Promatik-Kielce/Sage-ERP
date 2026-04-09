@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ================================================================ -->
+    <!-- Root menu: navigate directly to the Knowledge client action       -->
+    <!-- ================================================================ -->
+
+    <record id="document_knowledge.menu_document_root" model="ir.ui.menu">
+        <field name="action" ref="knowledge_article_action_client"/>
+    </record>
+
+    <!-- Deactivate "Pages" parent menu from document_page -->
+    <record id="document_page.menu_wiki" model="ir.ui.menu">
+        <field name="active" eval="False"/>
+    </record>
+
+    <!-- Redirect "Browse Wiki Content" to the knowledge article browse action -->
+    <record id="document_page.menu_browse_content" model="ir.ui.menu">
+        <field name="action" ref="knowledge_article_action_browse"/>
+    </record>
+
+    <!-- ================================================================ -->
+    <!-- Menu Items under the Knowledge top-level menu                     -->
+    <!-- (Articles submenu removed — root menu now opens client action)    -->
+    <!-- ================================================================ -->
+
+    <!-- Templates -->
+    <menuitem id="menu_knowledge_templates"
+              name="Templates"
+              parent="document_knowledge.menu_document_root"
+              action="knowledge_article_action_templates"
+              sequence="15"
+              groups="group_knowledge_user"/>
+
+    <!-- Trash -->
+    <menuitem id="menu_knowledge_trash"
+              name="Trash"
+              parent="document_knowledge.menu_document_root"
+              action="knowledge_article_action_trash"
+              sequence="180"
+              groups="group_knowledge_manager"/>
+
+</odoo>

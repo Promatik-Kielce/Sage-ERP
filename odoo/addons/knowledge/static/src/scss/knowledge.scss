@@ -1,0 +1,374 @@
+// Knowledge Module Styles
+
+.o_knowledge {
+    background-color: #fff;
+
+    // --- Sidebar ---
+    .o_knowledge_sidebar {
+        background-color: #f8f9fa;
+
+        .o_knowledge_sidebar_item {
+            padding: 4px 8px;
+            cursor: pointer;
+            border-radius: 4px;
+            margin: 1px 4px;
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+            transition: background-color 0.15s;
+            white-space: nowrap;
+            overflow: hidden;
+
+            &:hover {
+                background-color: #e9ecef;
+            }
+
+            &.active {
+                background-color: #dee2e6;
+                font-weight: 500;
+            }
+
+            .o_knowledge_toggle {
+                width: 16px;
+                text-align: center;
+                cursor: pointer;
+                color: #6c757d;
+
+                &:hover {
+                    color: #212529;
+                }
+            }
+
+            .o_knowledge_toggle_placeholder {
+                width: 16px;
+                display: inline-block;
+            }
+
+            .o_knowledge_sidebar_item_name {
+                flex: 1;
+                min-width: 0;
+            }
+        }
+
+        .o_knowledge_section_header {
+            user-select: none;
+
+            small {
+                font-size: 11px;
+                letter-spacing: 0.5px;
+            }
+        }
+
+        // Category folder nodes
+        .o_knowledge_category_node {
+            cursor: pointer;
+            font-size: 13px;
+
+            .fa-folder {
+                font-size: 13px;
+            }
+        }
+
+        // Drag-and-drop
+        .o_knowledge_sidebar_item[draggable="true"] {
+            cursor: grab;
+
+            &:active {
+                cursor: grabbing;
+                opacity: 0.7;
+            }
+        }
+
+        .o_knowledge_drop_target {
+            background-color: #cff4fc !important;
+            border: 1px dashed #0dcaf0 !important;
+            border-radius: 4px;
+        }
+
+        // Shared with me row — keeps remove button tight to the item
+        .o_knowledge_shared_with_me_row {
+            margin: 1px 4px;
+
+            > .flex-grow-1 {
+                min-width: 0;
+
+                .o_knowledge_sidebar_item {
+                    margin: 0;
+                }
+            }
+
+            > .btn-link {
+                font-size: 11px;
+                line-height: 1;
+                opacity: 0.5;
+
+                &:hover {
+                    opacity: 1;
+                }
+            }
+        }
+    }
+
+    // --- Content Area ---
+    .o_knowledge_content {
+        background-color: #fff;
+
+        .o_knowledge_content_header {
+            min-height: 48px;
+        }
+
+        .o_knowledge_content_body {
+            .o_knowledge_article_view {
+                max-width: 100%;
+
+                &.o_knowledge_narrow {
+                    max-width: 900px;
+                }
+            }
+
+            .o_knowledge_cover img {
+                border-radius: 8px;
+            }
+
+            .o_knowledge_title h1 {
+                font-size: 2rem;
+                font-weight: 700;
+                border: none;
+
+                .o_knowledge_icon {
+                    font-size: 2rem;
+                }
+
+                [contenteditable="true"] {
+                    outline: none;
+
+                    &:focus {
+                        border-bottom: 2px solid #7c3aed;
+                    }
+                }
+            }
+
+            // Wysiwyg editor integration
+            .o_knowledge_body {
+                .o-wysiwyg {
+                    min-height: 300px;
+                }
+
+                .odoo-editor-editable {
+                    min-height: 300px;
+                    outline: none;
+                    line-height: 1.7;
+                    font-size: 15px;
+
+                    h2, h3, h4 {
+                        margin-top: 1.5em;
+                        margin-bottom: 0.5em;
+                    }
+
+                    table {
+                        width: 100%;
+                        border-collapse: collapse;
+
+                        td, th {
+                            border: 1px solid #dee2e6;
+                            padding: 8px;
+                        }
+                    }
+                }
+
+                .o_knowledge_body_content {
+                    min-height: 300px;
+                    outline: none;
+                    line-height: 1.7;
+                    font-size: 15px;
+                }
+            }
+
+            // PDF section — full width, outside narrow article container
+            .o_knowledge_pdf_section {
+                .o_knowledge_pdf_item {
+                    overflow: hidden;
+
+                    iframe {
+                        display: block; // removes inline gap below iframe
+                    }
+                }
+            }
+        }
+    }
+}
+
+// --- Emoji Picker ---
+.o_knowledge_emoji_picker {
+    position: absolute;
+    top: 110%;
+    left: 0;
+    z-index: 1000;
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    padding: 8px;
+    width: 272px;
+    user-select: none;
+
+    .o_knowledge_emoji_tabs {
+        display: flex;
+        gap: 4px;
+        margin-bottom: 8px;
+
+        .o_knowledge_emoji_tab {
+            flex: 1;
+            background: none;
+            border: 1px solid transparent;
+            border-radius: 6px;
+            padding: 4px 0;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.1s;
+
+            &:hover {
+                background-color: #f1f3f5;
+            }
+
+            &.active {
+                background-color: #e9ecef;
+                border-color: #ced4da;
+            }
+        }
+    }
+
+    .o_knowledge_emoji_grid {
+        display: grid;
+        grid-template-columns: repeat(8, 1fr);
+        gap: 2px;
+        margin-bottom: 8px;
+
+        .o_knowledge_emoji_btn {
+            background: none;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            padding: 3px;
+            font-size: 18px;
+            line-height: 1;
+            cursor: pointer;
+            text-align: center;
+            transition: background-color 0.1s;
+
+            &:hover {
+                background-color: #f1f3f5;
+            }
+
+            &.selected {
+                background-color: #d8f5e1;
+                border-color: #51cf66;
+            }
+        }
+    }
+
+    .o_knowledge_emoji_footer {
+        border-top: 1px solid #f1f3f5;
+        padding-top: 6px;
+        text-align: center;
+
+        .o_knowledge_emoji_remove {
+            background: none;
+            border: none;
+            color: #dc3545;
+            font-size: 12px;
+            cursor: pointer;
+            padding: 2px 8px;
+            border-radius: 4px;
+
+            &:hover {
+                background-color: #fff5f5;
+            }
+        }
+    }
+}
+
+// --- Icon trigger (client action + form widget) ---
+.o_knowledge_icon_area {
+    display: inline-block;
+}
+
+.o_knowledge_icon_trigger {
+    cursor: pointer;
+    border-radius: 4px;
+    padding: 2px 4px;
+    display: inline-block;
+    transition: background-color 0.15s;
+
+    &:hover {
+        background-color: #f1f3f5;
+    }
+
+    .o_knowledge_icon_placeholder {
+        font-size: 0.75rem;
+        color: #adb5bd;
+        font-weight: 400;
+        white-space: nowrap;
+    }
+}
+
+// --- Icon widget (form view) ---
+.o_knowledge_icon_widget {
+    .o_knowledge_icon_trigger {
+        font-size: 1.5rem;
+        line-height: 1;
+    }
+
+    &.o_knowledge_icon_empty .o_knowledge_icon_trigger {
+        font-size: 0.875rem;
+    }
+}
+
+// --- Comments Panel chatter overrides ---
+.o_knowledge_comments_panel {
+    // Fix hover actions bar rendering on top of message text in the narrow panel.
+    // o-mail-Message-core is position-relative, so absolute positioning here keeps
+    // the toolbar inside the message row without displacing text.
+    .o-mail-Message-actions {
+        position: absolute;
+        top: 2px;
+        right: 4px;
+        margin: 0 !important;
+        padding: 2px 4px;
+        background-color: #fff;
+        border-radius: 4px;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+        z-index: 2;
+    }
+
+    // Give messages enough right padding so text doesn't hide behind the
+    // action bar when it appears (action bar is ~80px wide).
+    .o-mail-Message-body {
+        padding-right: 88px !important;
+    }
+
+    // Tighten the chatter's own internal padding — it adds too much blank space
+    // in a side panel at 320px.
+    .o-mail-Chatter {
+        > .o-mail-Chatter-content {
+            padding-left: 4px;
+            padding-right: 4px;
+        }
+    }
+
+    // Reduce excessive bottom padding Odoo adds to the thread list.
+    .o-mail-Thread {
+        padding-bottom: 1rem !important;
+    }
+}
+
+// --- Kanban card styles ---
+.o_knowledge_article_kanban {
+    .o_kanban_record {
+        border-radius: 8px;
+        transition: box-shadow 0.2s;
+
+        &:hover {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+    }
+}

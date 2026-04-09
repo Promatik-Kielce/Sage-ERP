@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- Assign demo user to knowledge group -->
+        <record id="base.user_demo" model="res.users">
+            <field name="groups_id" eval="[(4, ref('knowledge.group_knowledge_user'))]"/>
+        </record>
+
+        <!-- ============================================================ -->
+        <!-- Demo Workspace Articles                                       -->
+        <!-- ============================================================ -->
+
+        <record id="demo_article_company_handbook" model="knowledge.article">
+            <field name="name">Company Handbook</field>
+            <field name="icon">📚</field>
+            <field name="category">workspace</field>
+            <field name="owner_id" ref="base.user_admin"/>
+            <field name="body" type="html">
+                <div>
+                    <h2>Welcome to the Company Handbook</h2>
+                    <p>This is your central resource for company policies,
+                    procedures, and important information.</p>
+                    <p>Browse the articles below to learn more about how
+                    we work together.</p>
+                </div>
+            </field>
+        </record>
+
+        <record id="demo_article_onboarding" model="knowledge.article">
+            <field name="name">New Employee Onboarding</field>
+            <field name="icon">👋</field>
+            <field name="category">workspace</field>
+            <field name="parent_id" ref="demo_article_company_handbook"/>
+            <field name="sequence">1</field>
+            <field name="owner_id" ref="base.user_admin"/>
+            <field name="body" type="html">
+                <div>
+                    <h2>New Employee Onboarding</h2>
+                    <h3>Your First Week</h3>
+                    <ul class="o_checklist">
+                        <li>Complete HR paperwork</li>
+                        <li>Set up your workstation</li>
+                        <li>Meet your team</li>
+                        <li>Review the company handbook</li>
+                        <li>Complete security training</li>
+                    </ul>
+                    <h3>Key Contacts</h3>
+                    <p>HR Department, IT Support, Your Manager</p>
+                </div>
+            </field>
+        </record>
+
+        <record id="demo_article_policies" model="knowledge.article">
+            <field name="name">Company Policies</field>
+            <field name="icon">📜</field>
+            <field name="category">workspace</field>
+            <field name="parent_id" ref="demo_article_company_handbook"/>
+            <field name="sequence">2</field>
+            <field name="owner_id" ref="base.user_admin"/>
+            <field name="body" type="html">
+                <div>
+                    <h2>Company Policies</h2>
+                    <h3>Working Hours</h3>
+                    <p>Standard working hours are 9:00 AM to 5:00 PM,
+                    Monday through Friday.</p>
+                    <h3>Remote Work</h3>
+                    <p>Employees may work remotely up to 2 days per week
+                    with manager approval.</p>
+                    <h3>Time Off</h3>
+                    <p>Please submit time-off requests through the HR module
+                    at least 2 weeks in advance.</p>
+                </div>
+            </field>
+        </record>
+
+        <!-- ============================================================ -->
+        <!-- Demo Private Article                                          -->
+        <!-- ============================================================ -->
+
+        <record id="demo_article_private_notes" model="knowledge.article">
+            <field name="name">My Personal Notes</field>
+            <field name="icon">📝</field>
+            <field name="category">private</field>
+            <field name="owner_id" ref="base.user_admin"/>
+            <field name="body" type="html">
+                <div>
+                    <h2>Personal Notes</h2>
+                    <p>This is a private article only visible to you.</p>
+                    <p>Use it for personal notes, drafts, and ideas.</p>
+                </div>
+            </field>
+        </record>
+
+    </data>
+</odoo>

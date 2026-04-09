@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+
+        <!-- ============================================================ -->
+        <!-- Security Groups                                               -->
+        <!-- ============================================================ -->
+
+        <record id="group_knowledge_user" model="res.groups">
+            <field name="name">Knowledge User</field>
+            <field name="implied_ids" eval="[(4, ref('document_knowledge.group_document_user'))]"/>
+            <field name="comment">
+                Users with this group can access Knowledge articles.
+                They can view workspace articles and articles they own or are members of.
+            </field>
+        </record>
+
+        <record id="group_knowledge_manager" model="res.groups">
+            <field name="name">Knowledge Manager</field>
+            <field name="implied_ids" eval="[(4, ref('group_knowledge_user'))]"/>
+            <field name="user_ids" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+            <field name="comment">
+                Managers have full access to all Knowledge articles regardless of membership.
+            </field>
+        </record>
+
+    </data>
+
+    <data noupdate="1">
+
+        <!-- ============================================================ -->
+        <!-- Record Rules                                                  -->
+        <!-- ============================================================ -->
+
+        <!-- Multi-company rule (global) -->
+        <record id="knowledge_article_rule_multi_company" model="ir.rule">
+            <field name="name">Knowledge Article: multi-company</field>
+            <field name="model_id" ref="model_knowledge_article"/>
+            <field name="global" eval="True"/>
+            <field name="domain_force">
+                ['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]
+            </field>
+        </record>
+
+        <!-- Workspace articles visible/writable to all knowledge users -->
+        <record id="knowledge_article_rule_workspace" model="ir.rule">
+            <field name="name">Knowledge Article: workspace visible</field>
+            <field name="model_id" ref="model_knowledge_article"/>
+            <field name="groups" eval="[(4, ref('group_knowledge_user'))]"/>
+            <field name="domain_force">
+                [('category', '=', 'workspace')]
+            </field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- Shared articles readable by all knowledge users -->
+        <record id="knowledge_article_rule_shared_read" model="ir.rule">
+            <field name="name">Knowledge Article: shared readable by all</field>
+            <field name="model_id" ref="model_knowledge_article"/>
+            <field name="groups" eval="[(4, ref('group_knowledge_user'))]"/>
+            <field name="domain_force">
+                [('category', '=', 'shared')]
+            </field>
+            <field name="perm_read"   eval="True"/>
+            <field name="perm_write"  eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- Articles where user is owner or member -->
+        <record id="knowledge_article_rule_member" model="ir.rule">
+            <field name="name">Knowledge Article: owner or member</field>
+            <field name="model_id" ref="model_knowledge_article"/>
+            <field name="groups" eval="[(4, ref('group_knowledge_user'))]"/>
+            <field name="domain_force">
+                ['|',
+                    ('owner_id', '=', user.id),
+                    ('member_ids.partner_id', '=', user.partner_id.id)
+                ]
+            </field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- Manager sees everything -->
+        <record id="knowledge_article_rule_manager" model="ir.rule">
+            <field name="name">Knowledge Article: manager full access</field>
+            <field name="model_id" ref="model_knowledge_article"/>
+            <field name="groups" eval="[(4, ref('group_knowledge_manager'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+        </record>
+
+        <!-- Article owners can delete their own articles -->
+        <record id="knowledge_article_rule_owner_unlink" model="ir.rule">
+            <field name="name">Knowledge Article: owner can delete</field>
+            <field name="model_id" ref="model_knowledge_article"/>
+            <field name="groups" eval="[(4, ref('group_knowledge_user'))]"/>
+            <field name="domain_force">[('owner_id', '=', user.id)]</field>
+            <field name="perm_read"   eval="False"/>
+            <field name="perm_write"  eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <!-- Member model: multi-company via article -->
+        <record id="knowledge_article_member_rule_multi_company" model="ir.rule">
+            <field name="name">Knowledge Article Member: multi-company</field>
+            <field name="model_id" ref="model_knowledge_article_member"/>
+            <field name="global" eval="True"/>
+            <field name="domain_force">
+                ['|', ('article_id.company_id', '=', False),
+                      ('article_id.company_id', 'in', company_ids)]
+            </field>
+        </record>
+
+    </data>
+</odoo>
