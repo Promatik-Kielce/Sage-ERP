@@ -149,8 +149,8 @@
                 </div>
 
                 <div class="mb-3 field-login">
-                    <label for="login" class="form-label d-flex justify-content-between">Email</label>
-                    <input type="text" placeholder="Enter your email" name="login" t-att-value="login" id="login" class="form-control" required="required" autocapitalize="off" autocomplete="username"/>
+                    <label for="login" class="form-label d-flex justify-content-between">Login</label>
+                    <input type="text" placeholder="Enter your login" name="login" t-att-value="login" id="login" class="form-control" required="required" autocapitalize="off" autocomplete="username"/>
                 </div>
 
                 <div class="o_caps_lock_warning">

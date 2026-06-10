@@ -531,9 +531,10 @@ class HrEmployee(models.Model):
         AND CURRENT_DATE + interval '1 month - 1 day'
         group by l_month''')
         join_data = cr.fetchall()
-        cr.execute('''select to_char(resign_date, 'Month YYYY') as l_month,
-         count(id) from hr_employee
-        WHERE resign_date BETWEEN CURRENT_DATE - INTERVAL '12 months'
+        cr.execute('''select to_char(COALESCE(e.resign_date, v.departure_date), 'Month YYYY') as l_month,
+         count(e.id) from hr_employee e
+        LEFT JOIN hr_version v ON v.id = e.current_version_id
+        WHERE COALESCE(e.resign_date, v.departure_date) BETWEEN CURRENT_DATE - INTERVAL '12 months'
         AND CURRENT_DATE + interval '1 month - 1 day'
         group by l_month;''')
         resign_data = cr.fetchall()
@@ -583,10 +584,12 @@ class HrEmployee(models.Model):
         self.env.cr.execute(sql)
         month_start_list = self.env.cr.fetchall()
         for month_date in month_start_list:
-            self.env.cr.execute("""select count(id), 
-            to_char(date '%s', 'Month YYYY') as l_month from hr_employee
-            where resign_date> date '%s' or resign_date is null and 
-            joining_date < date '%s'
+            self.env.cr.execute("""select count(e.id),
+            to_char(date '%s', 'Month YYYY') as l_month from hr_employee e
+            LEFT JOIN hr_version v ON v.id = e.current_version_id
+            where COALESCE(e.resign_date, v.departure_date) > date '%s'
+               or (COALESCE(e.resign_date, v.departure_date) is null and
+            e.joining_date < date '%s')
             """ % (month_date[0], month_date[0], month_date[0],))
             month_emp = self.env.cr.fetchone()
             match_join = \
