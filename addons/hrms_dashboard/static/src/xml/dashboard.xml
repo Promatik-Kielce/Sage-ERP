@@ -150,15 +150,15 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-2 col-sm-6 login_broad_factor oh-payslip oh-broad-factor"
-                 t-on-click="employee_broad_factor">
+            <div class="col-md-2 col-sm-6 login_tasks oh-payslip"
+                 t-on-click="employee_tasks">
                 <div class="oh-card">
                     <div class="oh-card-body">
                         <div class="stat-widget-one">
-                            <div class="stat-icon"><i class="fa fa-bar-chart"/></div>
+                            <div class="stat-icon"><i class="fa fa-tasks"/></div>
                             <div class="stat-content">
-                                <div class="stat-text" t-esc="this.translations.broadFactor"/>
-                                <div class="stat-digit"><t t-esc="this.state.login_employee['broad_factor']"/></div>
+                                <div class="stat-text" t-esc="this.translations.tasks"/>
+                                <div class="stat-digit"><t t-esc="this.state.login_employee['tasks_count']"/></div>
                             </div>
                         </div>
                     </div>

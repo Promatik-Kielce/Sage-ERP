@@ -209,12 +209,10 @@ class HrEmployee(models.Model):
             'hr_timesheet.hr_timesheet_line_search')
         job_applications = self.env['hr.applicant'].sudo().search_count([])
         if employee:
-            sql = """select broad_factor from hr_employee_broad_factor 
-            where id =%s"""
-            self.env.cr.execute(sql, (employee[0]['id'],))
-            result = self.env.cr.dictfetchall()
-            broad_factor = result[0]['broad_factor'] if result[0][
-                'broad_factor'] else False
+            tasks_count = self.env['project.task'].sudo().search_count([
+                ('user_ids', 'in', uid),
+                ('is_closed', '=', False),
+            ])
             if employee[0]['birthday']:
                 diff = relativedelta(datetime.today(), employee[0]['birthday'])
                 age = diff.years
@@ -232,7 +230,7 @@ class HrEmployee(models.Model):
                 experience = False
             if employee:
                 data = {
-                    'broad_factor': broad_factor if broad_factor else 0,
+                    'tasks_count': tasks_count,
                     'leaves_to_approve': leaves_to_approve,
                     'leaves_today': leaves_today,
                     'leaves_this_month': leaves_this_month,

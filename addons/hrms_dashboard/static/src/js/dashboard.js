@@ -74,7 +74,7 @@ export class HrDashboard extends Component{
             payslips: _t("Payslips"),
             timesheets: _t("Timesheets"),
             contracts: _t("Contracts"),
-            broadFactor: _t("Broad Factor"),
+            tasks: _t("Tasks"),
             checkIn: _t("Check In"),
             checkOut: _t("Check Out"),
             leaveRequests: _t("Leave Requests"),
@@ -671,21 +671,8 @@ export class HrDashboard extends Component{
             target: 'current'
         })
     }
-    employee_broad_factor() {
-        var today = new Date();
-        var dd = String(today.getDate()).padStart(2, '0');
-        var mm = String(today.getMonth() + 1).padStart(2, '0');
-        var yyyy = today.getFullYear();
-        this.action.doAction({
-            name: _t("Leave Request"),
-            type: 'ir.actions.act_window',
-            res_model: 'hr.leave',
-            view_mode: 'tree,form,calendar',
-            views: [[false, 'list'],[false, 'form']],
-            domain: [['state','in',['validate']],['employee_id','=', this.state.login_employee.id],['date_to','<=',today]],
-            target: 'current',
-            context:{'order':'duration_display'}
-        })
+    employee_tasks() {
+        this.action.doAction('project.action_view_all_task', { viewType: 'list' });
     }
      async attendance_sign_in_out() {
         if (this.state.login_employee['attendance_state'] == 'checked_out') {
