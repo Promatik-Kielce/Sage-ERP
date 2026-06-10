@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="report_article_document">
+        <t t-set="company" t-value="company or user.company_id"/>
+        <div class="header">
+            <div class="d-flex align-items-center border-bottom pb-2">
+                <img t-if="company.logo"
+                     t-att-src="image_data_uri(company.logo)"
+                     style="max-height: 32px;" class="me-2" alt="Logo"/>
+                <span class="fw-bold" t-field="company.name"/>
+            </div>
+        </div>
+        <div class="article o_report_layout_standard">
+            <div class="page">
+                <h1>
+                    <span t-if="doc.icon" t-out="doc.icon" class="me-2"/>
+                    <span t-field="doc.name"/>
+                </h1>
+                <div class="mt-3" t-out="doc.body"/>
+            </div>
+        </div>
+        <div class="footer">
+            <div class="text-center text-muted" style="font-size: 9px;">
+                <span class="page"/> / <span class="topage"/>
+            </div>
+        </div>
+    </template>
+
+    <template id="report_article">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="knowledge.report_article_document"/>
+            </t>
+        </t>
+    </template>
+
+    <record id="action_report_knowledge_article" model="ir.actions.report">
+        <field name="name">Article</field>
+        <field name="model">knowledge.article</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">knowledge.report_article</field>
+        <field name="report_file">knowledge.report_article</field>
+        <field name="print_report_name">(object.name or 'Article')</field>
+    </record>
+
+</odoo>

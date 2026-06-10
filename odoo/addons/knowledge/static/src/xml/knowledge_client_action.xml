@@ -327,6 +327,11 @@
                             <i class="fa fa-share-alt"/>
                         </button>
                         <button class="btn btn-sm btn-outline-secondary"
+                                title="Export as PDF"
+                                t-on-click="onExportPdf">
+                            <i class="fa fa-file-pdf-o me-1"/>PDF
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary"
                                 title="Add sub-article"
                                 t-on-click="onCreateChildArticle">
                             <i class="fa fa-plus"/>
@@ -460,12 +465,6 @@
                                                 <t t-out="pdf.name"/>
                                             </span>
                                             <div class="d-flex gap-1">
-                                                <button t-if="!isReadonly"
-                                                        class="btn btn-sm btn-outline-primary"
-                                                        title="Convert to article content"
-                                                        t-on-click="() => this.onConvertPdfToArticle(pdf.id)">
-                                                    <i class="fa fa-magic me-1"/>Convert
-                                                </button>
                                                 <a t-att-href="'/web/content/' + pdf.id + '?download=true'"
                                                    class="btn btn-sm btn-outline-secondary" title="Download">
                                                     <i class="fa fa-download"/>

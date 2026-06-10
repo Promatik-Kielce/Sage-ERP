@@ -399,6 +399,17 @@ class KnowledgeClientAction extends Component {
         });
     }
 
+    onExportPdf() {
+        if (!this.state.activeArticle) return;
+        this.action.doAction("knowledge.action_report_knowledge_article", {
+            additionalContext: {
+                active_id: this.state.activeArticle.id,
+                active_ids: [this.state.activeArticle.id],
+                active_model: "knowledge.article",
+            },
+        });
+    }
+
     toggleSidebar() {
         this.state.sidebarCollapsed = !this.state.sidebarCollapsed;
     }
@@ -487,18 +498,6 @@ class KnowledgeClientAction extends Component {
 
     async onDeletePdf(attachmentId) {
         await rpc("/knowledge/article/delete_pdf", { attachment_id: attachmentId });
-        await this.onSelectArticle(this.state.activeArticle.id);
-    }
-
-    async onConvertPdfToArticle(attachmentId) {
-        const result = await rpc("/knowledge/article/convert_pdf", {
-            article_id: this.state.activeArticle.id,
-            attachment_id: attachmentId,
-        });
-        if (result && result.error) {
-            console.warn("PDF conversion failed:", result.error);
-            return;
-        }
         await this.onSelectArticle(this.state.activeArticle.id);
     }
 }

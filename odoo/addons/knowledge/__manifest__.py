@@ -35,6 +35,7 @@ Provides a full-featured knowledge base with:
         "views/knowledge_category_views.xml",
         "views/knowledge_menus.xml",
         "views/res_config_settings_views.xml",
+        "report/knowledge_article_report.xml",
         "data/knowledge_data.xml",
         "data/knowledge_templates.xml",
     ],
