@@ -120,21 +120,6 @@ class HrBusinessTrip(models.Model):
             if rec.date_from and rec.date_to and rec.date_to < rec.date_from:
                 raise ValidationError(_("Date To cannot be earlier than Date From."))
 
-    @api.constrains("employee_id", "date_from", "date_to", "state")
-    def _check_overlaps(self):
-        for rec in self.filtered(lambda r: r.state != "refused"):
-            domain = [
-                ("id", "!=", rec.id),
-                ("employee_id", "=", rec.employee_id.id),
-                ("state", "!=", "refused"),
-                ("date_from", "<=", rec.date_to),
-                ("date_to", ">=", rec.date_from),
-            ]
-            if self.search_count(domain):
-                raise ValidationError(
-                    _("This employee already has another business trip in the selected period.")
-                )
-
     def _unlink_trip_attendances(self):
         """Usuń tylko attendance wygenerowane przez delegację wraz z kartami pracy."""
         attendances = self.env["hr.attendance"].search([
@@ -149,33 +134,6 @@ class HrBusinessTrip(models.Model):
 
         attendances.unlink()
 
-    def _create_trip_timesheet(self, attendance, day_date):
-        """Utwórz kartę pracy dla attendance delegacyjnego."""
-        self.ensure_one()
-
-        if not self.project_id:
-            return
-
-        employee = self.employee_id
-        if not employee:
-            return
-
-        user_id = employee.user_id.id if employee.user_id else self.env.user.id
-
-        self.env["account.analytic.line"].create({
-            "employee_id": employee.id,
-            "user_id": user_id,
-            "project_id": self.project_id.id,
-            "date": day_date,
-            "name": self.note or _("Delegacja: %s") % self.project_id.display_name,
-            "unit_amount": 8.0,
-            "attendance_id": attendance.id,
-        })
-
-        attendance._compute_timesheet_hours()
-        attendance._compute_main_project()
-        attendance._compute_current_project()
-
     def _unlink_trip_timesheets(self):
         """Usuń karty pracy powiązane z attendance wygenerowanymi z delegacji."""
         attendances = self.env["hr.attendance"].search([
@@ -186,6 +144,34 @@ class HrBusinessTrip(models.Model):
             ("attendance_id", "in", attendances.ids),
         ])
         timesheets.unlink()
+
+    def _ensure_trip_timesheets(self):
+        """Upewnij się, że każde attendance delegacyjne ma kartę pracy.
+
+        Działa zarówno dla automatycznie wygenerowanych, jak i ręcznie dodanych
+        attendance. Liczba godzin wynika z faktycznego czasu pracy attendance,
+        więc np. ręczny wpis 12:00-16:00 dostaje 4h. Metoda jest idempotentna -
+        tworzy kartę pracy tylko gdy jeszcze nie istnieje.
+        """
+        Timesheet = self.env["account.analytic.line"]
+        for rec in self:
+            if not rec.project_id or not rec.employee_id:
+                continue
+
+            user_id = rec.employee_id.user_id.id if rec.employee_id.user_id else self.env.user.id
+
+            for att in rec.attendance_ids.filtered(lambda a: a.is_business_trip):
+                if att.timesheet_ids:
+                    continue
+                Timesheet.create({
+                    "employee_id": rec.employee_id.id,
+                    "user_id": user_id,
+                    "project_id": rec.project_id.id,
+                    "date": att.check_in.date() if att.check_in else rec.date_from,
+                    "name": rec.note or _("Delegacja: %s") % rec.project_id.display_name,
+                    "unit_amount": att.worked_hours or 0.0,
+                    "attendance_id": att.id,
+                })
 
     def unlink(self):
         """Przy usuwaniu delegacji usuń też wygenerowane attendance."""
@@ -206,6 +192,10 @@ class HrBusinessTrip(models.Model):
 
         if needs_sync and approved_before:
             approved_before._sync_approved_trip_attendances()
+
+        if "attendance_ids" in vals:
+            # Ręcznie dodane attendance delegacyjne też dostają kartę pracy.
+            self._ensure_trip_timesheets()
 
         return result
 
@@ -289,22 +279,6 @@ class HrBusinessTrip(models.Model):
             if current.weekday() < 5:  # Mon-Fri
                 check_in_utc, check_out_utc = self._get_utc_datetimes_for_day(current, tz)
 
-                # Najpierw szukaj attendance tej konkretnej delegacji dla tego dnia
-                existing = self.env["hr.attendance"].search([
-                    ("business_trip_id", "=", self.id),
-                    ("is_business_trip", "=", True),
-                    ("check_in", "=", check_in_utc),
-                    ("check_out", "=", check_out_utc),
-                ], limit=1)
-
-                # Fallback: jeśli nie ma, szukaj kolidującego attendance pracownika
-                if not existing:
-                    existing = self.env["hr.attendance"].search([
-                        ("employee_id", "=", employee.id),
-                        ("check_in", "<", check_out_utc),
-                        ("check_out", ">", check_in_utc),
-                    ], limit=1)
-
                 vals = {
                     "employee_id": employee.id,
                     "check_in": check_in_utc,
@@ -314,24 +288,34 @@ class HrBusinessTrip(models.Model):
                     "project_id": self.project_id.id if self.project_id else False,
                 }
 
-                attendance = False
+                # Najpierw szukaj attendance tej konkretnej delegacji dla tego dnia
+                existing = self.env["hr.attendance"].search([
+                    ("business_trip_id", "=", self.id),
+                    ("is_business_trip", "=", True),
+                    ("check_in", "=", check_in_utc),
+                    ("check_out", "=", check_out_utc),
+                ], limit=1)
 
                 if existing:
-                    if existing.is_business_trip:
-                        old_timesheets = self.env["account.analytic.line"].search([
-                            ("attendance_id", "=", existing.id),
-                        ])
-                        old_timesheets.unlink()
+                    existing.write(vals)
+                    current += timedelta(days=1)
+                    continue
 
-                        existing.write(vals)
-                        attendance = existing
-                else:
-                    attendance = self.env["hr.attendance"].create(vals)
+                # Pomiń dzień, jeśli pracownik ma już kolidujące attendance
+                # (np. inną delegację lub zwykłą obecność) - użytkownik doda je ręcznie.
+                conflicting = self.env["hr.attendance"].search([
+                    ("employee_id", "=", employee.id),
+                    ("check_in", "<", check_out_utc),
+                    ("check_out", ">", check_in_utc),
+                ], limit=1)
 
-                if attendance:
-                    self._create_trip_timesheet(attendance, current)
+                if not conflicting:
+                    self.env["hr.attendance"].create(vals)
 
             current += timedelta(days=1)
+
+        # Utwórz brakujące karty pracy dla wygenerowanych attendance.
+        self._ensure_trip_timesheets()
 
     def _get_utc_datetimes_for_day(self, day_date, tz):
         local_check_in = tz.localize(datetime.combine(day_date, time(8, 0, 0)))

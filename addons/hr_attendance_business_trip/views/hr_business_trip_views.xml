@@ -60,9 +60,12 @@
                         <page string="Description">
                             <field name="note" placeholder="Business trip description..."/>
                         </page>
-                        <page string="Generated Attendances">
-                            <field name="attendance_ids" readonly="1">
-                                <list decoration-primary="is_business_trip">
+                        <page string="Attendances">
+                            <field name="attendance_ids"
+                                   context="{'default_employee_id': employee_id,
+                                             'default_is_business_trip': True,
+                                             'default_project_id': project_id}">
+                                <list editable="bottom" decoration-primary="is_business_trip">
                                     <field name="is_business_trip" column_invisible="1"/>
                                     <field name="employee_id"/>
                                     <field name="check_in"/>
