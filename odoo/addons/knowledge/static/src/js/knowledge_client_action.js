@@ -4,6 +4,8 @@ import { Component, onWillStart, useState, markup, useRef, useEffect } from "@od
 import { _t } from "@web/core/l10n/translation";
 import { rpc } from "@web/core/network/rpc";
 import { registry } from "@web/core/registry";
+import { router } from "@web/core/browser/router";
+import { browser } from "@web/core/browser/browser";
 import { useService } from "@web/core/utils/hooks";
 import { standardActionServiceProps } from "@web/webclient/actions/action_service";
 import { Wysiwyg } from "@html_editor/wysiwyg";
@@ -135,6 +137,7 @@ class KnowledgeClientAction extends Component {
     setup() {
         this.orm = useService("orm");
         this.action = useService("action");
+        this.notification = useService("notification");
         this.editor = null;
 
         this.state = useState({
@@ -168,6 +171,14 @@ class KnowledgeClientAction extends Component {
 
         onWillStart(async () => {
             await this.loadSidebar();
+            const initialId =
+                this.props.state?.article_id ||
+                this.props.action?.context?.article_id ||
+                this.props.action?.params?.article_id;
+            if (initialId) {
+                await this.onSelectArticle(Number(initialId));
+                await this.loadSidebar(Number(initialId));
+            }
         });
     }
 
@@ -238,6 +249,7 @@ class KnowledgeClientAction extends Component {
         });
         if (data) {
             this.state.activeArticle = data;
+            router.pushState({ article_id: articleId });
         }
     }
 
@@ -397,6 +409,12 @@ class KnowledgeClientAction extends Component {
             target: "new",
             context: { active_id: this.state.activeArticle.id },
         });
+    }
+
+    async onCopyLink() {
+        if (!this.state.activeArticle) return;
+        await browser.navigator.clipboard.writeText(browser.location.href);
+        this.notification.add(_t("Link copied to clipboard"), { type: "success" });
     }
 
     onExportPdf() {

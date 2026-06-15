@@ -327,6 +327,11 @@
                             <i class="fa fa-share-alt"/>
                         </button>
                         <button class="btn btn-sm btn-outline-secondary"
+                                title="Copy link to this article"
+                                t-on-click="onCopyLink">
+                            <i class="fa fa-link"/>
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary"
                                 title="Export as PDF"
                                 t-on-click="onExportPdf">
                             <i class="fa fa-file-pdf-o me-1"/>PDF
