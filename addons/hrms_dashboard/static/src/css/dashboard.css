@@ -1208,3 +1208,141 @@ h4 .stat-count {
 .address p {
     color: black !important;
 }
+
+/*=====================Mobile / Tablet responsive layer===========================*/
+/* Additive only - desktop (>=992px) layout is untouched. Fixes the fixed-position
+   sidebar, empty .dummy spacer gaps, float-based sub-blocks and fixed-pixel charts
+   that break the dashboard on small screens. */
+
+@media (max-width: 991.98px) {
+
+    /* Unpin the employee profile "side container" so it becomes a normal full-width
+       card at the top of the dashboard instead of being pinned over the content. */
+    .employee_prof,
+    .employee-prof {
+        position: static !important;
+        height: auto !important;
+        width: 100% !important;
+        padding-left: 0 !important;
+    }
+    .employee_prof .employee_icon,
+    .employee-prof .employee-icon {
+        float: none !important;
+        height: auto !important;
+        width: 100% !important;
+        text-align: center;
+    }
+    .employee_prof .employee_icon img {
+        width: 140px !important;
+        height: 140px !important;
+        margin: 12px auto !important;
+        float: none !important;
+        display: block;
+    }
+
+    /* Remove the empty spacer columns that only reserve the fixed-sidebar gutter. */
+    .dummy {
+        display: none !important;
+    }
+
+    /* Force every dashboard grid column to stack in a single full-width column.
+       Scoped to .o_hr_dashboard so the rest of the backend is unaffected. */
+    .o_hr_dashboard [class*="col-"] {
+        flex: 0 0 100% !important;
+        max-width: 100% !important;
+        width: 100% !important;
+    }
+    .o_hr_dashboard .row.main-section {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+    .leave-manager {
+        width: 100% !important;
+        margin: 15px 0 !important;
+    }
+
+    /* Neutralize the float / fixed-% sub-layouts so blocks stack and read cleanly. */
+    .employee-gender,
+    .employee-age,
+    .employee-country,
+    .employee-mobile,
+    .employee-experience,
+    .employee-email,
+    .contact,
+    .address {
+        float: none !important;
+        width: 100% !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        padding-left: 0 !important;
+        border-right: 0 !important;
+    }
+    .address {
+        padding-left: 15px !important;
+    }
+    .leave-manager h4,
+    .hr_leave_allocations_approve h4,
+    .hr_job_application_approve h4 {
+        float: none !important;
+        width: 100% !important;
+    }
+    .stat-head,
+    .emp_graph {
+        margin-left: 0 !important;
+        padding-left: 15px !important;
+        padding-right: 15px !important;
+    }
+
+    /* Charts: drop the hard-coded pixel widths so Chart.js scales to the card. */
+    #lineChart,
+    #attritionRateChart,
+    #leaveTrendChart,
+    #employeePieChart,
+    #leave_barChart,
+    #leave_doughnutChart,
+    #skillChart {
+        width: 100% !important;
+        max-width: 100% !important;
+        height: auto !important;
+    }
+    .leave_graph {
+        flex-direction: column !important;
+    }
+    .graph_view .legend,
+    .monthly_leave_graph_view .legend {
+        margin: 10px 0 0 0 !important;
+        height: auto !important;
+        max-height: 200px;
+        overflow: auto;
+    }
+    .leave_broad_factor {
+        overflow-x: auto !important;
+    }
+
+    /* Tables: scroll wide tables inside their card instead of the whole page, and
+       let short tables shrink instead of reserving a fixed 185px of dead space. */
+    .expense_table,
+    .leaves_table,
+    .attendance_table,
+    .projects_table {
+        height: auto !important;
+        max-height: 250px;
+        overflow-x: auto !important;
+        overflow-y: auto !important;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .stat-head,
+    .stat_head {
+        font-size: 16px !important;
+        margin-left: 0 !important;
+    }
+    .o_hr_dashboard .oh-card {
+        margin-bottom: 1rem;
+    }
+    .employee_prof .employee_icon img {
+        width: 110px !important;
+        height: 110px !important;
+    }
+}
