@@ -112,8 +112,55 @@
                     </div>
                 </div>
 
+                <!-- Sidebar Search -->
+                <div class="o_knowledge_sidebar_search p-2 border-bottom position-relative">
+                    <i class="fa fa-search o_knowledge_search_icon"/>
+                    <input type="text"
+                           class="form-control form-control-sm o_knowledge_search_input"
+                           placeholder="Search articles..."
+                           t-att-value="state.searchQuery"
+                           t-on-input="onSearchInput"/>
+                    <button t-if="state.searchQuery"
+                            class="btn btn-sm btn-link p-0 text-muted o_knowledge_search_clear"
+                            title="Clear search"
+                            t-on-click="clearSearch">
+                        <i class="fa fa-times"/>
+                    </button>
+                </div>
+
                 <!-- Sidebar Content (scrollable) -->
                 <div class="o_knowledge_sidebar_content flex-grow-1 overflow-auto py-2">
+
+                  <!-- Search results (shown while a query is active) -->
+                  <t t-if="state.searchQuery.trim()">
+                    <t t-if="state.searching and !state.searchResults.length">
+                        <div class="d-flex align-items-center justify-content-center py-3 text-muted">
+                            <i class="fa fa-spinner fa-spin"/>
+                        </div>
+                    </t>
+                    <t t-foreach="state.searchResults" t-as="result" t-key="result.id">
+                        <div class="o_knowledge_sidebar_item o_knowledge_search_result px-2 py-1"
+                             t-att-class="{'active': state.activeArticle and state.activeArticle.id === result.id}"
+                             t-on-click="() => this.onSelectSearchResult(result.id)">
+                            <div class="d-flex align-items-center">
+                                <span t-if="result.icon" class="me-1" t-out="result.icon"/>
+                                <span t-else="" class="fa fa-file-text-o text-muted me-1"/>
+                                <span class="o_knowledge_sidebar_item_name text-truncate"
+                                      t-out="result.name"/>
+                            </div>
+                            <div t-if="result.breadcrumb"
+                                 class="o_knowledge_search_crumb text-truncate"
+                                 t-out="result.breadcrumb"/>
+                        </div>
+                    </t>
+                    <div t-if="!state.searching and !state.searchResults.length"
+                         class="px-3 py-2 text-muted small fst-italic">
+                        No articles found
+                    </div>
+                  </t>
+
+                  <!-- Normal tree (shown when no search is active) -->
+                  <t t-else="">
 
                     <!-- Favorites Section -->
                     <t t-if="state.sidebar.favorites.length">
@@ -267,6 +314,8 @@
                             </div>
                         </t>
                     </t>
+
+                  </t><!-- /normal tree -->
 
                 </div>
 

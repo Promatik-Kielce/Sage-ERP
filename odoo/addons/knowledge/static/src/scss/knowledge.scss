@@ -59,6 +59,44 @@
             }
         }
 
+        // Search box
+        .o_knowledge_sidebar_search {
+            .o_knowledge_search_icon {
+                position: absolute;
+                top: 50%;
+                left: 16px;
+                transform: translateY(-50%);
+                color: #adb5bd;
+                font-size: 12px;
+                pointer-events: none;
+                z-index: 2;
+            }
+
+            .o_knowledge_search_input {
+                padding-left: 32px !important;
+            }
+
+            .o_knowledge_search_clear {
+                position: absolute;
+                top: 50%;
+                right: 18px;
+                transform: translateY(-50%);
+                line-height: 1;
+            }
+        }
+
+        // Search result rows — stacked title + breadcrumb
+        .o_knowledge_search_result {
+            flex-direction: column;
+            align-items: stretch;
+
+            .o_knowledge_search_crumb {
+                font-size: 11px;
+                color: #adb5bd;
+                padding-left: 18px;
+            }
+        }
+
         // Category folder nodes
         .o_knowledge_category_node {
             cursor: pointer;

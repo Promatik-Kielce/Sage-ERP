@@ -155,9 +155,13 @@ class KnowledgeClientAction extends Component {
             sidebarCollapsed: false,
             showIconPicker: false,
             showComments: false,
+            searchQuery: "",
+            searchResults: [],
+            searching: false,
         });
 
         this._saveTimeout = null;
+        this._searchTimeout = null;
 
         this.titleSpanRef = useRef("titleSpan");
         useEffect(
@@ -230,6 +234,46 @@ class KnowledgeClientAction extends Component {
         });
         this.state.sidebar = data;
         this.state.loading = false;
+    }
+
+    // --- Search ---
+
+    onSearchInput(ev) {
+        this.state.searchQuery = ev.target.value;
+        if (this._searchTimeout) clearTimeout(this._searchTimeout);
+        if (!this.state.searchQuery.trim()) {
+            this.state.searchResults = [];
+            this.state.searching = false;
+            return;
+        }
+        this._searchTimeout = setTimeout(() => this._runSearch(), 250);
+    }
+
+    async _runSearch() {
+        const query = this.state.searchQuery.trim();
+        if (!query) {
+            this.state.searchResults = [];
+            return;
+        }
+        this.state.searching = true;
+        const results = await rpc("/knowledge/search", { query });
+        // Ignore stale responses if the query changed meanwhile.
+        if (this.state.searchQuery.trim() === query) {
+            this.state.searchResults = results;
+            this.state.searching = false;
+        }
+    }
+
+    clearSearch() {
+        if (this._searchTimeout) clearTimeout(this._searchTimeout);
+        this.state.searchQuery = "";
+        this.state.searchResults = [];
+        this.state.searching = false;
+    }
+
+    async onSelectSearchResult(articleId) {
+        await this.onSelectArticle(articleId);
+        this.clearSearch();
     }
 
     // --- Article selection ---

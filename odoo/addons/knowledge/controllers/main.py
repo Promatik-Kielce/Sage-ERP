@@ -12,6 +12,11 @@ class KnowledgeController(http.Controller):
             .get_sidebar_articles(active_article_id=active_article_id)
         )
 
+    @http.route("/knowledge/search", type="json", auth="user")
+    def search_articles(self, query):
+        """Return articles matching the query by title (for sidebar search)."""
+        return request.env["knowledge.article"].search_articles(query)
+
     @http.route("/knowledge/article/children", type="json", auth="user")
     def get_article_children(self, article_id):
         """Lazy-load children for a sidebar tree node."""

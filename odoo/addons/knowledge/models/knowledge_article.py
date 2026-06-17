@@ -589,6 +589,68 @@ class KnowledgeArticle(models.Model):
             ),
         }
 
+    @api.model
+    def search_articles(self, query, limit=20):
+        """Return a flat list of articles matching ``query`` by title.
+
+        Results are scoped to what the current user may access (``search``
+        applies record rules) and carry a breadcrumb describing where each
+        article lives, e.g. ``Shared › Finance ›``.
+        """
+        if not query or not query.strip():
+            return []
+
+        articles = self.search(
+            [
+                ("is_trashed", "=", False),
+                ("is_template", "=", False),
+                ("name", "ilike", query.strip()),
+            ],
+            order="name",
+            limit=limit,
+        )
+        if not articles:
+            return []
+
+        # Batch-load ancestor names (one browse) to avoid N+1 queries.
+        ancestor_ids = set()
+        for article in articles:
+            if article.parent_path:
+                ancestor_ids.update(
+                    int(x)
+                    for x in article.parent_path.split("/")
+                    if x and int(x) != article.id
+                )
+        name_by_id = {
+            a.id: a.name
+            for a in self.browse(list(ancestor_ids))
+        }
+
+        section_labels = {
+            "workspace": "Workspace",
+            "shared": "Shared",
+            "private": "My Articles",
+        }
+
+        results = []
+        for article in articles:
+            parts = [section_labels.get(article.category, article.category or "")]
+            if article.knowledge_category_id:
+                parts.append(article.knowledge_category_id.name)
+            if article.parent_path:
+                for x in article.parent_path.split("/"):
+                    if x and int(x) != article.id:
+                        parts.append(name_by_id.get(int(x), ""))
+            parts = [p for p in parts if p]
+            breadcrumb = (" › ".join(parts) + " ›") if parts else ""
+            results.append({
+                "id": article.id,
+                "name": article.name,
+                "icon": article.icon or "",
+                "breadcrumb": breadcrumb,
+            })
+        return results
+
     def get_article_children(self):
         """Lazy-load children for sidebar tree expansion."""
         self.ensure_one()
