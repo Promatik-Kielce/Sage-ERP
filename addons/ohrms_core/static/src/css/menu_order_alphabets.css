@@ -2,7 +2,7 @@
     float: left;
     position: relative;
     width: 99vw;
-    height: 100vh;
+    height: auto;
     background: #fff;
     display: flex;
     justify-content: start;
@@ -74,16 +74,18 @@
     flex-wrap: wrap;
 
 }
-.o_main_navbar .dropdown-menu.show {
-    max-height: none !important;
-    min-width: 100vw;
-    min-heigt: 100vh;
-    overflow: auto;
-    margin-top: 0;
-    position: relative;
-    margin-top: 46px;
-    margin-left: -18px;
-}
+.o_main_navbar .dropdown-menu.fullscreen-menu.show {
+    position: fixed;
+    top: 46px;            /* below the 46px navbar ($o-navbar-height) */
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100vw;
+    height: calc(100vh - 46px);
+    max-height: calc(100vh - 46px);
+    overflow-y: auto;     /* the working scrollbar */
+    overflow-x: hidden;
+    margin: 0;
 }
 .o-menu-search-result.dropdown-item.col-12.ml-auto.mr-auto {
 
@@ -110,11 +112,10 @@
 @media (max-width: 684px){
 
 .nav-container {
-    background:red;
     float: left;
     position: relative;
     width: 99vw;
-    height: 100vh;
+    height: auto;
     background: #fff;
     display: flex;
     justify-content: start;
