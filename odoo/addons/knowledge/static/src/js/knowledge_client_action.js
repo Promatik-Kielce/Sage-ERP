@@ -9,7 +9,7 @@ import { browser } from "@web/core/browser/browser";
 import { useService } from "@web/core/utils/hooks";
 import { standardActionServiceProps } from "@web/webclient/actions/action_service";
 import { Wysiwyg } from "@html_editor/wysiwyg";
-import { MAIN_PLUGINS } from "@html_editor/plugin_sets";
+import { MAIN_PLUGINS, COLLABORATION_PLUGINS } from "@html_editor/plugin_sets";
 import { HtmlViewer } from "@html_editor/components/html_viewer/html_viewer";
 import { EmojiPicker } from "./emoji_picker";
 import { Chatter } from "@mail/chatter/web_portal/chatter";
@@ -138,6 +138,7 @@ class KnowledgeClientAction extends Component {
         this.orm = useService("orm");
         this.action = useService("action");
         this.notification = useService("notification");
+        this.busService = useService("bus_service");
         this.editor = null;
 
         this.state = useState({
@@ -197,10 +198,34 @@ class KnowledgeClientAction extends Component {
         return !this.state.activeArticle.user_has_write_access || this.state.activeArticle.is_locked;
     }
 
+    /**
+     * Real-time collaborative editing is only enabled for writable Workspace
+     * articles. Private and shared articles keep the single-editor flow, and
+     * locked/read-only articles never open a peer-to-peer session.
+     */
+    get isCollaborative() {
+        return !this.isReadonly && this.state.activeArticle?.category === "workspace";
+    }
+
+    generateId() {
+        // No need for secure random number.
+        return Math.floor(Math.random() * Math.pow(2, 52)).toString();
+    }
+
+    /** Stable per-session peer id, regenerated whenever the active article changes. */
+    getPeerId() {
+        const articleId = this.state.activeArticle?.id;
+        if (this._peerIdArticle !== articleId) {
+            this._peerIdArticle = articleId;
+            this._peerId = this.generateId();
+        }
+        return this._peerId;
+    }
+
     getWysiwygConfig() {
-        return {
+        const config = {
             content: markup(this.state.activeArticle?.body || ""),
-            Plugins: MAIN_PLUGINS,
+            Plugins: [...MAIN_PLUGINS, ...(this.isCollaborative ? COLLABORATION_PLUGINS : [])],
             onChange: () => this.onWysiwygChange(),
             baseContainers: ["DIV", "P"],
             dropImageAsAttachment: true,
@@ -209,6 +234,20 @@ class KnowledgeClientAction extends Component {
                 resId: this.state.activeArticle?.id,
             }),
         };
+        if (this.isCollaborative) {
+            config.collaboration = {
+                busService: this.busService,
+                ormService: this.orm,
+                collaborativeTrigger: "focus",
+                collaborationChannel: {
+                    collaborationModelName: "knowledge.article",
+                    collaborationFieldName: "body",
+                    collaborationResId: this.state.activeArticle.id,
+                },
+                peerId: this.getPeerId(),
+            };
+        }
+        return config;
     }
 
     getReadonlyConfig() {
@@ -402,11 +441,29 @@ class KnowledgeClientAction extends Component {
     async _saveArticle(vals) {
         if (!this.state.activeArticle) return;
         this.state.saving = true;
-        await rpc("/knowledge/article/save", {
-            article_id: this.state.activeArticle.id,
-            vals,
-        });
-        this.state.saving = false;
+        try {
+            await rpc("/knowledge/article/save", {
+                article_id: this.state.activeArticle.id,
+                vals,
+            });
+        } catch (error) {
+            // During collaborative editing, concurrent saves can diverge on the
+            // server (html.field.history.mixin raises a ValidationError). The
+            // peer-to-peer layer is the source of truth for live merging, so we
+            // swallow that specific divergence error instead of surfacing a
+            // blocking dialog. Any other error is re-raised as before.
+            const isDivergence =
+                this.isCollaborative &&
+                "body" in vals &&
+                error?.data?.name?.includes("ValidationError");
+            if (isDivergence) {
+                console.debug("Knowledge: ignored collaborative save divergence", error);
+            } else {
+                throw error;
+            }
+        } finally {
+            this.state.saving = false;
+        }
     }
 
     // --- Create ---
