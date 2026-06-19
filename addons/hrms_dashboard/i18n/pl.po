@@ -776,8 +776,20 @@ msgstr "Pomyślnie "
 #. module: hrms_dashboard
 #. odoo-javascript
 #: code:addons/hrms_dashboard/static/src/js/dashboard.js:0
+msgid "TASKS"
+msgstr "ZADANIA"
+
+#. module: hrms_dashboard
+#. odoo-javascript
+#: code:addons/hrms_dashboard/static/src/js/dashboard.js:0
 msgid "Task"
 msgstr "Zadanie"
+
+#. module: hrms_dashboard
+#. odoo-javascript
+#: code:addons/hrms_dashboard/static/src/js/dashboard.js:0
+msgid "Tasks"
+msgstr "Zadania"
 
 #. module: hrms_dashboard
 #. odoo-javascript
