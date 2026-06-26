@@ -1,0 +1,41 @@
+.o_fleet_car_rental_btn {
+    position: absolute;
+    top: 1.25rem;
+    left: 1.25rem;
+    z-index: 1030;
+    border-radius: 50%;
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.o_fleet_car_list,
+.o_fleet_rent_form {
+    max-width: 900px;
+}
+
+.o_fleet_rent_form {
+    max-width: 600px;
+}
+
+.o_fleet_car_card {
+    transition: box-shadow 0.15s ease-in-out, transform 0.15s ease-in-out;
+
+    &.o_fleet_car_available {
+        cursor: pointer;
+
+        &:hover {
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px);
+        }
+    }
+
+    &.o_fleet_car_unavailable {
+        opacity: 0.5;
+        cursor: not-allowed;
+        background-color: var(--bs-light, #f8f9fa);
+    }
+}

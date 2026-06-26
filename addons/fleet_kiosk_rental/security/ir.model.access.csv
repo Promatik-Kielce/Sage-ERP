@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_fleet_rental_project_user,fleet.rental.project.user,model_fleet_rental_project,fleet.fleet_group_user,1,1,1,1
+access_fleet_rental_project_manager,fleet.rental.project.manager,model_fleet_rental_project,fleet.fleet_group_manager,1,1,1,1

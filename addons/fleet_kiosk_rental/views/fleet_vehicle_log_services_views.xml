@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Rename the "Services" UI to "Cars History" and surface rental data -->
+    <record id="fleet.fleet_vehicle_log_services_action" model="ir.actions.act_window">
+        <field name="name">Cars History</field>
+    </record>
+
+    <!-- Stat button label on the vehicle form -->
+    <record id="fleet_vehicle_view_form_cars_history" model="ir.ui.view">
+        <field name="name">fleet.vehicle.form.cars.history</field>
+        <field name="model">fleet.vehicle</field>
+        <field name="inherit_id" ref="fleet.fleet_vehicle_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='service_count']" position="attributes">
+                <attribute name="string">Cars History</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Services list: rental columns -->
+    <record id="fleet_vehicle_log_services_view_tree_rental" model="ir.ui.view">
+        <field name="name">fleet.vehicle.log.services.list.rental</field>
+        <field name="model">fleet.vehicle.log.services</field>
+        <field name="inherit_id" ref="fleet.fleet_vehicle_log_services_view_tree"/>
+        <field name="arch" type="xml">
+            <list position="attributes">
+                <attribute name="string">Cars History</attribute>
+            </list>
+            <xpath expr="//field[@name='purchaser_id']" position="after">
+                <field name="employee_id" optional="show"/>
+                <field name="rental_start" optional="show"/>
+                <field name="rental_return" optional="show"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Services form: rental section -->
+    <record id="fleet_vehicle_log_services_view_form_rental" model="ir.ui.view">
+        <field name="name">fleet.vehicle.log.services.form.rental</field>
+        <field name="model">fleet.vehicle.log.services</field>
+        <field name="inherit_id" ref="fleet.fleet_vehicle_log_services_view_form"/>
+        <field name="arch" type="xml">
+            <form position="attributes">
+                <attribute name="string">Cars History</attribute>
+            </form>
+            <xpath expr="//field[@name='purchaser_id']" position="after">
+                <field name="is_rental"/>
+                <field name="employee_id" invisible="not is_rental"/>
+                <field name="rental_start" invisible="not is_rental"/>
+                <field name="rental_return" invisible="not is_rental"/>
+            </xpath>
+            <xpath expr="//field[@name='notes']" position="before">
+                <separator string="Project Numbers" invisible="not is_rental"/>
+                <field name="project_number_ids" invisible="not is_rental">
+                    <list editable="bottom">
+                        <field name="name"/>
+                    </list>
+                </field>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

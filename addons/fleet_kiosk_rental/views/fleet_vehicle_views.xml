@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Vehicle form: insurance / checkup dates + rental status bar -->
+    <record id="fleet_vehicle_view_form_rental" model="ir.ui.view">
+        <field name="name">fleet.vehicle.form.rental</field>
+        <field name="model">fleet.vehicle</field>
+        <field name="inherit_id" ref="fleet.fleet_vehicle_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/field[@name='state_id']" position="after">
+                <field name="rental_state" widget="statusbar" options="{'clickable': '1'}"/>
+            </xpath>
+            <xpath expr="//field[@name='vin_sn']" position="after">
+                <field name="insurance_expiry_date"/>
+                <field name="next_technical_checkup_date"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Vehicle kanban: pipeline by rental status (Parking / Delegation / Service) -->
+    <record id="fleet_vehicle_view_kanban_rental" model="ir.ui.view">
+        <field name="name">fleet.vehicle.kanban.rental</field>
+        <field name="model">fleet.vehicle</field>
+        <field name="inherit_id" ref="fleet.fleet_vehicle_view_kanban"/>
+        <field name="arch" type="xml">
+            <xpath expr="//kanban" position="attributes">
+                <attribute name="default_group_by">rental_state</attribute>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

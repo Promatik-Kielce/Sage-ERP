@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <!-- Add the car button to the kiosk header and the rental screens to the shell -->
+    <t t-name="fleet_kiosk_rental.public_kiosk_app"
+       t-inherit="hr_attendance.public_kiosk_app"
+       t-inherit-mode="extension">
+
+        <xpath expr="//MainComponentsContainer" position="after">
+            <button t-if="state.active_display === 'main'"
+                    class="btn btn-light o_fleet_car_rental_btn"
+                    t-on-click="openCarRental"
+                    title="Car Rent">
+                <i class="fa fa-car fa-lg"/>
+            </button>
+        </xpath>
+
+        <xpath expr="//CardLayout" position="inside">
+
+            <!-- Identification: scan badge or identify manually -->
+            <t t-if="state.active_display === 'car_auth'">
+                <div class="o_hr_kiosk_mode_main d-flex flex-column gap-3 m-auto">
+                    <h1 class="text-center">Car Rent</h1>
+                    <KioskBarcodeScanner
+                        kioskMode="this.props.kioskMode"
+                        fromTrialMode="this.props.fromTrialMode"
+                        token="this.props.token"
+                        barcodeSource="this.props.barcodeSource"
+                        onBarcodeScanned="(ev) => this.onCarBarcodeScanned(ev)"/>
+                </div>
+                <div class="o_hr_kiosk_mode_bottom d-flex flex-column flex-md-row gap-2 align-items-center justify-content-center my-5">
+                    <button t-on-click="() => this.switchDisplay('car_manual')" class="btn btn-light btn-lg rounded-3">
+                        <i class="fa fa-user-o me-2"/>
+                        <span>Identify Manually</span>
+                    </button>
+                    <button t-on-click="() => this.kioskReturn()" class="btn btn-secondary btn-lg rounded-3">
+                        <i class="oi oi-chevron-left me-2"/>
+                        <span>Cancel</span>
+                    </button>
+                </div>
+            </t>
+
+            <!-- Manual employee selection (reuse attendance component) -->
+            <t t-if="state.active_display === 'car_manual'">
+                <KioskManualSelection
+                    displayBackButton="true"
+                    departments="this.props.departments"
+                    onSelectEmployee="(e) => this.carConfirm(e)"
+                    onClickBack="() => this.switchDisplay('car_auth')"
+                    token="this.props.token"/>
+            </t>
+
+            <!-- PIN entry -->
+            <t t-if="state.active_display === 'car_pin'">
+                <CarRentalPinCode
+                    employeeData="this.carRental.pinEmployee"
+                    onPinConfirm="(id, pin) => this.carPinConfirm(id, pin)"
+                    onClickBack="() => this.switchDisplay('car_manual')"/>
+            </t>
+
+            <!-- Car list -->
+            <t t-if="state.active_display === 'car_list'">
+                <div class="o_hr_kiosk_mode_main d-flex flex-column m-auto w-100 o_fleet_car_list">
+                    <h2 class="text-center mb-3">Choose a car</h2>
+                    <div class="row g-3">
+                        <t t-foreach="carRental.vehicles" t-as="car" t-key="car.id">
+                            <div class="col-12 col-md-6">
+                                <div class="card h-100 o_fleet_car_card"
+                                     t-att-class="{'o_fleet_car_unavailable': !car.available, 'o_fleet_car_available': car.available}"
+                                     t-on-click="() => this.selectCar(car)">
+                                    <div class="card-body d-flex align-items-center">
+                                        <i class="fa fa-car fa-2x me-3"/>
+                                        <div class="flex-grow-1">
+                                            <div class="fw-bolder fs-5"><t t-esc="car.name"/></div>
+                                            <div class="small text-muted" t-if="car.license_plate"><t t-esc="car.license_plate"/></div>
+                                            <div class="small text-danger" t-if="car.is_rented">
+                                                Taken<t t-if="car.renter_name"> by <t t-esc="car.renter_name"/></t>
+                                            </div>
+                                            <div class="small text-danger" t-if="car.insurance_expired">Insurance expired</div>
+                                            <div class="small text-danger" t-if="car.checkup_overdue">Technical checkup overdue</div>
+                                        </div>
+                                        <i class="fa fa-chevron-right text-muted" t-if="car.available"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+                    <div class="alert alert-info text-center mt-3" t-if="!carRental.vehicles.length">
+                        No cars found.
+                    </div>
+                </div>
+                <div class="o_hr_kiosk_mode_bottom my-4 mx-auto">
+                    <button class="btn btn-light btn-lg rounded-pill px-5" t-on-click="() => this.kioskReturn()">
+                        <i class="oi oi-chevron-left me-2"/>
+                        <span>Cancel</span>
+                    </button>
+                </div>
+            </t>
+
+            <!-- Rent form: project numbers + notes -->
+            <t t-if="state.active_display === 'car_form'">
+                <div class="o_hr_kiosk_mode_main d-flex flex-column m-auto w-100 o_fleet_rent_form">
+                    <h2 class="text-center mb-3">Rent <t t-esc="carRental.selectedVehicleName"/></h2>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Project Numbers</label>
+                        <t t-foreach="carRental.projectNumbers" t-as="pn" t-key="pn_index">
+                            <div class="input-group mb-2">
+                                <input type="text" class="form-control form-control-lg"
+                                       placeholder="e.g. 2019-A-1234"
+                                       t-att-value="pn"
+                                       t-on-input="(ev) => this.updateProjectNumber(pn_index, ev.target.value)"/>
+                                <button class="btn btn-outline-secondary" type="button"
+                                        t-on-click="() => this.removeProjectNumber(pn_index)">
+                                    <i class="fa fa-times"/>
+                                </button>
+                            </div>
+                        </t>
+                        <button class="btn btn-link p-0" type="button" t-on-click="() => this.addProjectNumber()">
+                            <i class="fa fa-plus me-1"/>Add another project number
+                        </button>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Notes</label>
+                        <textarea class="form-control" rows="3"
+                                  t-on-input="(ev) => this.carRental.notes = ev.target.value"/>
+                    </div>
+                </div>
+                <div class="o_hr_kiosk_mode_bottom d-flex gap-2 my-4 mx-auto">
+                    <button class="btn btn-light btn-lg rounded-pill px-4" t-on-click="() => this.switchDisplay('car_list')">
+                        <i class="oi oi-chevron-left me-2"/>
+                        <span>Back</span>
+                    </button>
+                    <button class="btn btn-primary btn-lg rounded-pill px-5" t-on-click="() => this.confirmRent()">
+                        <i class="fa fa-key me-2"/>
+                        <span>Rent</span>
+                    </button>
+                </div>
+            </t>
+
+            <!-- Confirmation -->
+            <t t-if="state.active_display === 'car_done'">
+                <div class="o_hr_kiosk_mode_main d-flex flex-grow-1 justify-content-center align-items-center">
+                    <div class="card rounded-3 text-center">
+                        <div class="card-body p-5">
+                            <i class="fa fa-check-circle fa-4x text-success mb-3"/>
+                            <t t-if="carRental.confirmation and carRental.confirmation.mode === 'rented'">
+                                <h2>Enjoy your trip!</h2>
+                                <h5 class="text-muted">You rented <strong><t t-esc="carRental.confirmation.vehicleName"/></strong></h5>
+                            </t>
+                            <t t-else="">
+                                <h2>Welcome back!</h2>
+                                <h5 class="text-muted">Returned <strong><t t-esc="carRental.confirmation and carRental.confirmation.vehicleName"/></strong></h5>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+                <div class="o_hr_kiosk_mode_bottom my-4 mx-auto">
+                    <button class="btn btn-primary btn-lg rounded-pill px-5" t-on-click="() => this.kioskReturn()">
+                        OK
+                    </button>
+                </div>
+            </t>
+
+        </xpath>
+    </t>
+
+    <!-- Rental PIN pad (mirrors hr_attendance.KioskPinConfirm with a rental heading) -->
+    <t t-name="fleet_kiosk_rental.CarRentalPinConfirm">
+        <t t-if="this.props.employeeData">
+            <div class="o_hr_kiosk_mode_main d-flex flex-grow-1 justify-content-center align-items-center">
+                <div class="card rounded-3">
+                    <div class="card-body rounded-3 text-center">
+                        <t t-call="hr_attendance.EmployeeBadge">
+                            <t t-set="employeeAvatar" t-value="this.props.employeeData.employee_avatar"/>
+                            <t t-set="employeeAvatarHeight" t-value="'60'"/>
+                        </t>
+                        <h3 class="mt-2 mb-1"><t t-esc="this.props.employeeData.employee_name"/></h3>
+                        <h5 class="text-muted my-0">Please enter your PIN</h5>
+                        <div class="o_hr_kiosk_mode_code mb-2">
+                            <div class="row">
+                                <div class="col-md-8 offset-md-2 o_hr_attendance_pin_pad">
+                                    <div class="row g-0 my-2">
+                                        <input t-att-value="state.codePin"
+                                               class="o_hr_attendance_PINbox py-0 border-0 bg-white text-center fs-3"
+                                               type="password"
+                                               readonly="readonly"
+                                               t-on-keydown="onPinInputKeyDown"/>
+                                    </div>
+                                    <div class="row g-2">
+                                        <div class="col-4" t-foreach="padButtons" t-as="btn" t-key="btn[0]">
+                                            <a href="#" t-on-click="() => this.onClickPadButton(btn[0])" t-attf-class="o_hr_attendance_PINbox_button btn {{btn[1]? btn[1] : 'btn-secondary'}} d-flex align-items-center justify-content-center py-2 py-xl-3 rounded-1">
+                                                <t t-esc="btn[0]"/>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="o_hr_kiosk_mode_bottom my-4 mx-auto">
+                <button class="btn btn-light btn-lg rounded-pill px-5" t-on-click="() => this.props.onClickBack()">
+                    <i class="oi oi-chevron-left me-2"/>
+                    <span>Go back</span>
+                </button>
+            </div>
+        </t>
+        <t t-else="">
+            <div class="alert alert-danger mx-3" role="alert">
+                <h4 class="alert-heading">Error: could not find corresponding employee.</h4>
+                <p>Please return to the main menu.</p>
+            </div>
+        </t>
+    </t>
+
+</templates>
