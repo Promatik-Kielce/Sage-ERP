@@ -4,12 +4,31 @@
     left: 1.25rem;
     z-index: 1030;
     border-radius: 50%;
-    width: 56px;
-    height: 56px;
+    width: 88px;
+    height: 88px;
     display: flex;
     align-items: center;
     justify-content: center;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+
+    .fa {
+        font-size: 2.5rem;
+    }
+}
+
+// On the rental identification screen the barcode scanner's "Scan your badge"
+// button is absolutely positioned (its container collapses), which lets it
+// overlap the heading above it - more visible with longer translations.
+// Put the scanner button back into normal flow so heading + scanner stack.
+.o_fleet_car_auth {
+    h1 {
+        position: relative;
+        z-index: 1;
+    }
+
+    .o_hr_attendance_kiosk .o_mobile_barcode {
+        position: static !important;
+    }
 }
 
 .o_fleet_car_list,

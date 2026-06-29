@@ -1,19 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <!-- Rename the "Services" UI to "Cars History" and surface rental data -->
+    <!-- Rename the "Services" UI to "Rental History" and surface rental data -->
     <record id="fleet.fleet_vehicle_log_services_action" model="ir.actions.act_window">
-        <field name="name">Cars History</field>
+        <field name="name">Rental History</field>
     </record>
 
-    <!-- Stat button label on the vehicle form -->
+    <!-- The left-nav menu item keeps its own stored name (captured as "Services"),
+         so rename it explicitly. Use <record> (not <menuitem>) to write only the
+         name and avoid resetting parent/action/groups. -->
+    <record id="fleet.fleet_vehicle_log_services_menu" model="ir.ui.menu">
+        <field name="name">Rental History</field>
+        <field name="parent_id" ref="fleet.fleet_vehicles"/>
+    </record>
+
+    <!-- Stat button label on the vehicle form (all three service-activity states) -->
     <record id="fleet_vehicle_view_form_cars_history" model="ir.ui.view">
-        <field name="name">fleet.vehicle.form.cars.history</field>
+        <field name="name">fleet.vehicle.form.rental.history</field>
         <field name="model">fleet.vehicle</field>
         <field name="inherit_id" ref="fleet.fleet_vehicle_view_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//field[@name='service_count']" position="attributes">
-                <attribute name="string">Cars History</attribute>
+            <xpath expr="//button[@invisible=&quot;service_activity != 'none'&quot;]/field[@name='service_count']" position="attributes">
+                <attribute name="string">Rental History</attribute>
+            </xpath>
+            <xpath expr="//button[@invisible=&quot;service_activity != 'overdue'&quot;]/field[@name='service_count']" position="attributes">
+                <attribute name="string">Rental History</attribute>
+            </xpath>
+            <xpath expr="//button[@invisible=&quot;service_activity != 'today'&quot;]/field[@name='service_count']" position="attributes">
+                <attribute name="string">Rental History</attribute>
             </xpath>
         </field>
     </record>
@@ -25,7 +39,7 @@
         <field name="inherit_id" ref="fleet.fleet_vehicle_log_services_view_tree"/>
         <field name="arch" type="xml">
             <list position="attributes">
-                <attribute name="string">Cars History</attribute>
+                <attribute name="string">Rental History</attribute>
             </list>
             <xpath expr="//field[@name='purchaser_id']" position="after">
                 <field name="employee_id" optional="show"/>
@@ -42,7 +56,7 @@
         <field name="inherit_id" ref="fleet.fleet_vehicle_log_services_view_form"/>
         <field name="arch" type="xml">
             <form position="attributes">
-                <attribute name="string">Cars History</attribute>
+                <attribute name="string">Rental History</attribute>
             </form>
             <xpath expr="//field[@name='purchaser_id']" position="after">
                 <field name="is_rental"/>

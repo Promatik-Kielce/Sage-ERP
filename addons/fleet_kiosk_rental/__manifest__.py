@@ -14,7 +14,7 @@ Lets employees rent (take) and return fleet cars from the attendance kiosk.
 * Adds a car button to the kiosk that identifies the employee (badge or PIN),
   lets them pick an available car, record project numbers and notes, and
   automatically registers the return on the next visit.
-* Stores the rental history on the fleet "Services" log (shown as "Cars History").
+* Stores the rental history on the fleet "Services" log (shown as "Rental History").
     """,
     'author': 'Sage-ERP',
     'depends': ['fleet', 'hr_attendance', 'hr'],

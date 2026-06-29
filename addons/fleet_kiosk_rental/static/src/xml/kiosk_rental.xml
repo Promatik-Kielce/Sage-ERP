@@ -19,8 +19,8 @@
 
             <!-- Identification: scan badge or identify manually -->
             <t t-if="state.active_display === 'car_auth'">
-                <div class="o_hr_kiosk_mode_main d-flex flex-column gap-3 m-auto">
-                    <h1 class="text-center">Car Rent</h1>
+                <div class="o_hr_kiosk_mode_main o_fleet_car_auth d-flex flex-column gap-3 m-auto">
+                    <h1 class="text-center mb-4">Car Rent</h1>
                     <KioskBarcodeScanner
                         kioskMode="this.props.kioskMode"
                         fromTrialMode="this.props.fromTrialMode"

@@ -1,0 +1,352 @@
+# Translation of Sage ERP Server.
+# This file contains the translation of the following modules:
+# 	* fleet_kiosk_rental
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Sage ERP Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-06-29 08:12+0000\n"
+"PO-Revision-Date: 2026-06-29 08:12+0000\n"
+"Last-Translator: \n"
+"Language-Team: Polish\n"
+"Language: pl\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
+
+#. module: fleet_kiosk_rental
+#. odoo-javascript
+#: code:addons/fleet_kiosk_rental/static/src/xml/kiosk_rental.xml:0
+msgid "Add another project number"
+msgstr "Dodaj kolejny numer projektu"
+
+#. module: fleet_kiosk_rental
+#. odoo-javascript
+#: code:addons/fleet_kiosk_rental/static/src/xml/kiosk_rental.xml:0
+msgid "Back"
+msgstr "Wstecz"
+
+#. module: fleet_kiosk_rental
+#. odoo-javascript
+#: code:addons/fleet_kiosk_rental/static/src/xml/kiosk_rental.xml:0
+msgid "Cancel"
+msgstr "Anuluj"
+
+#. module: fleet_kiosk_rental
+#. odoo-javascript
+#: code:addons/fleet_kiosk_rental/static/src/xml/kiosk_rental.xml:0
+msgid "Car Rent"
+msgstr "Wynajem samochodu"
+
+#. module: fleet_kiosk_rental
+#: model:fleet.service.type,name:fleet_kiosk_rental.fleet_service_type_car_rental
+#: model:ir.model.fields,field_description:fleet_kiosk_rental.field_fleet_vehicle_log_services__is_rental
+msgid "Car Rental"
+msgstr "Wynajem samochodu"
+
+#. module: fleet_kiosk_rental
+#: model:ir.model,name:fleet_kiosk_rental.model_fleet_rental_project
+msgid "Car Rental Project Number"
+msgstr "Numer projektu wynajmu samochodu"
+
+#. module: fleet_kiosk_rental
+#. odoo-javascript
+#: code:addons/fleet_kiosk_rental/static/src/xml/kiosk_rental.xml:0
+msgid "Choose a car"
+msgstr "Wybierz samochód"
+
+#. module: fleet_kiosk_rental
+#. odoo-javascript
+#: code:addons/fleet_kiosk_rental/static/src/js/kiosk_rental.js:0
+msgid "Could not find the selected employee."
+msgstr "Nie można znaleźć wybranego pracownika."
+
+#. module: fleet_kiosk_rental
+#. odoo-javascript
+#: code:addons/fleet_kiosk_rental/static/src/js/kiosk_rental.js:0
+msgid "Could not register the car return."
+msgstr "Nie można zarejestrować zwrotu samochodu."
+
+#. module: fleet_kiosk_rental
+#. odoo-javascript
+#: code:addons/fleet_kiosk_rental/static/src/js/kiosk_rental.js:0
+msgid "Could not rent this car. It may no longer be available."
+msgstr "Nie można wypożyczyć tego samochodu. Może być już niedostępny."
+
+#. module: fleet_kiosk_rental
+#: model:ir.model.fields,field_description:fleet_kiosk_rental.field_fleet_rental_project__create_uid
+msgid "Created by"
+msgstr "Utworzone przez"
+
+#. module: fleet_kiosk_rental
+#: model:ir.model.fields,field_description:fleet_kiosk_rental.field_fleet_rental_project__create_date
+msgid "Created on"
+msgstr "Data utworzenia"
+
+#. module: fleet_kiosk_rental
+#: model:ir.model.fields,help:fleet_kiosk_rental.field_fleet_vehicle__next_technical_checkup_date
+msgid ""
+"Date of the next mandatory technical inspection. Past this date the car can "
+"no longer be rented from the kiosk."
+msgstr "Data następnego obowiązkowego przeglądu technicznego. Po tej dacie samochód nie może być już wypożyczony z kiosku."
+
+#. module: fleet_kiosk_rental
+#: model:ir.model.fields,help:fleet_kiosk_rental.field_fleet_vehicle__insurance_expiry_date
+msgid ""
+"Date on which the vehicle insurance expires. Past this date the car can no "
+"longer be rented from the kiosk."
+msgstr "Data wygaśnięcia ubezpieczenia pojazdu. Po tej dacie samochód nie może być już wypożyczony z kiosku."
+
+#. module: fleet_kiosk_rental
+#: model:ir.model.fields.selection,name:fleet_kiosk_rental.selection__fleet_vehicle__rental_state__delegation
+msgid "Delegation"
+msgstr "Delegacja"
+
+#. module: fleet_kiosk_rental
+#: model:ir.model.fields,field_description:fleet_kiosk_rental.field_fleet_rental_project__display_name
+#: model:ir.model.fields,field_description:fleet_kiosk_rental.field_fleet_vehicle__display_name
+#: model:ir.model.fields,field_description:fleet_kiosk_rental.field_fleet_vehicle_log_services__display_name
+msgid "Display Name"
+msgstr "Nazwa wyświetlana"
+
+#. module: fleet_kiosk_rental
+#. odoo-javascript
+#: code:addons/fleet_kiosk_rental/static/src/js/kiosk_rental.js:0
+msgid "Employee not recognized."
+msgstr "Nie rozpoznano pracownika."
+
+#. module: fleet_kiosk_rental
+#. odoo-javascript
+#: code:addons/fleet_kiosk_rental/static/src/xml/kiosk_rental.xml:0
+msgid "Enjoy your trip!"
+msgstr "Udanej podróży!"
+
+#. module: fleet_kiosk_rental
+#. odoo-javascript
+#: code:addons/fleet_kiosk_rental/static/src/xml/kiosk_rental.xml:0
+msgid "Error: could not find corresponding employee."
+msgstr "Błąd: nie znaleziono odpowiedniego pracownika."
+
+#. module: fleet_kiosk_rental
+#: model:ir.model.fields,help:fleet_kiosk_rental.field_fleet_rental_project__name
+msgid ""
+"Free-text project/site number. Intentionally not linked to any project "
+"record, since employees may visit very old projects that are no longer in "
+"the system."
+msgstr "Dowolny numer projektu/budowy. Celowo niepowiązany z żadnym rekordem projektu, ponieważ pracownicy mogą odwiedzać bardzo stare projekty, których nie ma już w systemie."
+
+#. module: fleet_kiosk_rental
+#. odoo-javascript
+#: code:addons/fleet_kiosk_rental/static/src/xml/kiosk_rental.xml:0
+msgid "Go back"
+msgstr "Wróć"
+
+#. module: fleet_kiosk_rental
+#: model:ir.model.fields,field_description:fleet_kiosk_rental.field_fleet_rental_project__id
+#: model:ir.model.fields,field_description:fleet_kiosk_rental.field_fleet_vehicle__id
+#: model:ir.model.fields,field_description:fleet_kiosk_rental.field_fleet_vehicle_log_services__id
+msgid "ID"
+msgstr "ID"
+
+#. module: fleet_kiosk_rental
+#. odoo-javascript
+#: code:addons/fleet_kiosk_rental/static/src/xml/kiosk_rental.xml:0
+msgid "Identify Manually"
+msgstr "Identyfikuj ręcznie"
+
+#. module: fleet_kiosk_rental
+#: model:ir.model.fields,field_description:fleet_kiosk_rental.field_fleet_vehicle__insurance_expiry_date
+msgid "Insurance Expiry"
+msgstr "Wygaśnięcie ubezpieczenia"
+
+#. module: fleet_kiosk_rental
+#. odoo-javascript
+#: code:addons/fleet_kiosk_rental/static/src/xml/kiosk_rental.xml:0
+msgid "Insurance expired"
+msgstr "Ubezpieczenie wygasło"
+
+#. module: fleet_kiosk_rental
+#: model:ir.model.fields,field_description:fleet_kiosk_rental.field_fleet_rental_project__write_uid
+msgid "Last Updated by"
+msgstr "Ostatnio aktualizowane przez"
+
+#. module: fleet_kiosk_rental
+#: model:ir.model.fields,field_description:fleet_kiosk_rental.field_fleet_rental_project__write_date
+msgid "Last Updated on"
+msgstr "Data ostatniej aktualizacji"
+
+#. module: fleet_kiosk_rental
+#: model:ir.model.fields,field_description:fleet_kiosk_rental.field_fleet_vehicle__next_technical_checkup_date
+msgid "Next Technical Checkup"
+msgstr "Następny przegląd techniczny"
+
+#. module: fleet_kiosk_rental
+#. odoo-javascript
+#: code:addons/fleet_kiosk_rental/static/src/xml/kiosk_rental.xml:0
+msgid "No cars found."
+msgstr "Nie znaleziono samochodów."
+
+#. module: fleet_kiosk_rental
+#. odoo-javascript
+#: code:addons/fleet_kiosk_rental/static/src/js/kiosk_rental.js:0
+msgid "No employee corresponding to Badge ID '%(barcode)s.'"
+msgstr "Brak pracownika odpowiadającego identyfikatorowi '%(barcode)s.'"
+
+#. module: fleet_kiosk_rental
+#. odoo-javascript
+#: code:addons/fleet_kiosk_rental/static/src/xml/kiosk_rental.xml:0
+msgid "Notes"
+msgstr "Notatki"
+
+#. module: fleet_kiosk_rental
+#. odoo-javascript
+#: code:addons/fleet_kiosk_rental/static/src/xml/kiosk_rental.xml:0
+msgid "OK"
+msgstr "OK"
+
+#. module: fleet_kiosk_rental
+#: model:ir.model.fields.selection,name:fleet_kiosk_rental.selection__fleet_vehicle__rental_state__parking
+msgid "Parking"
+msgstr "Parking"
+
+#. module: fleet_kiosk_rental
+#: model:ir.model.fields,help:fleet_kiosk_rental.field_fleet_vehicle__rental_state
+msgid ""
+"Parking: available on site. Delegation: currently rented by an employee. "
+"Service: at the mechanic or otherwise unavailable (set manually)."
+msgstr "Parking: dostępny na miejscu. Delegacja: aktualnie wypożyczony przez pracownika. Serwis: u mechanika lub w inny sposób niedostępny (ustawiane ręcznie)."
+
+#. module: fleet_kiosk_rental
+#. odoo-javascript
+#: code:addons/fleet_kiosk_rental/static/src/xml/kiosk_rental.xml:0
+msgid "Please enter your PIN"
+msgstr "Wprowadź swój PIN"
+
+#. module: fleet_kiosk_rental
+#. odoo-javascript
+#: code:addons/fleet_kiosk_rental/static/src/xml/kiosk_rental.xml:0
+msgid "Please return to the main menu."
+msgstr "Wróć do menu głównego."
+
+#. module: fleet_kiosk_rental
+#: model:ir.model.fields,field_description:fleet_kiosk_rental.field_fleet_rental_project__name
+msgid "Project Number"
+msgstr "Numer projektu"
+
+#. module: fleet_kiosk_rental
+#. odoo-javascript
+#: code:addons/fleet_kiosk_rental/static/src/xml/kiosk_rental.xml:0
+#: model:ir.model.fields,field_description:fleet_kiosk_rental.field_fleet_vehicle_log_services__project_number_ids
+#: model_terms:ir.ui.view,arch_db:fleet_kiosk_rental.fleet_vehicle_log_services_view_form_rental
+msgid "Project Numbers"
+msgstr "Numery projektów"
+
+#. module: fleet_kiosk_rental
+#. odoo-javascript
+#: code:addons/fleet_kiosk_rental/static/src/xml/kiosk_rental.xml:0
+msgid "Rent"
+msgstr "Wynajmij"
+
+#. module: fleet_kiosk_rental
+#: model:ir.model.fields,field_description:fleet_kiosk_rental.field_fleet_rental_project__service_id
+msgid "Rental"
+msgstr "Wynajem"
+
+#. module: fleet_kiosk_rental
+#: model:ir.actions.act_window,name:fleet.fleet_vehicle_log_services_action
+#: model:ir.ui.menu,name:fleet.fleet_vehicle_log_services_menu
+#: model_terms:ir.ui.view,arch_db:fleet_kiosk_rental.fleet_vehicle_log_services_view_form_rental
+#: model_terms:ir.ui.view,arch_db:fleet_kiosk_rental.fleet_vehicle_log_services_view_tree_rental
+#: model_terms:ir.ui.view,arch_db:fleet_kiosk_rental.fleet_vehicle_view_form_cars_history
+msgid "Rental History"
+msgstr "Historia wynajmu"
+
+#. module: fleet_kiosk_rental
+#: model:ir.model.fields,field_description:fleet_kiosk_rental.field_fleet_vehicle__rental_state
+msgid "Rental Status"
+msgstr "Status wynajmu"
+
+#. module: fleet_kiosk_rental
+#: model:ir.model.fields,field_description:fleet_kiosk_rental.field_fleet_vehicle_log_services__employee_id
+msgid "Rented By"
+msgstr "Wypożyczone przez"
+
+#. module: fleet_kiosk_rental
+#. odoo-javascript
+#: code:addons/fleet_kiosk_rental/static/src/xml/kiosk_rental.xml:0
+msgid "Returned"
+msgstr "Zwrócono"
+
+#. module: fleet_kiosk_rental
+#: model:ir.model.fields,field_description:fleet_kiosk_rental.field_fleet_vehicle_log_services__rental_return
+msgid "Returned On"
+msgstr "Zwrócono dnia"
+
+#. module: fleet_kiosk_rental
+#: model:ir.model.fields.selection,name:fleet_kiosk_rental.selection__fleet_vehicle__rental_state__service
+msgid "Service"
+msgstr "Serwis"
+
+#. module: fleet_kiosk_rental
+#: model:ir.model,name:fleet_kiosk_rental.model_fleet_vehicle_log_services
+msgid "Services for vehicles"
+msgstr "Serwisy pojazdów"
+
+#. module: fleet_kiosk_rental
+#: model:ir.model.fields,help:fleet_kiosk_rental.field_fleet_vehicle_log_services__is_rental
+msgid "Set when this log was created through the kiosk car rental flow."
+msgstr "Ustawiane, gdy wpis został utworzony przez proces wynajmu samochodu w kiosku."
+
+#. module: fleet_kiosk_rental
+#. odoo-javascript
+#: code:addons/fleet_kiosk_rental/static/src/xml/kiosk_rental.xml:0
+msgid "Taken"
+msgstr "Wypożyczony"
+
+#. module: fleet_kiosk_rental
+#: model:ir.model.fields,field_description:fleet_kiosk_rental.field_fleet_vehicle_log_services__rental_start
+msgid "Taken On"
+msgstr "Pobrano dnia"
+
+#. module: fleet_kiosk_rental
+#. odoo-javascript
+#: code:addons/fleet_kiosk_rental/static/src/xml/kiosk_rental.xml:0
+msgid "Technical checkup overdue"
+msgstr "Zaległy przegląd techniczny"
+
+#. module: fleet_kiosk_rental
+#: model:ir.model,name:fleet_kiosk_rental.model_fleet_vehicle
+msgid "Vehicle"
+msgstr "Pojazd"
+
+#. module: fleet_kiosk_rental
+#. odoo-javascript
+#: code:addons/fleet_kiosk_rental/static/src/xml/kiosk_rental.xml:0
+msgid "Welcome back!"
+msgstr "Witaj z powrotem!"
+
+#. module: fleet_kiosk_rental
+#. odoo-javascript
+#: code:addons/fleet_kiosk_rental/static/src/js/kiosk_rental.js:0
+msgid "Wrong PIN"
+msgstr "Nieprawidłowy PIN"
+
+#. module: fleet_kiosk_rental
+#. odoo-javascript
+#: code:addons/fleet_kiosk_rental/static/src/xml/kiosk_rental.xml:0
+msgid "You rented"
+msgstr "Wypożyczono"
+
+#. module: fleet_kiosk_rental
+#. odoo-javascript
+#: code:addons/fleet_kiosk_rental/static/src/xml/kiosk_rental.xml:0
+msgid "by"
+msgstr "przez"
+
+#. module: fleet_kiosk_rental
+#. odoo-javascript
+#: code:addons/fleet_kiosk_rental/static/src/xml/kiosk_rental.xml:0
+msgid "e.g. 2019-A-1234"
+msgstr "np. 2019-A-1234"
