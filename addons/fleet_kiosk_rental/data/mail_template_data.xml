@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Sent by the daily cron to Fleet Officers/Administrators when a vehicle's
+             insurance or technical checkup is due within the configured lead time.
+             Rendered once per vehicle per reason with `reason` ('insurance'/'checkup')
+             and `expiry_date` in the context. -->
+        <record id="mail_template_expiry_reminder" model="mail.template">
+            <field name="name">Fleet: Upcoming Expiry Reminder</field>
+            <field name="model_id" ref="fleet.model_fleet_vehicle"/>
+            <field name="subject">Fleet reminder: {{ object.name }} — {{ 'insurance' if ctx.get('reason') == 'insurance' else 'technical checkup' }} expiring {{ ctx.get('expiry_date') }}</field>
+            <field name="body_html" type="html">
+                <div style="margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;">
+                    <p>Hello,</p>
+                    <p>
+                        The
+                        <t t-if="ctx.get('reason') == 'insurance'"><strong>insurance</strong></t>
+                        <t t-else=""><strong>technical checkup</strong></t>
+                        for the following fleet vehicle is coming up:
+                    </p>
+                    <ul>
+                        <li>Vehicle: <strong t-out="object.name">Car</strong></li>
+                        <li t-if="object.license_plate">License plate: <t t-out="object.license_plate"></t></li>
+                        <li>Expiry date: <strong t-out="ctx.get('expiry_date')">Date</strong></li>
+                    </ul>
+                    <p>Please arrange the renewal / inspection in time. Until it is resolved,
+                       the car remains rentable from the kiosk only up to its expiry date.</p>
+                </div>
+            </field>
+            <field name="auto_delete" eval="True"/>
+        </record>
+    </data>
+</odoo>

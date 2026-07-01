@@ -4,15 +4,48 @@
     left: 1.25rem;
     z-index: 1030;
     border-radius: 50%;
-    width: 88px;
-    height: 88px;
+    width: 104px;
+    height: 104px;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    color: #fff;
+    background-color: #1a73e8;
+    border: 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    animation: o_fleet_car_rental_pulse 2s ease-in-out infinite;
 
     .fa {
-        font-size: 2.5rem;
+        font-size: 3rem;
+    }
+
+    &:hover,
+    &:focus {
+        color: #fff;
+        background-color: #1662c4;
+        transform: scale(1.05);
+    }
+}
+
+// Draw the eye with a soft expanding ring around the rental button.
+@keyframes o_fleet_car_rental_pulse {
+    0% {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25),
+                    0 0 0 0 rgba(26, 115, 232, 0.55);
+    }
+    70% {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25),
+                    0 0 0 18px rgba(26, 115, 232, 0);
+    }
+    100% {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25),
+                    0 0 0 0 rgba(26, 115, 232, 0);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .o_fleet_car_rental_btn {
+        animation: none;
     }
 }
 

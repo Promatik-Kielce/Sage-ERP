@@ -98,6 +98,8 @@ class FleetKioskRental(http.Controller):
             return {'error': 'already_renting'}
         if vehicle._get_open_rental():
             return {'error': 'unavailable'}
+        if vehicle.rental_state == 'service':
+            return {'error': 'unavailable'}
         today = fields.Date.context_today(vehicle)
         if (vehicle.insurance_expiry_date and vehicle.insurance_expiry_date < today) or \
            (vehicle.next_technical_checkup_date and vehicle.next_technical_checkup_date < today):

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Number of days before an insurance / technical-checkup expiry date at
+             which the reminder email is sent. Editable in Settings > Technical >
+             System Parameters. -->
+        <record id="ir_config_expiry_reminder_lead_days" model="ir.config_parameter">
+            <field name="key">fleet_kiosk_rental.expiry_reminder_lead_days</field>
+            <field name="value">30</field>
+        </record>
+
+        <!-- Daily check for upcoming insurance / technical-checkup expiries. -->
+        <record id="ir_cron_expiry_reminders" model="ir.cron">
+            <field name="name">Fleet Kiosk Rental: Upcoming Expiry Reminders</field>
+            <field name="model_id" ref="fleet.model_fleet_vehicle"/>
+            <field name="state">code</field>
+            <field name="code">model._cron_expiry_reminders()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+        </record>
+    </data>
+</odoo>

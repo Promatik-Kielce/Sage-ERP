@@ -73,7 +73,7 @@ msgstr "Nie można zarejestrować zwrotu samochodu."
 #. odoo-javascript
 #: code:addons/fleet_kiosk_rental/static/src/js/kiosk_rental.js:0
 msgid "Could not rent this car. It may no longer be available."
-msgstr "Nie można wypożyczyć tego samochodu. Może być już niedostępny."
+msgstr "Nie można wynająć tego samochodu. Może być już niedostępny."
 
 #. module: fleet_kiosk_rental
 #: model:ir.model.fields,field_description:fleet_kiosk_rental.field_fleet_rental_project__create_uid
@@ -90,14 +90,14 @@ msgstr "Data utworzenia"
 msgid ""
 "Date of the next mandatory technical inspection. Past this date the car can "
 "no longer be rented from the kiosk."
-msgstr "Data następnego obowiązkowego przeglądu technicznego. Po tej dacie samochód nie może być już wypożyczony z kiosku."
+msgstr "Data następnego obowiązkowego przeglądu technicznego. Po tej dacie samochód nie może być już wynajęty z kiosku."
 
 #. module: fleet_kiosk_rental
 #: model:ir.model.fields,help:fleet_kiosk_rental.field_fleet_vehicle__insurance_expiry_date
 msgid ""
 "Date on which the vehicle insurance expires. Past this date the car can no "
 "longer be rented from the kiosk."
-msgstr "Data wygaśnięcia ubezpieczenia pojazdu. Po tej dacie samochód nie może być już wypożyczony z kiosku."
+msgstr "Data wygaśnięcia ubezpieczenia pojazdu. Po tej dacie samochód nie może być już wynajęty z kiosku."
 
 #. module: fleet_kiosk_rental
 #: model:ir.model.fields.selection,name:fleet_kiosk_rental.selection__fleet_vehicle__rental_state__delegation
@@ -155,6 +155,12 @@ msgstr "ID"
 #: code:addons/fleet_kiosk_rental/static/src/xml/kiosk_rental.xml:0
 msgid "Identify Manually"
 msgstr "Identyfikuj ręcznie"
+
+#. module: fleet_kiosk_rental
+#. odoo-javascript
+#: code:addons/fleet_kiosk_rental/static/src/xml/kiosk_rental.xml:0
+msgid "In service"
+msgstr "W serwisie"
 
 #. module: fleet_kiosk_rental
 #: model:ir.model.fields,field_description:fleet_kiosk_rental.field_fleet_vehicle__insurance_expiry_date
@@ -216,7 +222,7 @@ msgstr "Parking"
 msgid ""
 "Parking: available on site. Delegation: currently rented by an employee. "
 "Service: at the mechanic or otherwise unavailable (set manually)."
-msgstr "Parking: dostępny na miejscu. Delegacja: aktualnie wypożyczony przez pracownika. Serwis: u mechanika lub w inny sposób niedostępny (ustawiane ręcznie)."
+msgstr "Parking: dostępny na miejscu. Delegacja: aktualnie wynajęty przez pracownika. Serwis: u mechanika lub w inny sposób niedostępny (ustawiane ręcznie)."
 
 #. module: fleet_kiosk_rental
 #. odoo-javascript
@@ -271,7 +277,7 @@ msgstr "Status wynajmu"
 #. module: fleet_kiosk_rental
 #: model:ir.model.fields,field_description:fleet_kiosk_rental.field_fleet_vehicle_log_services__employee_id
 msgid "Rented By"
-msgstr "Wypożyczone przez"
+msgstr "Wynajęty przez"
 
 #. module: fleet_kiosk_rental
 #. odoo-javascript
@@ -303,7 +309,7 @@ msgstr "Ustawiane, gdy wpis został utworzony przez proces wynajmu samochodu w k
 #. odoo-javascript
 #: code:addons/fleet_kiosk_rental/static/src/xml/kiosk_rental.xml:0
 msgid "Taken"
-msgstr "Wypożyczony"
+msgstr "Wynajęty"
 
 #. module: fleet_kiosk_rental
 #: model:ir.model.fields,field_description:fleet_kiosk_rental.field_fleet_vehicle_log_services__rental_start
@@ -337,7 +343,7 @@ msgstr "Nieprawidłowy PIN"
 #. odoo-javascript
 #: code:addons/fleet_kiosk_rental/static/src/xml/kiosk_rental.xml:0
 msgid "You rented"
-msgstr "Wypożyczono"
+msgstr "Wynajęto"
 
 #. module: fleet_kiosk_rental
 #. odoo-javascript

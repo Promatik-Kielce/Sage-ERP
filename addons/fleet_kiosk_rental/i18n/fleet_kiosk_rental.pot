@@ -156,6 +156,12 @@ msgid "Identify Manually"
 msgstr ""
 
 #. module: fleet_kiosk_rental
+#. odoo-javascript
+#: code:addons/fleet_kiosk_rental/static/src/xml/kiosk_rental.xml:0
+msgid "In service"
+msgstr ""
+
+#. module: fleet_kiosk_rental
 #: model:ir.model.fields,field_description:fleet_kiosk_rental.field_fleet_vehicle__insurance_expiry_date
 msgid "Insurance Expiry"
 msgstr ""

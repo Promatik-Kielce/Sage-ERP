@@ -8,10 +8,10 @@
 
         <xpath expr="//MainComponentsContainer" position="after">
             <button t-if="state.active_display === 'main'"
-                    class="btn btn-light o_fleet_car_rental_btn"
+                    class="btn o_fleet_car_rental_btn"
                     t-on-click="openCarRental"
                     title="Car Rent">
-                <i class="fa fa-car fa-lg"/>
+                <i class="fa fa-car"/>
             </button>
         </xpath>
 
@@ -78,6 +78,7 @@
                                             </div>
                                             <div class="small text-danger" t-if="car.insurance_expired">Insurance expired</div>
                                             <div class="small text-danger" t-if="car.checkup_overdue">Technical checkup overdue</div>
+                                            <div class="small text-danger" t-if="car.in_service">In service</div>
                                         </div>
                                         <i class="fa fa-chevron-right text-muted" t-if="car.available"/>
                                     </div>

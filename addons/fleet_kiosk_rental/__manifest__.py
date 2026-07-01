@@ -17,10 +17,12 @@ Lets employees rent (take) and return fleet cars from the attendance kiosk.
 * Stores the rental history on the fleet "Services" log (shown as "Rental History").
     """,
     'author': 'Sage-ERP',
-    'depends': ['fleet', 'hr_attendance', 'hr'],
+    'depends': ['fleet', 'hr_attendance', 'hr', 'mail'],
     'data': [
         'security/ir.model.access.csv',
         'data/fleet_service_type_data.xml',
+        'data/mail_template_data.xml',
+        'data/ir_cron_data.xml',
         'views/fleet_vehicle_views.xml',
         'views/fleet_vehicle_log_services_views.xml',
     ],
