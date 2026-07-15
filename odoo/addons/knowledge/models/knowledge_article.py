@@ -23,7 +23,7 @@ class KnowledgeArticle(models.Model):
         "html.field.history.mixin",
         "ir.attachment.action_download",
     ]
-    _order = "sequence, id"
+    _order = "name, id"
     _parent_store = True
     _check_company_auto = True
     _mail_post_access = "read"
@@ -460,7 +460,7 @@ class KnowledgeArticle(models.Model):
         workspace_roots = self.search(
             domain_base
             + [("category", "=", "workspace"), ("parent_id", "=", False)],
-            order="sequence, id",
+            order="name, id",
         )
         private_roots = self.search(
             domain_base
@@ -469,7 +469,7 @@ class KnowledgeArticle(models.Model):
                 ("parent_id", "=", False),
                 ("owner_id", "=", user.id),
             ],
-            order="sequence, id",
+            order="name, id",
         )
         # Articles shared directly with the user (any category, not owned by user)
         shared_with_me_roots = self.search(
@@ -479,11 +479,11 @@ class KnowledgeArticle(models.Model):
                 ("owner_id", "!=", user.id),
                 ("member_ids.partner_id", "=", user.partner_id.id),
             ],
-            order="sequence, id",
+            order="name, id",
         )
         favorites = self.search(
             domain_base + [("favorite_user_ids", "in", [user.id])],
-            order="sequence, id",
+            order="name, id",
         )
 
         # Determine which articles to expand (ancestors of active article)
@@ -500,7 +500,7 @@ class KnowledgeArticle(models.Model):
         def _article_to_dict(article, depth=0):
             children = article.child_ids.filtered(
                 lambda c: not c.is_trashed and not c.is_template
-            ).sorted("sequence")
+            ).sorted(lambda c: (c.name or "").lower())
             return {
                 "type": "article",
                 "id": article.id,
@@ -541,10 +541,10 @@ class KnowledgeArticle(models.Model):
                     ("knowledge_category_id", "=", cat.id),
                     ("parent_id", "=", False),
                 ],
-                order="sequence, id",
+                order="name, id",
             )
             sub_cats = self.env["knowledge.category"].search(
-                [("parent_id", "=", cat.id)], order="sequence, name"
+                [("parent_id", "=", cat.id)], order="name"
             )
             return {
                 "type": "category",
@@ -558,7 +558,7 @@ class KnowledgeArticle(models.Model):
             }
 
         root_categories = self.env["knowledge.category"].search(
-            [("parent_id", "=", False)], order="sequence, name"
+            [("parent_id", "=", False)], order="name"
         )
         shared_uncategorized = self.search(
             domain_base + [
@@ -566,7 +566,7 @@ class KnowledgeArticle(models.Model):
                 ("parent_id", "=", False),
                 ("knowledge_category_id", "=", False),
             ],
-            order="sequence, id",
+            order="name, id",
         )
         shared_data = (
             [_category_to_dict(c) for c in root_categories]
@@ -656,7 +656,7 @@ class KnowledgeArticle(models.Model):
         self.ensure_one()
         children = self.child_ids.filtered(
             lambda c: not c.is_trashed and not c.is_template
-        ).sorted("sequence")
+        ).sorted(lambda c: (c.name or "").lower())
         return [
             {
                 "id": c.id,

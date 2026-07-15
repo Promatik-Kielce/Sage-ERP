@@ -6,7 +6,7 @@ class KnowledgeCategory(models.Model):
     _description = "Knowledge Shared Category"
     _parent_name = "parent_id"
     _parent_store = True
-    _order = "sequence, name"
+    _order = "name"
 
     name = fields.Char("Name", required=True)
     description = fields.Text("Description")

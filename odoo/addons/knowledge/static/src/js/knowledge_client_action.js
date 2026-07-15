@@ -46,7 +46,7 @@ class KnowledgeSidebarItem extends Component {
     }
 
     get paddingStyle() {
-        return `padding-left: ${this.depth * 20 + 8}px`;
+        return `padding-left: ${this.depth * 10 + 8}px`;
     }
 
     onClickArticle(ev) {
@@ -99,7 +99,7 @@ class KnowledgeCategoryItem extends Component {
     }
 
     get paddingStyle() {
-        return `padding-left: ${this.depth * 20 + 8}px`;
+        return `padding-left: ${this.depth * 10 + 8}px`;
     }
 
     onClickToggle(ev) {
