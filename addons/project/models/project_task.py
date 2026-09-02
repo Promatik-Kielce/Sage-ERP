@@ -5,6 +5,7 @@ from pytz import UTC
 from collections import defaultdict
 from datetime import timedelta, datetime, time
 from lxml import html
+from markupsafe import Markup
 
 from odoo import api, fields, models, tools, SUPERUSER_ID, _
 from odoo.fields import Command, Date, Domain
@@ -163,7 +164,7 @@ class ProjectTask(models.Model):
        default=_get_default_stage_id, group_expand='_read_group_stage_ids',
        domain="[('project_ids', '=', project_id)]")
     stage_id_color = fields.Integer(string='Stage Color', related="stage_id.color", export_string_translation=False)
-    tag_ids = fields.Many2many('project.tags', string='Tags')
+    tag_ids = fields.Many2many('project.tags', string='Tags', tracking=True)
 
     state = fields.Selection([
         ('01_in_progress', 'In Progress'),
@@ -1205,6 +1206,16 @@ class ProjectTask(models.Model):
         self.check_access('write')
         if len(self) == 1:
             handle_history_divergence(self, 'description', vals)
+        # Snapshot the description before it is popped out of `vals` below, so that
+        # a chatter note can be logged for the tasks whose description really changed.
+        # The Html field type is not supported by `mail.tracking.value`, hence the
+        # dedicated note instead of a regular `tracking=True`.
+        descriptions_before = {}
+        if 'description' in vals and not any(
+            self.env.context.get(key)
+            for key in ('tracking_disable', 'mail_notrack', 'project_task_no_description_log')
+        ):
+            descriptions_before = {task.id: task.description for task in self.sudo()}
         partner_ids = []
 
         # Some values are determined by this override and must be written as
@@ -1319,6 +1330,13 @@ class ProjectTask(models.Model):
         elif additional_vals:
             super(ProjectTask, self.sudo()).write(additional_vals)
         result = super().write(vals)
+
+        if descriptions_before:
+            # Compare the sanitized values written in database: comparing the raw
+            # `vals['description']` would log a note on saves that did not change anything.
+            for task in self.sudo():
+                if task.description != descriptions_before[task.id]:
+                    task._log_description_update()
 
         if 'user_ids' in vals:
             self._populate_missing_personal_stages()
@@ -1574,6 +1592,23 @@ class ProjectTask(models.Model):
                 pass
         return new_followers
 
+    def _log_description_update(self):
+        """ Log a note in the chatter when the description changed.
+
+        `description` is an Html field and `mail.tracking.value` does not support
+        that type, so it cannot use `tracking=True`. The full revisions are already
+        stored by `html.field.history.mixin`, hence the note only links to them.
+        """
+        self.ensure_one()
+        self._message_log(body=Markup(
+            '%(message)s <a href="#" class="o_project_description_history" '
+            'data-oe-model="project.task" data-oe-id="%(task_id)s">%(link_label)s</a>'
+        ) % {
+            'message': _("Description updated"),
+            'task_id': self.id,
+            'link_label': _("View history"),
+        })
+
     def _track_template(self, changes):
         res = super()._track_template(changes)
         test_task = self[0]
@@ -1772,7 +1807,9 @@ class ProjectTask(models.Model):
                 element.getparent().remove(element)
 
             cleaned_html = html.tostring(doc, encoding='unicode').strip()
-            self.description = html_sanitize(cleaned_html)
+            # Populating the description from the incoming email is not a user
+            # edit, so it should not be logged as one in the chatter.
+            self.with_context(project_task_no_description_log=True).description = html_sanitize(cleaned_html)
 
         return super()._message_post_after_hook(message, msg_vals)
 

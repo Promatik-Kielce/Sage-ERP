@@ -810,6 +810,7 @@ msgstr ""
 
 #. module: project
 #. odoo-javascript
+#: code:addons/project/static/src/core/web/description_history_link_patch.js:0
 #: code:addons/project/static/src/views/project_task_form/project_task_form_controller.js:0
 msgid "Are you sure you want to restore this version ?"
 msgstr ""
@@ -1680,6 +1681,12 @@ msgstr ""
 #. module: project
 #: model:ir.model.fields,help:project.field_project_project__description
 msgid "Description to provide more information and context about this project"
+msgstr ""
+
+#. module: project
+#. odoo-python
+#: code:addons/project/models/project_task.py:0
+msgid "Description updated"
 msgstr ""
 
 #. module: project
@@ -3845,12 +3852,14 @@ msgstr ""
 
 #. module: project
 #. odoo-javascript
+#: code:addons/project/static/src/core/web/description_history_link_patch.js:0
 #: code:addons/project/static/src/views/project_task_form/project_task_form_controller.js:0
 msgid "Restore"
 msgstr ""
 
 #. module: project
 #. odoo-javascript
+#: code:addons/project/static/src/core/web/description_history_link_patch.js:0
 #: code:addons/project/static/src/views/project_task_form/project_task_form_controller.js:0
 msgid ""
 "Restoring will replace the current content with the selected version. Any "
@@ -4701,7 +4710,7 @@ msgstr ""
 
 #. module: project
 #. odoo-javascript
-#: code:addons/project/static/src/views/project_task_form/project_task_form_controller.js:0
+#: code:addons/project/static/src/views/project_task_form/description_history.js:0
 msgid "The task description was empty at the time."
 msgstr ""
 
@@ -5223,6 +5232,12 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:project.project_milestone_view_tree
 #: model_terms:ir.ui.view,arch_db:project.view_project
 msgid "View Tasks"
+msgstr ""
+
+#. module: project
+#. odoo-python
+#: code:addons/project/models/project_task.py:0
+msgid "View history"
 msgstr ""
 
 #. module: project

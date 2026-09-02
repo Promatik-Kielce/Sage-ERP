@@ -971,6 +971,7 @@ msgstr "Jesteś pewien, że chcesz usunąć ten rekord?"
 
 #. module: project
 #. odoo-javascript
+#: code:addons/project/static/src/core/web/description_history_link_patch.js:0
 #: code:addons/project/static/src/views/project_task_form/project_task_form_controller.js:0
 msgid "Are you sure you want to restore this version ?"
 msgstr "Czy na pewno chcesz przywrócić tę wersję?"
@@ -1898,6 +1899,12 @@ msgstr "Opis"
 #: model:ir.model.fields,help:project.field_project_project__description
 msgid "Description to provide more information and context about this project"
 msgstr "Opis szczegółów i kontekstu projektu"
+
+#. module: project
+#. odoo-python
+#: code:addons/project/models/project_task.py:0
+msgid "Description updated"
+msgstr "Zaktualizowano opis"
 
 #. module: project
 #. odoo-javascript
@@ -4156,12 +4163,14 @@ msgstr "Użytkownik odpowiedzialny"
 
 #. module: project
 #. odoo-javascript
+#: code:addons/project/static/src/core/web/description_history_link_patch.js:0
 #: code:addons/project/static/src/views/project_task_form/project_task_form_controller.js:0
 msgid "Restore"
 msgstr "Przywróć"
 
 #. module: project
 #. odoo-javascript
+#: code:addons/project/static/src/core/web/description_history_link_patch.js:0
 #: code:addons/project/static/src/views/project_task_form/project_task_form_controller.js:0
 msgid ""
 "Restoring will replace the current content with the selected version. Any "
@@ -5047,7 +5056,7 @@ msgstr "Zadanie i powiązany partner muszą być powiązane z tą samą firmą."
 
 #. module: project
 #. odoo-javascript
-#: code:addons/project/static/src/views/project_task_form/project_task_form_controller.js:0
+#: code:addons/project/static/src/views/project_task_form/description_history.js:0
 msgid "The task description was empty at the time."
 msgstr "Opis zadania był wówczas pusty."
 
@@ -5636,6 +5645,12 @@ msgstr "Wyświetl zadanie"
 #: model_terms:ir.ui.view,arch_db:project.view_project
 msgid "View Tasks"
 msgstr "Pokaż zadania"
+
+#. module: project
+#. odoo-python
+#: code:addons/project/models/project_task.py:0
+msgid "View history"
+msgstr "Zobacz historię"
 
 #. module: project
 #: model:ir.model.fields,field_description:project.field_project_project__privacy_visibility

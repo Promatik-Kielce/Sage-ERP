@@ -2,11 +2,17 @@ import { _t } from "@web/core/l10n/translation";
 import { ConfirmationDialog } from "@web/core/confirmation_dialog/confirmation_dialog";
 import { HistoryDialog } from "@html_editor/components/history_dialog/history_dialog";
 import { useService } from '@web/core/utils/hooks';
-import { markup, useEffect } from "@odoo/owl";
+import { useEffect } from "@odoo/owl";
 import { FormControllerWithHTMLExpander } from '@resource/views/form_with_html_expander/form_controller_with_html_expander';
 import { getHtmlFieldMetadata, setHtmlFieldMetadata } from "@html_editor/fields/html_field";
 
 import { ProjectTaskTemplateDropdown } from "../components/project_task_template_dropdown";
+import {
+    DESCRIPTION_FIELD_NAME,
+    descriptionHistoryDialogTitle,
+    descriptionHistoryEmptyMessage,
+    getDescriptionHistoryNoContentHelper,
+} from "./description_history";
 
 export const subTaskDeleteConfirmationMessage = _t(
     `Deleting a task will also delete its associated sub-tasks. \
@@ -81,25 +87,18 @@ export class ProjectTaskFormController extends FormControllerWithHTMLExpander {
 
     async openHistoryDialog() {
         const record = this.model.root;
-        const versionedFieldName = 'description';
+        const versionedFieldName = DESCRIPTION_FIELD_NAME;
         const historyMetadata = record.data["html_field_history_metadata"]?.[versionedFieldName];
         if (!historyMetadata) {
-            this.notifications.add(
-                _t(
-                    "The task description lacks any past content that could be restored at the moment."
-                )
-            );
+            this.notifications.add(descriptionHistoryEmptyMessage);
             return;
         }
 
         this.dialogService.add(
             HistoryDialog,
             {
-                title: _t("Task Description History"),
-                noContentHelper: markup`
-                    <span class='text-muted fst-italic'>${_t(
-                        "The task description was empty at the time."
-                    )}</span>`,
+                title: descriptionHistoryDialogTitle,
+                noContentHelper: getDescriptionHistoryNoContentHelper(),
                 recordId: record.resId,
                 recordModel: this.props.resModel,
                 versionedFieldName,
