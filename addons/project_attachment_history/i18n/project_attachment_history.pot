@@ -1,0 +1,338 @@
+# Translation of Sage ERP Server.
+# This file contains the translation of the following modules:
+# 	* project_attachment_history
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Sage ERP Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-09 07:31+0000\n"
+"PO-Revision-Date: 2026-09-09 07:31+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: project_attachment_history
+#: model:ir.model.fields,field_description:project_attachment_history.field_project_attachment_log__action
+#: model_terms:ir.ui.view,arch_db:project_attachment_history.project_attachment_log_view_search
+msgid "Action"
+msgstr ""
+
+#. module: project_attachment_history
+#: model:ir.model.fields.selection,name:project_attachment_history.selection__project_attachment_log__action__added
+#: model_terms:ir.ui.view,arch_db:project_attachment_history.project_attachment_log_view_search
+msgid "Added"
+msgstr ""
+
+#. module: project_attachment_history
+#: model:ir.model,name:project_attachment_history.model_ir_attachment
+#: model:ir.model.fields,field_description:project_attachment_history.field_project_attachment_log__attachment_id
+msgid "Attachment"
+msgstr ""
+
+#. module: project_attachment_history
+#: model:ir.actions.act_window,name:project_attachment_history.project_attachment_log_action
+#: model:ir.actions.act_window,name:project_attachment_history.project_attachment_log_action_project
+#: model:ir.actions.act_window,name:project_attachment_history.project_attachment_log_action_task
+#: model:ir.ui.menu,name:project_attachment_history.menu_project_attachment_log
+#: model_terms:ir.ui.view,arch_db:project_attachment_history.project_attachment_log_view_form
+#: model_terms:ir.ui.view,arch_db:project_attachment_history.project_attachment_log_view_list
+#: model_terms:ir.ui.view,arch_db:project_attachment_history.project_attachment_log_view_search
+msgid "Attachment History"
+msgstr ""
+
+#. module: project_attachment_history
+#: model_terms:ir.ui.view,arch_db:project_attachment_history.project_attachment_log_view_search
+msgid "Changed"
+msgstr ""
+
+#. module: project_attachment_history
+#: model:ir.model.fields,field_description:project_attachment_history.field_project_attachment_log__checksum
+msgid "Checksum"
+msgstr ""
+
+#. module: project_attachment_history
+#: model:ir.model.fields.selection,name:project_attachment_history.selection__project_attachment_log__action__replaced
+msgid "Content replaced"
+msgstr ""
+
+#. module: project_attachment_history
+#: model:ir.model.fields,field_description:project_attachment_history.field_project_attachment_log__create_uid
+msgid "Created by"
+msgstr ""
+
+#. module: project_attachment_history
+#: model:ir.model.fields,field_description:project_attachment_history.field_project_attachment_log__create_date
+msgid "Created on"
+msgstr ""
+
+#. module: project_attachment_history
+#: model:ir.model.fields,field_description:project_attachment_history.field_project_attachment_log__date
+#: model_terms:ir.ui.view,arch_db:project_attachment_history.project_attachment_log_view_search
+msgid "Date"
+msgstr ""
+
+#. module: project_attachment_history
+#: model:ir.model.fields.selection,name:project_attachment_history.selection__project_attachment_log__action__deleted
+#: model_terms:ir.ui.view,arch_db:project_attachment_history.project_attachment_log_view_search
+msgid "Deleted"
+msgstr ""
+
+#. module: project_attachment_history
+#: model:ir.model.fields,field_description:project_attachment_history.field_ir_attachment__display_name
+#: model:ir.model.fields,field_description:project_attachment_history.field_project_attachment_log__display_name
+#: model:ir.model.fields,field_description:project_attachment_history.field_project_project__display_name
+#: model:ir.model.fields,field_description:project_attachment_history.field_project_task__display_name
+msgid "Display Name"
+msgstr ""
+
+#. module: project_attachment_history
+#: model_terms:ir.ui.view,arch_db:project_attachment_history.project_attachment_log_view_form
+msgid "Event"
+msgstr ""
+
+#. module: project_attachment_history
+#: model_terms:ir.actions.act_window,help:project_attachment_history.project_attachment_log_action
+msgid ""
+"Every file added to or removed from a project or a task is recorded\n"
+"                here, together with who did it and when. Deleted files are kept and\n"
+"                can be restored."
+msgstr ""
+
+#. module: project_attachment_history
+#: model:ir.model.fields,field_description:project_attachment_history.field_project_attachment_log__attachment_name
+#: model_terms:ir.ui.view,arch_db:project_attachment_history.project_attachment_log_view_form
+#: model_terms:ir.ui.view,arch_db:project_attachment_history.project_attachment_log_view_search
+msgid "File"
+msgstr ""
+
+#. module: project_attachment_history
+#. odoo-python
+#: code:addons/project_attachment_history/models/project_attachment_log.py:0
+msgid "File added: %(name)s (%(size)s)"
+msgstr ""
+
+#. module: project_attachment_history
+#. odoo-python
+#: code:addons/project_attachment_history/models/project_attachment_log.py:0
+msgid "File deleted: %(name)s (%(size)s) —"
+msgstr ""
+
+#. module: project_attachment_history
+#. odoo-python
+#: code:addons/project_attachment_history/models/project_attachment_log.py:0
+msgid "File moved: %(name)s (%(other)s)"
+msgstr ""
+
+#. module: project_attachment_history
+#. odoo-python
+#: code:addons/project_attachment_history/models/project_attachment_log.py:0
+msgid "File renamed: %(old)s → %(new)s"
+msgstr ""
+
+#. module: project_attachment_history
+#. odoo-python
+#: code:addons/project_attachment_history/models/project_attachment_log.py:0
+msgid "File replaced: %(name)s (content changed)"
+msgstr ""
+
+#. module: project_attachment_history
+#. odoo-python
+#: code:addons/project_attachment_history/models/project_attachment_log.py:0
+msgid "File restored: %(name)s (%(size)s)"
+msgstr ""
+
+#. module: project_attachment_history
+#: model:ir.model.fields,field_description:project_attachment_history.field_ir_attachment__id
+#: model:ir.model.fields,field_description:project_attachment_history.field_project_attachment_log__id
+#: model:ir.model.fields,field_description:project_attachment_history.field_project_project__id
+#: model:ir.model.fields,field_description:project_attachment_history.field_project_task__id
+msgid "ID"
+msgstr ""
+
+#. module: project_attachment_history
+#: model:ir.model.fields,field_description:project_attachment_history.field_project_attachment_log__write_uid
+msgid "Last Updated by"
+msgstr ""
+
+#. module: project_attachment_history
+#: model:ir.model.fields,field_description:project_attachment_history.field_project_attachment_log__write_date
+msgid "Last Updated on"
+msgstr ""
+
+#. module: project_attachment_history
+#: model:ir.model.fields,field_description:project_attachment_history.field_project_attachment_log__message_id
+msgid "Message"
+msgstr ""
+
+#. module: project_attachment_history
+#: model:ir.model.fields,field_description:project_attachment_history.field_project_attachment_log__res_model
+msgid "Model"
+msgstr ""
+
+#. module: project_attachment_history
+#: model:ir.model.fields.selection,name:project_attachment_history.selection__project_attachment_log__action__moved
+msgid "Moved"
+msgstr ""
+
+#. module: project_attachment_history
+#: model_terms:ir.ui.view,arch_db:project_attachment_history.project_attachment_log_view_search
+msgid "My Events"
+msgstr ""
+
+#. module: project_attachment_history
+#: model_terms:ir.actions.act_window,help:project_attachment_history.project_attachment_log_action
+msgid "No attachment change recorded yet"
+msgstr ""
+
+#. module: project_attachment_history
+#: model_terms:ir.ui.view,arch_db:project_attachment_history.project_attachment_log_view_form
+msgid "Open Record"
+msgstr ""
+
+#. module: project_attachment_history
+#: model:ir.model.fields,field_description:project_attachment_history.field_project_attachment_log__previous_checksum
+msgid "Previous Checksum"
+msgstr ""
+
+#. module: project_attachment_history
+#: model:ir.model.fields,field_description:project_attachment_history.field_project_attachment_log__previous_name
+#: model_terms:ir.ui.view,arch_db:project_attachment_history.project_attachment_log_view_form
+msgid "Previous Value"
+msgstr ""
+
+#. module: project_attachment_history
+#: model:ir.model,name:project_attachment_history.model_project_project
+#: model:ir.model.fields,field_description:project_attachment_history.field_project_attachment_log__project_id
+#: model_terms:ir.ui.view,arch_db:project_attachment_history.project_attachment_log_view_search
+msgid "Project"
+msgstr ""
+
+#. module: project_attachment_history
+#: model:ir.model,name:project_attachment_history.model_project_attachment_log
+msgid "Project Attachment History"
+msgstr ""
+
+#. module: project_attachment_history
+#: model:ir.model.fields,field_description:project_attachment_history.field_project_attachment_log__res_name
+#: model_terms:ir.ui.view,arch_db:project_attachment_history.project_attachment_log_view_form
+#: model_terms:ir.ui.view,arch_db:project_attachment_history.project_attachment_log_view_list
+#: model_terms:ir.ui.view,arch_db:project_attachment_history.project_attachment_log_view_search
+msgid "Record"
+msgstr ""
+
+#. module: project_attachment_history
+#: model:ir.model.fields,field_description:project_attachment_history.field_project_attachment_log__res_id
+msgid "Record ID"
+msgstr ""
+
+#. module: project_attachment_history
+#: model:ir.model.fields,field_description:project_attachment_history.field_project_attachment_log__is_recoverable
+#: model_terms:ir.ui.view,arch_db:project_attachment_history.project_attachment_log_view_search
+msgid "Recoverable"
+msgstr ""
+
+#. module: project_attachment_history
+#: model:ir.model.fields.selection,name:project_attachment_history.selection__project_attachment_log__action__renamed
+msgid "Renamed"
+msgstr ""
+
+#. module: project_attachment_history
+#. odoo-javascript
+#. odoo-python
+#: code:addons/project_attachment_history/models/project_attachment_log.py:0
+#: code:addons/project_attachment_history/static/src/js/attachment_restore_link_patch.js:0
+#: model_terms:ir.ui.view,arch_db:project_attachment_history.project_attachment_log_view_form
+#: model_terms:ir.ui.view,arch_db:project_attachment_history.project_attachment_log_view_list
+msgid "Restore"
+msgstr ""
+
+#. module: project_attachment_history
+#. odoo-javascript
+#: code:addons/project_attachment_history/static/src/js/attachment_restore_link_patch.js:0
+msgid "Restore this file?"
+msgstr ""
+
+#. module: project_attachment_history
+#: model:ir.model.fields.selection,name:project_attachment_history.selection__project_attachment_log__action__restored
+#: model_terms:ir.ui.view,arch_db:project_attachment_history.project_attachment_log_view_search
+msgid "Restored"
+msgstr ""
+
+#. module: project_attachment_history
+#: model_terms:ir.ui.view,arch_db:project_attachment_history.project_attachment_log_view_form
+#: model_terms:ir.ui.view,arch_db:project_attachment_history.project_attachment_log_view_list
+msgid "Size"
+msgstr ""
+
+#. module: project_attachment_history
+#: model:ir.model.fields,field_description:project_attachment_history.field_project_attachment_log__file_size
+msgid "Size (bytes)"
+msgstr ""
+
+#. module: project_attachment_history
+#: model:ir.model,name:project_attachment_history.model_project_task
+#: model:ir.model.fields,field_description:project_attachment_history.field_project_attachment_log__task_id
+#: model_terms:ir.ui.view,arch_db:project_attachment_history.project_attachment_log_view_search
+msgid "Task"
+msgstr ""
+
+#. module: project_attachment_history
+#. odoo-python
+#: code:addons/project_attachment_history/models/project_attachment_log.py:0
+msgid "The attachment history cannot be deleted."
+msgstr ""
+
+#. module: project_attachment_history
+#. odoo-javascript
+#: code:addons/project_attachment_history/static/src/js/attachment_restore_link_patch.js:0
+msgid "The file will be put back on the record it was deleted from."
+msgstr ""
+
+#. module: project_attachment_history
+#. odoo-python
+#: code:addons/project_attachment_history/models/project_attachment_log.py:0
+msgid ""
+"The record this file belonged to no longer exists, so it cannot be restored."
+msgstr ""
+
+#. module: project_attachment_history
+#. odoo-python
+#: code:addons/project_attachment_history/models/project_attachment_log.py:0
+msgid "This file cannot be restored."
+msgstr ""
+
+#. module: project_attachment_history
+#. odoo-python
+#: code:addons/project_attachment_history/models/project_attachment_log.py:0
+msgid "This record no longer exists."
+msgstr ""
+
+#. module: project_attachment_history
+#: model:ir.model.fields,field_description:project_attachment_history.field_project_attachment_log__mimetype
+msgid "Type"
+msgstr ""
+
+#. module: project_attachment_history
+#: model:ir.model.fields,help:project_attachment_history.field_project_task__display_name
+msgid ""
+"Use these keywords in the title to set new tasks:\n"
+"\n"
+"        30h Allocate 30 hours to the task\n"
+"        #tags Set tags on the task\n"
+"        @user Assign the task to a user\n"
+"        ! Set the task a medium priority\n"
+"        !! Set the task a high priority\n"
+"        !!! Set the task a urgent priority\n"
+"\n"
+"        Make sure to use the right format and order e.g. Improve the configuration screen 5h #feature #v16 @Mitchell !"
+msgstr ""
+
+#. module: project_attachment_history
+#: model:ir.model.fields,field_description:project_attachment_history.field_project_attachment_log__user_id
+#: model_terms:ir.ui.view,arch_db:project_attachment_history.project_attachment_log_view_search
+msgid "User"
+msgstr ""

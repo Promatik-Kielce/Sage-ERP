@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--
+        Mirror the visibility of the audited records onto their history, so that
+        a log row never leaks a project an employee cannot see. The domains come
+        from `project_public_members_rule` and `task_visibility_rule` in
+        addons/project/security/project_security.xml, applied through the stored
+        `project_id`.
+    -->
+    <record model="ir.rule" id="project_attachment_log_employee_rule">
+        <field name="name">Project Attachment History: employees: follow required for follower-only projects</field>
+        <field name="model_id" ref="model_project_attachment_log"/>
+        <field name="domain_force">['|',
+                                        ('project_id', '=', False),
+                                        '|',
+                                            ('project_id.privacy_visibility', 'in', ['employees', 'portal']),
+                                            ('project_id.message_partner_ids', 'in', [user.partner_id.id])
+                                    ]</field>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+    <record model="ir.rule" id="project_attachment_log_manager_rule">
+        <field name="name">Project Attachment History: project manager sees everything</field>
+        <field name="model_id" ref="model_project_attachment_log"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('project.group_project_manager'))]"/>
+    </record>
+
+</odoo>

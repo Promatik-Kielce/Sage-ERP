@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="project_attachment_log_view_list" model="ir.ui.view">
+        <field name="name">project.attachment.log.list</field>
+        <field name="model">project.attachment.log</field>
+        <field name="arch" type="xml">
+            <list string="Attachment History" create="false" edit="false" delete="false"
+                  decoration-danger="action == 'deleted'"
+                  decoration-success="action in ['added', 'restored']"
+                  decoration-warning="action in ['renamed', 'replaced', 'moved']">
+                <field name="date"/>
+                <field name="user_id" widget="many2one_avatar_user"/>
+                <field name="action"/>
+                <field name="attachment_name"/>
+                <field name="previous_name" optional="hide"/>
+                <field name="file_size_human" string="Size"/>
+                <field name="mimetype" optional="hide"/>
+                <field name="res_name" string="Record"/>
+                <field name="project_id" optional="hide"/>
+                <field name="task_id" optional="hide"/>
+                <!-- The checksum is what exposes a delete-then-reupload swap. -->
+                <field name="checksum" optional="hide"/>
+                <field name="previous_checksum" optional="hide"/>
+                <field name="is_recoverable" column_invisible="True"/>
+                <button name="action_restore" type="object" string="Restore"
+                        icon="fa-undo" class="btn-link"
+                        invisible="not is_recoverable"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="project_attachment_log_view_form" model="ir.ui.view">
+        <field name="name">project.attachment.log.form</field>
+        <field name="model">project.attachment.log</field>
+        <field name="arch" type="xml">
+            <form string="Attachment History" create="false" edit="false">
+                <header>
+                    <button name="action_restore" type="object" string="Restore"
+                            class="btn-primary" invisible="not is_recoverable"/>
+                    <button name="action_open_record" type="object" string="Open Record"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="attachment_name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group string="Event">
+                            <field name="action"/>
+                            <field name="user_id" widget="many2one_avatar_user"/>
+                            <field name="date"/>
+                            <field name="is_recoverable"/>
+                        </group>
+                        <group string="Record">
+                            <field name="res_name"/>
+                            <field name="project_id"/>
+                            <field name="task_id"/>
+                            <field name="res_model" groups="base.group_no_one"/>
+                            <field name="res_id" groups="base.group_no_one"/>
+                        </group>
+                        <group string="File">
+                            <field name="file_size_human" string="Size"/>
+                            <field name="mimetype"/>
+                            <field name="checksum"/>
+                            <field name="attachment_id"/>
+                        </group>
+                        <group string="Previous Value">
+                            <field name="previous_name"/>
+                            <field name="previous_checksum"/>
+                            <field name="message_id" groups="base.group_no_one"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="project_attachment_log_view_search" model="ir.ui.view">
+        <field name="name">project.attachment.log.search</field>
+        <field name="model">project.attachment.log</field>
+        <field name="arch" type="xml">
+            <search string="Attachment History">
+                <field name="attachment_name" string="File"/>
+                <field name="res_name" string="Record"/>
+                <field name="user_id"/>
+                <field name="project_id"/>
+                <field name="task_id"/>
+                <field name="checksum"/>
+                <filter name="filter_added" string="Added" domain="[('action', '=', 'added')]"/>
+                <filter name="filter_deleted" string="Deleted" domain="[('action', '=', 'deleted')]"/>
+                <filter name="filter_restored" string="Restored" domain="[('action', '=', 'restored')]"/>
+                <filter name="filter_changed" string="Changed"
+                        domain="[('action', 'in', ['renamed', 'replaced', 'moved'])]"/>
+                <separator/>
+                <filter name="filter_recoverable" string="Recoverable"
+                        domain="[('is_recoverable', '=', True)]"/>
+                <separator/>
+                <filter name="filter_my_events" string="My Events"
+                        domain="[('user_id', '=', uid)]"/>
+                <filter name="filter_date" string="Date" date="date"/>
+                <group>
+                    <filter name="groupby_project" string="Project" context="{'group_by': 'project_id'}"/>
+                    <filter name="groupby_task" string="Task" context="{'group_by': 'task_id'}"/>
+                    <filter name="groupby_record" string="Record" context="{'group_by': 'res_name'}"/>
+                    <filter name="groupby_user" string="User" context="{'group_by': 'user_id'}"/>
+                    <filter name="groupby_action" string="Action" context="{'group_by': 'action'}"/>
+                    <filter name="groupby_file" string="File" context="{'group_by': 'attachment_name'}"/>
+                    <filter name="groupby_date" string="Date" context="{'group_by': 'date'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="project_attachment_log_action" model="ir.actions.act_window">
+        <field name="name">Attachment History</field>
+        <field name="res_model">project.attachment.log</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="project_attachment_log_view_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No attachment change recorded yet
+            </p>
+            <p>
+                Every file added to or removed from a project or a task is recorded
+                here, together with who did it and when. Deleted files are kept and
+                can be restored.
+            </p>
+        </field>
+    </record>
+
+    <!--
+        Bound actions: puts "Attachment History" in the cog menu of the task and
+        project forms and lists, without having to patch any core view.
+    -->
+    <record id="project_attachment_log_action_task" model="ir.actions.act_window">
+        <field name="name">Attachment History</field>
+        <field name="res_model">project.attachment.log</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="project_attachment_log_view_search"/>
+        <field name="domain">[('res_model', '=', 'project.task'), ('res_id', 'in', active_ids)]</field>
+        <field name="binding_model_id" ref="project.model_project_task"/>
+        <field name="binding_view_types">form,list</field>
+    </record>
+
+    <record id="project_attachment_log_action_project" model="ir.actions.act_window">
+        <field name="name">Attachment History</field>
+        <field name="res_model">project.attachment.log</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="project_attachment_log_view_search"/>
+        <field name="domain">['|',
+                                '&amp;', ('res_model', '=', 'project.project'), ('res_id', 'in', active_ids),
+                                ('project_id', 'in', active_ids)]</field>
+        <field name="binding_model_id" ref="project.model_project_project"/>
+        <field name="binding_view_types">form,list</field>
+    </record>
+
+    <menuitem
+        name="Attachment History"
+        id="menu_project_attachment_log"
+        parent="project.menu_project_config"
+        action="project_attachment_log_action"
+        groups="project.group_project_manager"
+        sequence="45"
+    />
+
+</odoo>

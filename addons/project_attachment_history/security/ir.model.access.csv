@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_project_attachment_log_user,project.attachment.log user,model_project_attachment_log,project.group_project_user,1,0,0,0
+access_project_attachment_log_employee,project.attachment.log employee,model_project_attachment_log,base.group_user,1,0,0,0
+access_project_attachment_log_manager,project.attachment.log manager,model_project_attachment_log,project.group_project_manager,1,0,0,0
+access_project_attachment_log_system,project.attachment.log system,model_project_attachment_log,base.group_system,1,1,1,1
