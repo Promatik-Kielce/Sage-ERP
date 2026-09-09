@@ -1,0 +1,57 @@
+// The timeline rail, the container and the top bar are styled by
+// `html_editor/static/src/components/history_dialog/history_dialog.scss`, which
+// this dialog shares the markup contract with. Only the file grid is new.
+.o_attachment_history {
+
+    .revision-list .btn {
+        // The rail entries carry a one-line summary on top of the date, so they
+        // need a little more room than the html history ones.
+        white-space: normal;
+
+        .o_attachment_history_summary {
+            max-width: 140px;
+        }
+    }
+
+    .o_attachment_history_files {
+        background-color: var(--o-view-background-color, #fff);
+    }
+
+    .o_attachment_history_card {
+        width: 160px;
+
+        .o_attachment_history_preview {
+            cursor: pointer;
+            height: 110px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background-color: rgba(0, 0, 0, .03);
+
+            &:hover {
+                background-color: rgba(0, 0, 0, .08);
+            }
+
+            .o_image {
+                // Mimetype icon sprite, reused from the chatter attachment cards.
+                width: 48px;
+                height: 48px;
+                background-size: contain;
+            }
+        }
+
+        .o_attachment_history_thumbnail {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: top;
+        }
+
+        .badge {
+            display: block;
+            white-space: normal;
+            text-align: left;
+        }
+    }
+}
