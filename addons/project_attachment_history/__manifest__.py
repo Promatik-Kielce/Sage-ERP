@@ -1,7 +1,7 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 {
     'name': 'Project Attachment History',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.1.0',
     'category': 'Services/Project',
     'summary': 'Audit trail and recycle bin for files attached to projects and tasks',
     'description': """
@@ -25,7 +25,7 @@ be silently swapped. This module makes every attachment change on
 """,
     'author': 'Sage-ERP',
     'license': 'LGPL-3',
-    'depends': ['project', 'mail'],
+    'depends': ['project', 'mail', 'html_editor'],
     'data': [
         'security/ir.model.access.csv',
         'security/project_attachment_history_security.xml',
@@ -33,9 +33,14 @@ be silently swapped. This module makes every attachment change on
     ],
     'assets': {
         'web.assets_backend': [
-            'project_attachment_history/static/src/js/attachment_restore_link_patch.js',
+            'project_attachment_history/static/src/scss/attachment_history_dialog.scss',
+            'project_attachment_history/static/src/xml/attachment_history_dialog.xml',
+            'project_attachment_history/static/src/js/attachment_history_dialog.js',
+            'project_attachment_history/static/src/js/attachment_history_link_patch.js',
+            'project_attachment_history/static/src/js/form_controller_patch.js',
         ],
     },
+    'post_init_hook': '_backfill_attachment_history',
     'installable': True,
     'application': False,
 }

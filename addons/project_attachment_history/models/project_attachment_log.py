@@ -7,6 +7,8 @@ from odoo.exceptions import UserError
 from odoo.fields import Command, Domain
 from odoo.tools import human_size
 
+from odoo.addons.mail.tools.discuss import Store
+
 # Models whose attachments are audited. Defined here rather than in
 # `ir_attachment.py`, which imports them, so the modules stay acyclic.
 TRACKED_MODELS = ('project.task', 'project.project')
@@ -14,6 +16,14 @@ TRACKED_MODELS = ('project.task', 'project.project')
 # While an attachment is soft deleted it is parked on the log record that
 # recorded the deletion, so it stops matching the thread attachment search.
 BIN_MODEL = 'project.attachment.log'
+
+# Actions that put a file on the record, and that take it off again, as replayed
+# by `_replay_events`. Any other action only changes the file in place.
+ADDING_ACTIONS = ('added', 'restored', 'moved_in')
+REMOVING_ACTIONS = ('deleted', 'moved_out')
+
+# `revision_id` sentinel meaning "the live state", as `HistoryDialog` uses it.
+CURRENT_REVISION = -1
 
 
 class ProjectAttachmentLog(models.Model):
@@ -39,7 +49,8 @@ class ProjectAttachmentLog(models.Model):
         ('restored', 'Restored'),
         ('renamed', 'Renamed'),
         ('replaced', 'Content replaced'),
-        ('moved', 'Moved'),
+        ('moved_in', 'Moved here'),
+        ('moved_out', 'Moved away'),
     ], string="Action", required=True, index=True, readonly=True)
 
     # `attachment_id` also owns the file while it is soft deleted. It is emptied
@@ -55,6 +66,11 @@ class ProjectAttachmentLog(models.Model):
     mimetype = fields.Char(string="Type", readonly=True)
     checksum = fields.Char(string="Checksum", readonly=True)
     previous_checksum = fields.Char(string="Previous Checksum", readonly=True)
+
+    # On a `replaced` event: a parked copy of the bytes as they were *before* the
+    # write. Without it an old snapshot could only ever serve the current bytes.
+    previous_attachment_id = fields.Many2one(
+        'ir.attachment', string="Previous Content", ondelete='set null', readonly=True)
 
     # Set when the file was carried by a chatter message, so that a restore can
     # put it back on that message.
@@ -147,41 +163,226 @@ class ProjectAttachmentLog(models.Model):
         """ Build the chatter note body for this event.
 
         Mirrors `project.task._log_description_update`: a plain `_message_log`
-        note holding a `Markup` body, so that the restore link can be clickable.
+        note holding a `Markup` body, so that the links can be clickable. Every
+        note carries a "View history" link opening the timeline dialog; a
+        deletion also keeps a one-click "Restore".
         """
         self.ensure_one()
         name = self.attachment_name or ''
         size = human_size(self.file_size) or ''
-        if self.action == 'added':
-            return Markup('%(label)s') % {
-                'label': _("File added: %(name)s (%(size)s)", name=name, size=size),
-            }
+        other = self.previous_name or ''
+        labels = {
+            'added': _("File added: %(name)s (%(size)s)", name=name, size=size),
+            'deleted': _("File deleted: %(name)s (%(size)s)", name=name, size=size),
+            'restored': _("File restored: %(name)s (%(size)s)", name=name, size=size),
+            'renamed': _("File renamed: %(old)s → %(new)s", old=other, new=name),
+            'replaced': _("File replaced: %(name)s (content changed)", name=name),
+            'moved_in': _("File moved here from %(other)s: %(name)s", other=other, name=name),
+            'moved_out': _("File moved to %(other)s: %(name)s", other=other, name=name),
+        }
+        label = labels.get(self.action)
+        if not label:
+            return Markup()
+        body = Markup('%(label)s —') % {'label': label}
         if self.action == 'deleted':
-            return Markup(
-                '%(label)s <a href="#" class="o_project_attachment_restore" '
-                'data-oe-model="project.attachment.log" data-oe-id="%(log_id)s">%(link)s</a>'
-            ) % {
-                'label': _("File deleted: %(name)s (%(size)s) —", name=name, size=size),
-                'log_id': self.id,
-                'link': _("Restore"),
-            }
-        if self.action == 'restored':
-            return Markup('%(label)s') % {
-                'label': _("File restored: %(name)s (%(size)s)", name=name, size=size),
-            }
-        if self.action == 'renamed':
-            return Markup('%(label)s') % {
-                'label': _("File renamed: %(old)s → %(new)s", old=self.previous_name or '', new=name),
-            }
-        if self.action == 'replaced':
-            return Markup('%(label)s') % {
-                'label': _("File replaced: %(name)s (content changed)", name=name),
-            }
-        if self.action == 'moved':
-            return Markup('%(label)s') % {
-                'label': _("File moved: %(name)s (%(other)s)", name=name, other=self.previous_name or ''),
-            }
-        return Markup()
+            body += Markup(
+                ' <a href="#" class="o_project_attachment_restore" '
+                'data-oe-model="project.attachment.log" data-oe-id="%(log_id)s">%(link)s</a> ·'
+            ) % {'log_id': self.id, 'link': _("Restore")}
+        body += Markup(
+            ' <a href="#" class="o_project_attachment_history" '
+            'data-oe-model="%(res_model)s" data-oe-id="%(res_id)s">%(link)s</a>'
+        ) % {
+            'res_model': self.res_model,
+            'res_id': self.res_id,
+            'link': _("View history"),
+        }
+        return body
+
+    # ------------------------------------------------------------
+    # Point in time reconstruction
+    # ------------------------------------------------------------
+
+    @api.model
+    def _check_history_access(self, res_model, res_id, operation='read'):
+        """ Guard for the public methods below.
+
+        They are `@api.model` and therefore reachable by any logged in user with
+        arbitrary arguments, so the record they are asked about has to be checked
+        explicitly.
+        """
+        if res_model not in TRACKED_MODELS:
+            raise UserError(_("Attachment history is not tracked for this model."))
+        record = self.env[res_model].browse(int(res_id)).exists()
+        if not record:
+            raise UserError(_("This record no longer exists."))
+        record.check_access(operation)
+        return record
+
+    def _event_summary(self):
+        """ One short line describing this event, for the timeline rail. """
+        self.ensure_one()
+        name = self.attachment_name or ''
+        other = self.previous_name or ''
+        return {
+            'added': _("Added %(name)s", name=name),
+            'deleted': _("Deleted %(name)s", name=name),
+            'restored': _("Restored %(name)s", name=name),
+            'renamed': _("Renamed %(old)s to %(new)s", old=other, new=name),
+            'replaced': _("Replaced the content of %(name)s", name=name),
+            'moved_in': _("Moved %(name)s here from %(other)s", name=name, other=other),
+            'moved_out': _("Moved %(name)s to %(other)s", name=name, other=other),
+        }.get(self.action, self.action or '')
+
+    @api.model
+    def _history_events(self, res_model, res_id):
+        """ Every event of a record, oldest first, as sudo.
+
+        Access is the caller's responsibility (`_check_history_access`): the rows
+        are read in sudo so that the replay is complete even when a single file
+        happens to sit outside the reader's reach.
+        """
+        return self.sudo().search(
+            [('res_model', '=', res_model), ('res_id', '=', res_id)], order='id asc')
+
+    @api.model
+    def _replay_events(self, events):
+        """ Replay an event stream into the set of files present at its end.
+
+        :param events: `project.attachment.log` records, oldest first
+        :return: dict attachment id -> {'name', 'log'} as of the last event
+        """
+        present = {}
+        for event in events:
+            attachment_id = event.attachment_id.id
+            if not attachment_id:
+                # The file was destroyed for real (the whole task was deleted).
+                # The row still documents what happened, but there is nothing to
+                # put in a snapshot.
+                continue
+            if event.action in ADDING_ACTIONS:
+                present[attachment_id] = {'name': event.attachment_name, 'log': event}
+            elif event.action in REMOVING_ACTIONS:
+                present.pop(attachment_id, None)
+            elif attachment_id in present:
+                # `renamed` / `replaced`: the file stays, its metadata moves on.
+                present[attachment_id] = {'name': event.attachment_name, 'log': event}
+        return present
+
+    @api.model
+    def _content_at_revision(self, attachment, events_after):
+        """ The attachment holding the bytes a file had at a past revision.
+
+        Walking forward from that revision, the first `replaced` event carries in
+        `previous_attachment_id` exactly the bytes that were current before it —
+        that is, the bytes at the revision we are looking at. With no later
+        replacement the live attachment still holds them (or the parked original,
+        if the file was deleted since).
+        """
+        for event in events_after:
+            if (event.action == 'replaced'
+                    and event.attachment_id.id == attachment.id
+                    and event.previous_attachment_id):
+                return event.previous_attachment_id
+        return attachment
+
+    @api.model
+    def get_attachment_history(self, res_model, res_id):
+        """ The timeline rail of a record.
+
+        :return: {'revisions': [...newest first...], 'record': {...}}
+        """
+        record = self._check_history_access(res_model, res_id)
+        events = self._history_events(res_model, res_id)
+        revisions = [{
+            'revision_id': event.id,
+            'create_date': event.date.isoformat(),
+            'create_uid': event.user_id.id,
+            'create_user_name': event.user_id.display_name,
+            'action': event.action,
+            'attachment_name': event.attachment_name,
+            'summary': event._event_summary(),
+        } for event in reversed(events)]
+        record_sudo = record.sudo()
+        return {
+            'revisions': revisions,
+            'record': {
+                'display_name': record_sudo.display_name,
+                'create_date': record_sudo.create_date and record_sudo.create_date.isoformat(),
+                'create_uid': record_sudo.create_uid.id,
+                'create_user_name': record_sudo.create_uid.display_name,
+            },
+        }
+
+    @api.model
+    def get_attachment_snapshot(self, res_model, res_id, revision_id):
+        """ The files present on a record just after `revision_id`.
+
+        `revision_id` is a `project.attachment.log` id, or `CURRENT_REVISION` for
+        the live state.
+
+        :return: {'files': [...], 'summary': str}
+        """
+        record = self._check_history_access(res_model, res_id)
+        revision_id = int(revision_id)
+        events = self._history_events(res_model, res_id)
+
+        if revision_id == CURRENT_REVISION:
+            # Read the live set rather than replaying, so that anything that ever
+            # slipped past the audit still shows up in "Current".
+            attachments = record.sudo()._get_mail_thread_data_attachments()
+            present = {att.id: {'name': att.name, 'log': self.browse()} for att in attachments}
+            events_after = self.browse()
+            changed_ids = set()
+        else:
+            up_to = events.filtered(lambda e: e.id <= revision_id)
+            present = self._replay_events(up_to)
+            events_after = events.filtered(lambda e: e.id > revision_id)
+            selected = events.filtered(lambda e: e.id == revision_id)
+            changed_ids = set(selected.attachment_id.ids)
+
+        live_ids = set(record.sudo()._get_mail_thread_data_attachments().ids)
+        attachments = self.env['ir.attachment'].sudo().browse(present.keys()).exists()
+
+        # sudo: the caller passed `check_access('read')` on the record above, so
+        # they are entitled to its files; the parked ones live on a bin record
+        # they may not reach directly.
+        store = Store()
+        files = []
+        for attachment in attachments:
+            content = self._content_at_revision(attachment, events_after)
+            store.add(content)
+            entry = present[attachment.id]
+            selected_event = entry['log']
+            files.append({
+                'attachment_id': content.id,
+                'name': entry['name'] or content.name,
+                'present_now': attachment.id in live_ids,
+                'changed_here': attachment.id in changed_ids and selected_event.action or False,
+                'log_id': selected_event.id or False,
+                'is_historical_content': content.id != attachment.id,
+                'restore_log_id': self._restorable_log_id(attachment),
+            })
+        return {
+            'files': files,
+            'store_data': store.get_result(),
+            'summary': self._revision_summary(events, revision_id),
+        }
+
+    @api.model
+    def _restorable_log_id(self, attachment):
+        """ The log row a currently parked file can be restored from, if any. """
+        if attachment.sudo().res_model != BIN_MODEL:
+            return False
+        log = self.sudo().browse(attachment.sudo().res_id).exists()
+        return log.id if log and log.action == 'deleted' else False
+
+    @api.model
+    def _revision_summary(self, events, revision_id):
+        if revision_id == CURRENT_REVISION:
+            return _("Current files")
+        event = events.filtered(lambda e: e.id == revision_id)
+        return event._event_summary() if event else ''
 
     # ------------------------------------------------------------
     # Actions
@@ -222,6 +423,40 @@ class ProjectAttachmentLog(models.Model):
                 'message_id': log.message_id.id or False,
             }])
             restored._notify_record()
+        return {'type': 'ir.actions.client', 'tag': 'soft_reload'}
+
+    @api.model
+    def action_restore_snapshot(self, res_model, res_id, revision_id):
+        """ Bring the whole attachment set back to how it was at a revision.
+
+        Files that were present then and are missing now are restored; files that
+        are present now and were not there then are soft deleted. Both directions
+        go through the ordinary paths, so the bulk change is itself audited and
+        just as reversible as any other.
+        """
+        record = self._check_history_access(res_model, res_id, operation='write')
+        revision_id = int(revision_id)
+        if revision_id == CURRENT_REVISION:
+            return False
+
+        events = self._history_events(res_model, res_id)
+        wanted_ids = set(self._replay_events(events.filtered(lambda e: e.id <= revision_id)))
+        live = record.sudo()._get_mail_thread_data_attachments()
+        live_ids = set(live.ids)
+
+        for attachment_id in sorted(wanted_ids - live_ids):
+            attachment = self.env['ir.attachment'].sudo().browse(attachment_id).exists()
+            log = self.sudo().browse(self._restorable_log_id(attachment)) if attachment else None
+            if log:
+                log.action_restore()
+
+        to_remove = live.filtered(lambda att: att.id not in wanted_ids)
+        if to_remove:
+            # The ordinary delete path: soft delete, chatter note and audit row.
+            # sudo: reverting the set is a change of the record, and write access
+            # on it was checked above; the individual files are reached through
+            # it, exactly as the Files box reaches them.
+            to_remove.unlink()
         return {'type': 'ir.actions.client', 'tag': 'soft_reload'}
 
     def action_open_record(self):

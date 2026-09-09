@@ -1,11 +1,13 @@
 import { Store } from "@mail/core/common/store_service";
 // Ensure this patch is applied after the generic `data-oe-model`/`data-oe-id` link
-// handler, so that our link is intercepted before it opens the log record form.
+// handler, so that our links are intercepted before they open a form view.
 import "@mail/core/web/store_service_patch";
 
 import { ConfirmationDialog } from "@web/core/confirmation_dialog/confirmation_dialog";
 import { _t } from "@web/core/l10n/translation";
 import { patch } from "@web/core/utils/patch";
+
+import { AttachmentHistoryDialog } from "./attachment_history_dialog";
 
 patch(Store.prototype, {
     handleClickOnLink(ev, thread) {
@@ -15,7 +17,25 @@ patch(Store.prototype, {
             this.restoreProjectAttachment(Number(link.dataset.oeId));
             return true;
         }
+        if (link?.classList.contains("o_project_attachment_history")) {
+            ev.preventDefault();
+            this.openProjectAttachmentHistory(
+                link.dataset.oeModel,
+                Number(link.dataset.oeId)
+            );
+            return true;
+        }
         return super.handleClickOnLink(...arguments);
+    },
+
+    /**
+     * Open the attachment timeline of a task or project from a chatter note.
+     *
+     * @param {string} resModel
+     * @param {number} resId
+     */
+    openProjectAttachmentHistory(resModel, resId) {
+        this.env.services.dialog.add(AttachmentHistoryDialog, { resModel, resId });
     },
 
     /**

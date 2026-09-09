@@ -15,24 +15,34 @@ msgstr ""
 "Plural-Forms: nplurals=4; plural=(n==1 ? 0 : (n%10>=2 && n%10<=4) && (n%100<12 || n%100>14) ? 1 : n!=1 && (n%10>=0 && n%10<=1) || (n%10>=5 && n%10<=9) || (n%100>=12 && n%100<=14) ? 2 : 3);\n"
 
 #. module: project_attachment_history
-#: model:ir.model.fields.selection,name:project_attachment_history.selection__project_attachment_log__action__added
-msgid "Added"
-msgstr "Dodano"
-
-#. module: project_attachment_history
 #: model:ir.model.fields,field_description:project_attachment_history.field_project_attachment_log__action
+#: model_terms:ir.ui.view,arch_db:project_attachment_history.project_attachment_log_view_search
 msgid "Action"
 msgstr "Akcja"
 
 #. module: project_attachment_history
+#: model:ir.model.fields.selection,name:project_attachment_history.selection__project_attachment_log__action__added
+#: model_terms:ir.ui.view,arch_db:project_attachment_history.project_attachment_log_view_search
+msgid "Added"
+msgstr "Dodano"
+
+#. module: project_attachment_history
+#. odoo-python
+#: code:addons/project_attachment_history/models/project_attachment_log.py:0
+msgid "Added %(name)s"
+msgstr "Dodano %(name)s"
+
+#. module: project_attachment_history
+#: model:ir.model,name:project_attachment_history.model_ir_attachment
 #: model:ir.model.fields,field_description:project_attachment_history.field_project_attachment_log__attachment_id
 msgid "Attachment"
 msgstr "Załącznik"
 
 #. module: project_attachment_history
+#. odoo-javascript
+#: code:addons/project_attachment_history/static/src/js/attachment_history_dialog.js:0
+#: code:addons/project_attachment_history/static/src/js/form_controller_patch.js:0
 #: model:ir.actions.act_window,name:project_attachment_history.project_attachment_log_action
-#: model:ir.actions.act_window,name:project_attachment_history.project_attachment_log_action_project
-#: model:ir.actions.act_window,name:project_attachment_history.project_attachment_log_action_task
 #: model:ir.ui.menu,name:project_attachment_history.menu_project_attachment_log
 #: model_terms:ir.ui.view,arch_db:project_attachment_history.project_attachment_log_view_form
 #: model_terms:ir.ui.view,arch_db:project_attachment_history.project_attachment_log_view_list
@@ -41,13 +51,18 @@ msgid "Attachment History"
 msgstr "Historia załączników"
 
 #. module: project_attachment_history
+#. odoo-python
+#: code:addons/project_attachment_history/models/project_attachment_log.py:0
+msgid "Attachment history is not tracked for this model."
+msgstr "Historia załączników nie jest śledzona dla tego modelu."
+
+#. module: project_attachment_history
 #: model_terms:ir.ui.view,arch_db:project_attachment_history.project_attachment_log_view_search
 msgid "Changed"
 msgstr "Zmienione"
 
 #. module: project_attachment_history
 #: model:ir.model.fields,field_description:project_attachment_history.field_project_attachment_log__checksum
-#: model_terms:ir.ui.view,arch_db:project_attachment_history.project_attachment_log_view_search
 msgid "Checksum"
 msgstr "Suma kontrolna"
 
@@ -55,6 +70,24 @@ msgstr "Suma kontrolna"
 #: model:ir.model.fields.selection,name:project_attachment_history.selection__project_attachment_log__action__replaced
 msgid "Content replaced"
 msgstr "Zawartość zastąpiona"
+
+#. module: project_attachment_history
+#: model:ir.model.fields,field_description:project_attachment_history.field_project_attachment_log__create_uid
+msgid "Created by"
+msgstr ""
+
+#. module: project_attachment_history
+#: model:ir.model.fields,field_description:project_attachment_history.field_project_attachment_log__create_date
+msgid "Created on"
+msgstr ""
+
+#. module: project_attachment_history
+#. odoo-javascript
+#. odoo-python
+#: code:addons/project_attachment_history/models/project_attachment_log.py:0
+#: code:addons/project_attachment_history/static/src/js/attachment_history_dialog.js:0
+msgid "Current files"
+msgstr "Bieżące pliki"
 
 #. module: project_attachment_history
 #: model:ir.model.fields,field_description:project_attachment_history.field_project_attachment_log__date
@@ -69,6 +102,37 @@ msgid "Deleted"
 msgstr "Usunięte"
 
 #. module: project_attachment_history
+#. odoo-python
+#: code:addons/project_attachment_history/models/project_attachment_log.py:0
+msgid "Deleted %(name)s"
+msgstr "Usunięto %(name)s"
+
+#. module: project_attachment_history
+#. odoo-javascript
+#: code:addons/project_attachment_history/static/src/xml/attachment_history_dialog.xml:0
+msgid "Discard"
+msgstr "Odrzuć"
+
+#. module: project_attachment_history
+#: model:ir.model.fields,field_description:project_attachment_history.field_ir_attachment__display_name
+#: model:ir.model.fields,field_description:project_attachment_history.field_project_attachment_log__display_name
+#: model:ir.model.fields,field_description:project_attachment_history.field_project_project__display_name
+#: model:ir.model.fields,field_description:project_attachment_history.field_project_task__display_name
+msgid "Display Name"
+msgstr ""
+
+#. module: project_attachment_history
+#. odoo-javascript
+#: code:addons/project_attachment_history/static/src/xml/attachment_history_dialog.xml:0
+msgid "Download"
+msgstr "Pobierz"
+
+#. module: project_attachment_history
+#: model_terms:ir.ui.view,arch_db:project_attachment_history.project_attachment_log_view_form
+msgid "Event"
+msgstr "Zdarzenie"
+
+#. module: project_attachment_history
 #: model_terms:ir.actions.act_window,help:project_attachment_history.project_attachment_log_action
 msgid ""
 "Every file added to or removed from a project or a task is recorded\n"
@@ -80,12 +144,8 @@ msgstr ""
 "                są zachowywane i można je przywrócić."
 
 #. module: project_attachment_history
-#: model_terms:ir.ui.view,arch_db:project_attachment_history.project_attachment_log_view_form
-msgid "Event"
-msgstr "Zdarzenie"
-
-#. module: project_attachment_history
 #: model:ir.model.fields,field_description:project_attachment_history.field_project_attachment_log__attachment_name
+#: model_terms:ir.ui.view,arch_db:project_attachment_history.project_attachment_log_view_form
 #: model_terms:ir.ui.view,arch_db:project_attachment_history.project_attachment_log_view_search
 msgid "File"
 msgstr "Plik"
@@ -99,14 +159,20 @@ msgstr "Dodano plik: %(name)s (%(size)s)"
 #. module: project_attachment_history
 #. odoo-python
 #: code:addons/project_attachment_history/models/project_attachment_log.py:0
-msgid "File deleted: %(name)s (%(size)s) —"
-msgstr "Usunięto plik: %(name)s (%(size)s) —"
+msgid "File deleted: %(name)s (%(size)s)"
+msgstr "Usunięto plik: %(name)s (%(size)s)"
 
 #. module: project_attachment_history
 #. odoo-python
 #: code:addons/project_attachment_history/models/project_attachment_log.py:0
-msgid "File moved: %(name)s (%(other)s)"
-msgstr "Przeniesiono plik: %(name)s (%(other)s)"
+msgid "File moved here from %(other)s: %(name)s"
+msgstr "Plik przeniesiony tutaj z %(other)s: %(name)s"
+
+#. module: project_attachment_history
+#. odoo-python
+#: code:addons/project_attachment_history/models/project_attachment_log.py:0
+msgid "File moved to %(other)s: %(name)s"
+msgstr "Plik przeniesiony do %(other)s: %(name)s"
 
 #. module: project_attachment_history
 #. odoo-python
@@ -121,10 +187,40 @@ msgid "File replaced: %(name)s (content changed)"
 msgstr "Zastąpiono plik: %(name)s (zmieniono zawartość)"
 
 #. module: project_attachment_history
+#. odoo-javascript
+#: code:addons/project_attachment_history/static/src/js/attachment_history_dialog.js:0
+msgid "File restored."
+msgstr "Plik przywrócony."
+
+#. module: project_attachment_history
 #. odoo-python
 #: code:addons/project_attachment_history/models/project_attachment_log.py:0
 msgid "File restored: %(name)s (%(size)s)"
 msgstr "Przywrócono plik: %(name)s (%(size)s)"
+
+#. module: project_attachment_history
+#. odoo-javascript
+#: code:addons/project_attachment_history/static/src/js/attachment_history_dialog.js:0
+msgid "Files that were present then will be put back, and files added since will be removed. Everything stays recoverable and is recorded in the chatter."
+msgstr "Pliki obecne w tamtym momencie zostaną przywrócone, a pliki dodane później usunięte. Wszystko pozostaje odwracalne i jest zapisywane w chatterze."
+
+#. module: project_attachment_history
+#: model:ir.model.fields,field_description:project_attachment_history.field_ir_attachment__id
+#: model:ir.model.fields,field_description:project_attachment_history.field_project_attachment_log__id
+#: model:ir.model.fields,field_description:project_attachment_history.field_project_project__id
+#: model:ir.model.fields,field_description:project_attachment_history.field_project_task__id
+msgid "ID"
+msgstr ""
+
+#. module: project_attachment_history
+#: model:ir.model.fields,field_description:project_attachment_history.field_project_attachment_log__write_uid
+msgid "Last Updated by"
+msgstr ""
+
+#. module: project_attachment_history
+#: model:ir.model.fields,field_description:project_attachment_history.field_project_attachment_log__write_date
+msgid "Last Updated on"
+msgstr ""
 
 #. module: project_attachment_history
 #: model:ir.model.fields,field_description:project_attachment_history.field_project_attachment_log__message_id
@@ -137,9 +233,26 @@ msgid "Model"
 msgstr "Model"
 
 #. module: project_attachment_history
-#: model:ir.model.fields.selection,name:project_attachment_history.selection__project_attachment_log__action__moved
-msgid "Moved"
-msgstr "Przeniesione"
+#. odoo-python
+#: code:addons/project_attachment_history/models/project_attachment_log.py:0
+msgid "Moved %(name)s here from %(other)s"
+msgstr "Przeniesiono %(name)s tutaj z %(other)s"
+
+#. module: project_attachment_history
+#. odoo-python
+#: code:addons/project_attachment_history/models/project_attachment_log.py:0
+msgid "Moved %(name)s to %(other)s"
+msgstr "Przeniesiono %(name)s do %(other)s"
+
+#. module: project_attachment_history
+#: model:ir.model.fields.selection,name:project_attachment_history.selection__project_attachment_log__action__moved_out
+msgid "Moved away"
+msgstr "Przeniesiony gdzie indziej"
+
+#. module: project_attachment_history
+#: model:ir.model.fields.selection,name:project_attachment_history.selection__project_attachment_log__action__moved_in
+msgid "Moved here"
+msgstr "Przeniesiony tutaj"
 
 #. module: project_attachment_history
 #: model_terms:ir.ui.view,arch_db:project_attachment_history.project_attachment_log_view_search
@@ -152,6 +265,18 @@ msgid "No attachment change recorded yet"
 msgstr "Nie zarejestrowano jeszcze żadnej zmiany załączników"
 
 #. module: project_attachment_history
+#. odoo-javascript
+#: code:addons/project_attachment_history/static/src/xml/attachment_history_dialog.xml:0
+msgid "No history"
+msgstr "Brak historii"
+
+#. module: project_attachment_history
+#. odoo-javascript
+#: code:addons/project_attachment_history/static/src/js/attachment_history_dialog.js:0
+msgid "Now"
+msgstr "Teraz"
+
+#. module: project_attachment_history
 #: model_terms:ir.ui.view,arch_db:project_attachment_history.project_attachment_log_view_form
 msgid "Open Record"
 msgstr "Otwórz rekord"
@@ -162,20 +287,27 @@ msgid "Previous Checksum"
 msgstr "Poprzednia suma kontrolna"
 
 #. module: project_attachment_history
+#: model:ir.model.fields,field_description:project_attachment_history.field_project_attachment_log__previous_attachment_id
+msgid "Previous Content"
+msgstr "Poprzednia zawartość"
+
+#. module: project_attachment_history
 #: model:ir.model.fields,field_description:project_attachment_history.field_project_attachment_log__previous_name
 #: model_terms:ir.ui.view,arch_db:project_attachment_history.project_attachment_log_view_form
 msgid "Previous Value"
 msgstr "Poprzednia wartość"
 
 #. module: project_attachment_history
+#: model:ir.model,name:project_attachment_history.model_project_project
+#: model:ir.model.fields,field_description:project_attachment_history.field_project_attachment_log__project_id
+#: model_terms:ir.ui.view,arch_db:project_attachment_history.project_attachment_log_view_search
+msgid "Project"
+msgstr "Projekt"
+
+#. module: project_attachment_history
 #: model:ir.model,name:project_attachment_history.model_project_attachment_log
 msgid "Project Attachment History"
 msgstr "Historia załączników projektu"
-
-#. module: project_attachment_history
-#: model:ir.model.fields,field_description:project_attachment_history.field_project_attachment_log__project_id
-msgid "Project"
-msgstr "Projekt"
 
 #. module: project_attachment_history
 #: model:ir.model.fields,field_description:project_attachment_history.field_project_attachment_log__res_name
@@ -191,6 +323,12 @@ msgid "Record ID"
 msgstr "ID rekordu"
 
 #. module: project_attachment_history
+#. odoo-javascript
+#: code:addons/project_attachment_history/static/src/js/attachment_history_dialog.js:0
+msgid "Record created"
+msgstr "Utworzono rekord"
+
+#. module: project_attachment_history
 #: model:ir.model.fields,field_description:project_attachment_history.field_project_attachment_log__is_recoverable
 #: model_terms:ir.ui.view,arch_db:project_attachment_history.project_attachment_log_view_search
 msgid "Recoverable"
@@ -202,10 +340,23 @@ msgid "Renamed"
 msgstr "Zmieniono nazwę"
 
 #. module: project_attachment_history
+#. odoo-python
+#: code:addons/project_attachment_history/models/project_attachment_log.py:0
+msgid "Renamed %(old)s to %(new)s"
+msgstr "Zmieniono nazwę %(old)s na %(new)s"
+
+#. module: project_attachment_history
+#. odoo-python
+#: code:addons/project_attachment_history/models/project_attachment_log.py:0
+msgid "Replaced the content of %(name)s"
+msgstr "Zastąpiono zawartość %(name)s"
+
+#. module: project_attachment_history
 #. odoo-javascript
 #. odoo-python
 #: code:addons/project_attachment_history/models/project_attachment_log.py:0
-#: code:addons/project_attachment_history/static/src/js/attachment_restore_link_patch.js:0
+#: code:addons/project_attachment_history/static/src/js/attachment_history_dialog.js:0
+#: code:addons/project_attachment_history/static/src/js/attachment_history_link_patch.js:0
 #: model_terms:ir.ui.view,arch_db:project_attachment_history.project_attachment_log_view_form
 #: model_terms:ir.ui.view,arch_db:project_attachment_history.project_attachment_log_view_list
 msgid "Restore"
@@ -213,9 +364,27 @@ msgstr "Przywróć"
 
 #. module: project_attachment_history
 #. odoo-javascript
-#: code:addons/project_attachment_history/static/src/js/attachment_restore_link_patch.js:0
+#: code:addons/project_attachment_history/static/src/xml/attachment_history_dialog.xml:0
+msgid "Restore this file"
+msgstr "Przywróć ten plik"
+
+#. module: project_attachment_history
+#. odoo-javascript
+#: code:addons/project_attachment_history/static/src/js/attachment_history_link_patch.js:0
 msgid "Restore this file?"
 msgstr "Przywrócić ten plik?"
+
+#. module: project_attachment_history
+#. odoo-javascript
+#: code:addons/project_attachment_history/static/src/xml/attachment_history_dialog.xml:0
+msgid "Restore this version"
+msgstr "Przywróć tę wersję"
+
+#. module: project_attachment_history
+#. odoo-javascript
+#: code:addons/project_attachment_history/static/src/js/attachment_history_dialog.js:0
+msgid "Restore this version?"
+msgstr "Przywrócić tę wersję?"
 
 #. module: project_attachment_history
 #: model:ir.model.fields.selection,name:project_attachment_history.selection__project_attachment_log__action__restored
@@ -224,7 +393,24 @@ msgid "Restored"
 msgstr "Przywrócone"
 
 #. module: project_attachment_history
-#: model:ir.model.fields,field_description:project_attachment_history.field_project_attachment_log__file_size_human
+#. odoo-python
+#: code:addons/project_attachment_history/models/project_attachment_log.py:0
+msgid "Restored %(name)s"
+msgstr "Przywrócono %(name)s"
+
+#. module: project_attachment_history
+#. odoo-javascript
+#: code:addons/project_attachment_history/static/src/js/attachment_history_dialog.js:0
+msgid "Showing the files as they were on %(date)s, after %(user)s %(summary)s"
+msgstr "Pliki w stanie z %(date)s, po tym jak %(user)s %(summary)s"
+
+#. module: project_attachment_history
+#. odoo-javascript
+#: code:addons/project_attachment_history/static/src/js/attachment_history_dialog.js:0
+msgid "Showing the files currently on this record"
+msgstr "Pliki obecnie znajdujące się w tym rekordzie"
+
+#. module: project_attachment_history
 #: model_terms:ir.ui.view,arch_db:project_attachment_history.project_attachment_log_view_form
 #: model_terms:ir.ui.view,arch_db:project_attachment_history.project_attachment_log_view_list
 msgid "Size"
@@ -236,7 +422,9 @@ msgid "Size (bytes)"
 msgstr "Rozmiar (bajty)"
 
 #. module: project_attachment_history
+#: model:ir.model,name:project_attachment_history.model_project_task
 #: model:ir.model.fields,field_description:project_attachment_history.field_project_attachment_log__task_id
+#: model_terms:ir.ui.view,arch_db:project_attachment_history.project_attachment_log_view_search
 msgid "Task"
 msgstr "Zadanie"
 
@@ -248,16 +436,27 @@ msgstr "Historii załączników nie można usunąć."
 
 #. module: project_attachment_history
 #. odoo-javascript
-#: code:addons/project_attachment_history/static/src/js/attachment_restore_link_patch.js:0
+#: code:addons/project_attachment_history/static/src/xml/attachment_history_dialog.xml:0
+msgid "The content shown is the one this file had at the selected time."
+msgstr "Pokazywana zawartość to ta, którą plik miał w wybranym momencie."
+
+#. module: project_attachment_history
+#. odoo-javascript
+#: code:addons/project_attachment_history/static/src/js/attachment_history_link_patch.js:0
 msgid "The file will be put back on the record it was deleted from."
 msgstr "Plik zostanie przywrócony do rekordu, z którego został usunięty."
 
 #. module: project_attachment_history
 #. odoo-python
 #: code:addons/project_attachment_history/models/project_attachment_log.py:0
-msgid ""
-"The record this file belonged to no longer exists, so it cannot be restored."
+msgid "The record this file belonged to no longer exists, so it cannot be restored."
 msgstr "Rekord, do którego należał ten plik, już nie istnieje, więc nie można go przywrócić."
+
+#. module: project_attachment_history
+#. odoo-javascript
+#: code:addons/project_attachment_history/static/src/xml/attachment_history_dialog.xml:0
+msgid "There was no file on this record at that time."
+msgstr "W tym momencie w rekordzie nie było żadnego pliku."
 
 #. module: project_attachment_history
 #. odoo-python
@@ -277,7 +476,94 @@ msgid "Type"
 msgstr "Typ"
 
 #. module: project_attachment_history
+#: model:ir.model.fields,help:project_attachment_history.field_project_task__display_name
+msgid ""
+"Use these keywords in the title to set new tasks:\n"
+"\n"
+"        30h Allocate 30 hours to the task\n"
+"        #tags Set tags on the task\n"
+"        @user Assign the task to a user\n"
+"        ! Set the task a medium priority\n"
+"        !! Set the task a high priority\n"
+"        !!! Set the task a urgent priority\n"
+"\n"
+"        Make sure to use the right format and order e.g. Improve the configuration screen 5h #feature #v16 @Mitchell !"
+msgstr ""
+
+#. module: project_attachment_history
 #: model:ir.model.fields,field_description:project_attachment_history.field_project_attachment_log__user_id
 #: model_terms:ir.ui.view,arch_db:project_attachment_history.project_attachment_log_view_search
 msgid "User"
 msgstr "Użytkownik"
+
+#. module: project_attachment_history
+#. odoo-javascript
+#: code:addons/project_attachment_history/static/src/xml/attachment_history_dialog.xml:0
+msgid "Version date"
+msgstr "Data wersji"
+
+#. module: project_attachment_history
+#. odoo-python
+#: code:addons/project_attachment_history/models/project_attachment_log.py:0
+msgid "View history"
+msgstr "Zobacz historię"
+
+#. module: project_attachment_history
+#. odoo-javascript
+#: code:addons/project_attachment_history/static/src/js/attachment_history_dialog.js:0
+msgid "added here"
+msgstr "dodano tutaj"
+
+#. module: project_attachment_history
+#. odoo-javascript
+#: code:addons/project_attachment_history/static/src/xml/attachment_history_dialog.xml:0
+msgid "content of that time"
+msgstr "zawartość z tamtego czasu"
+
+#. module: project_attachment_history
+#. odoo-javascript
+#: code:addons/project_attachment_history/static/src/js/attachment_history_dialog.js:0
+msgid "content replaced here"
+msgstr "zawartość zastąpiona tutaj"
+
+#. module: project_attachment_history
+#. odoo-javascript
+#: code:addons/project_attachment_history/static/src/js/attachment_history_dialog.js:0
+msgid "deleted here"
+msgstr "usunięto tutaj"
+
+#. module: project_attachment_history
+#. odoo-javascript
+#: code:addons/project_attachment_history/static/src/xml/attachment_history_dialog.xml:0
+msgid "file(s)"
+msgstr "plik(ów)"
+
+#. module: project_attachment_history
+#. odoo-javascript
+#: code:addons/project_attachment_history/static/src/js/attachment_history_dialog.js:0
+msgid "moved away here"
+msgstr "przeniesiono stąd"
+
+#. module: project_attachment_history
+#. odoo-javascript
+#: code:addons/project_attachment_history/static/src/js/attachment_history_dialog.js:0
+msgid "moved here"
+msgstr "przeniesiono tutaj"
+
+#. module: project_attachment_history
+#. odoo-javascript
+#: code:addons/project_attachment_history/static/src/xml/attachment_history_dialog.xml:0
+msgid "not on the record any more"
+msgstr "nie ma już w rekordzie"
+
+#. module: project_attachment_history
+#. odoo-javascript
+#: code:addons/project_attachment_history/static/src/js/attachment_history_dialog.js:0
+msgid "renamed here"
+msgstr "zmieniono nazwę tutaj"
+
+#. module: project_attachment_history
+#. odoo-javascript
+#: code:addons/project_attachment_history/static/src/js/attachment_history_dialog.js:0
+msgid "restored here"
+msgstr "przywrócono tutaj"

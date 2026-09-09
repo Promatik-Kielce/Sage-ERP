@@ -87,9 +87,16 @@ class IrAttachment(models.Model):
             att.id: (att.res_model, att.res_id, att.name, att.checksum)
             for att in watched
         }
+        # A content write destroys the previous bytes, so read them first: an old
+        # snapshot has to be able to hand back the file as it was. Only done for
+        # files actually under audit, and only when the content is being touched.
+        previous_content = {}
+        if before and {'raw', 'datas', 'db_datas'} & vals.keys():
+            for att in watched._project_history_tracked():
+                previous_content[att.id] = (att.name, att.mimetype, att.raw)
         res = super().write(vals)
         if before:
-            watched.exists()._project_history_log_written(before)
+            watched.exists()._project_history_log_written(before, previous_content)
         return res
 
     def unlink(self):
@@ -145,12 +152,32 @@ class IrAttachment(models.Model):
         record = self.env[res_model].browse(res_id).sudo().exists()
         return record.display_name if record else res_model
 
-    def _project_history_log_written(self, before):
+    def _project_history_park_content(self, log, name, mimetype, raw):
+        """ Keep the bytes a file had before it was overwritten.
+
+        The copy is parked on the log row of the replacement, the same way a soft
+        deleted file is parked on the row of its deletion, so an older snapshot
+        can serve it.
+        """
+        copy = self.env['ir.attachment'].sudo().with_context(**{NO_LOG_CTX: True}).create({
+            'name': name,
+            'raw': raw,
+            'mimetype': mimetype,
+            'res_model': BIN_MODEL,
+            'res_id': log.id,
+        })
+        log.sudo().write({'previous_attachment_id': copy.id})
+        return copy
+
+    def _project_history_log_written(self, before, previous_content=None):
         """ Turn a write into audit events.
 
         :param dict before: attachment id -> (res_model, res_id, name, checksum)
             as they were before the write.
+        :param dict previous_content: attachment id -> (name, mimetype, raw) for
+            the files whose content the write is about to replace.
         """
+        previous_content = previous_content or {}
         Log = self.env['project.attachment.log']
         for att in self:
             old_model, old_id, old_name, old_checksum = before[att.id]
@@ -168,8 +195,10 @@ class IrAttachment(models.Model):
             if moved and was_tracked:
                 old_label = self._record_label(old_model, old_id)
                 new_label = self._record_label(att.res_model, att.res_id)
+                # Directional: replaying a snapshot needs to know whether the file
+                # left this record or arrived on it.
                 events = [att._project_history_vals(
-                    'moved',
+                    'moved_out',
                     res_model=old_model, res_id=old_id,
                     previous_name=new_label,
                 )]
@@ -177,7 +206,7 @@ class IrAttachment(models.Model):
                     # Audited on both sides, so that neither record loses track
                     # of the file.
                     events.append(att._project_history_vals(
-                        'moved', previous_name=old_label))
+                        'moved_in', previous_name=old_label))
                 if is_tracked or att.res_model != BIN_MODEL:
                     Log._log_events(events)._notify_record()
                 continue
@@ -188,11 +217,19 @@ class IrAttachment(models.Model):
             events = []
             if old_name != att.name:
                 events.append(att._project_history_vals('renamed', previous_name=old_name))
-            if old_checksum != att.checksum:
+            replaced = old_checksum != att.checksum
+            if replaced:
                 events.append(att._project_history_vals(
                     'replaced', previous_checksum=old_checksum))
-            if events:
-                Log._log_events(events)._notify_record()
+            if not events:
+                continue
+            logs = Log._log_events(events)
+            if replaced and att.id in previous_content:
+                old_name_before, old_mimetype, old_raw = previous_content[att.id]
+                replaced_log = logs.filtered(lambda log: log.action == 'replaced')
+                att._project_history_park_content(
+                    replaced_log, old_name_before, old_mimetype, old_raw)
+            logs._notify_record()
 
     def _project_history_soft_delete(self):
         """ Park the files on their own audit row instead of destroying them.

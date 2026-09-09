@@ -8,7 +8,7 @@
             <list string="Attachment History" create="false" edit="false" delete="false"
                   decoration-danger="action == 'deleted'"
                   decoration-success="action in ['added', 'restored']"
-                  decoration-warning="action in ['renamed', 'replaced', 'moved']">
+                  decoration-warning="action in ['renamed', 'replaced', 'moved_in', 'moved_out']">
                 <field name="date"/>
                 <field name="user_id" widget="many2one_avatar_user"/>
                 <field name="action"/>
@@ -67,6 +67,7 @@
                         <group string="Previous Value">
                             <field name="previous_name"/>
                             <field name="previous_checksum"/>
+                            <field name="previous_attachment_id"/>
                             <field name="message_id" groups="base.group_no_one"/>
                         </group>
                     </group>
@@ -90,7 +91,7 @@
                 <filter name="filter_deleted" string="Deleted" domain="[('action', '=', 'deleted')]"/>
                 <filter name="filter_restored" string="Restored" domain="[('action', '=', 'restored')]"/>
                 <filter name="filter_changed" string="Changed"
-                        domain="[('action', 'in', ['renamed', 'replaced', 'moved'])]"/>
+                        domain="[('action', 'in', ['renamed', 'replaced', 'moved_in', 'moved_out'])]"/>
                 <separator/>
                 <filter name="filter_recoverable" string="Recoverable"
                         domain="[('is_recoverable', '=', True)]"/>
@@ -126,32 +127,6 @@
                 can be restored.
             </p>
         </field>
-    </record>
-
-    <!--
-        Bound actions: puts "Attachment History" in the cog menu of the task and
-        project forms and lists, without having to patch any core view.
-    -->
-    <record id="project_attachment_log_action_task" model="ir.actions.act_window">
-        <field name="name">Attachment History</field>
-        <field name="res_model">project.attachment.log</field>
-        <field name="view_mode">list,form</field>
-        <field name="search_view_id" ref="project_attachment_log_view_search"/>
-        <field name="domain">[('res_model', '=', 'project.task'), ('res_id', 'in', active_ids)]</field>
-        <field name="binding_model_id" ref="project.model_project_task"/>
-        <field name="binding_view_types">form,list</field>
-    </record>
-
-    <record id="project_attachment_log_action_project" model="ir.actions.act_window">
-        <field name="name">Attachment History</field>
-        <field name="res_model">project.attachment.log</field>
-        <field name="view_mode">list,form</field>
-        <field name="search_view_id" ref="project_attachment_log_view_search"/>
-        <field name="domain">['|',
-                                '&amp;', ('res_model', '=', 'project.project'), ('res_id', 'in', active_ids),
-                                ('project_id', 'in', active_ids)]</field>
-        <field name="binding_model_id" ref="project.model_project_project"/>
-        <field name="binding_view_types">form,list</field>
     </record>
 
     <menuitem
