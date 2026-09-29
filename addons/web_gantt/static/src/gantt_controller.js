@@ -35,8 +35,6 @@ export class GanttController extends Component {
     async loadData(props = this.props) {
         // Use search groupBy if available, otherwise use default from view definition
         let groupBy = props.groupBy || [];
-        console.log("[web_gantt] Controller.loadData - props.groupBy:", props.groupBy);
-        console.log("[web_gantt] Controller.loadData - props.archInfo.defaultGroupBy:", props.archInfo.defaultGroupBy);
 
         // If we have a default_group_by from the view, prioritize it
         if (props.archInfo.defaultGroupBy) {
@@ -47,11 +45,9 @@ export class GanttController extends Component {
             if (hasDefaultField) {
                 // Filter to only use the default group field
                 groupBy = groupBy.filter(g => g.split(':')[0] === defaultField);
-                console.log("[web_gantt] Controller.loadData - Filtered to default groupBy:", groupBy);
             } else if (groupBy.length === 0) {
                 // No groupBy from search, use default
                 groupBy = [defaultField];
-                console.log("[web_gantt] Controller.loadData - Using default groupBy:", groupBy);
             }
         }
 
@@ -62,7 +58,6 @@ export class GanttController extends Component {
             orderBy: props.orderBy || "",
         };
 
-        console.log("[web_gantt] Controller.loadData - Final searchParams.groupBy:", searchParams.groupBy);
         await this.model.load(searchParams);
     }
 

@@ -5,6 +5,19 @@ import { GanttModel } from "@web_gantt/gantt_model";
 import { GanttRenderer } from "@web_gantt/gantt_renderer";
 import { onWillUnmount } from "@odoo/owl";
 
+const LEAVE_DATE_FORMAT = new Intl.DateTimeFormat('pl-PL', {
+    day: '2-digit', month: '2-digit', year: 'numeric',
+});
+
+const formatDate = (d) => LEAVE_DATE_FORMAT.format(new Date(d));
+
+function formatLeave(leave) {
+    const leaveType = Array.isArray(leave.holiday_status_id)
+        ? leave.holiday_status_id[1] : 'Urlop';
+    const duration = leave.duration_display || `${leave.number_of_days} d`;
+    return { leaveType, duration };
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // GanttModel patch — fetch approved hr.leave records alongside attendance data
 // ─────────────────────────────────────────────────────────────────────────────
@@ -22,39 +35,35 @@ patch(GanttModel.prototype, {
 
     async _fetchLeaves() {
         const records = this.data.records;
+        this.data.leaves = [];
+        this.data.leavesByEmployee = new Map();
 
         if (!records || records.length === 0) {
-            this.data.leaves = [];
             return;
         }
 
-        const employeeIds = [
-            ...new Set(
-                records
-                    .filter(r => Array.isArray(r.employee_id))
-                    .map(r => r.employee_id[0])
-            )
-        ];
+        // Single pass (no Math.min(...spread): it overflows the stack on large sets)
+        const employeeIds = new Set();
+        let rangeStartTs = Infinity;
+        let rangeEndTs = -Infinity;
+        for (const record of records) {
+            if (Array.isArray(record.employee_id)) {
+                employeeIds.add(record.employee_id[0]);
+            }
+            if (record.check_in) {
+                rangeStartTs = Math.min(rangeStartTs, new Date(record.check_in).getTime());
+            }
+            if (record.check_out) {
+                rangeEndTs = Math.max(rangeEndTs, new Date(record.check_out).getTime());
+            }
+        }
 
-        if (employeeIds.length === 0) {
-            this.data.leaves = [];
+        if (employeeIds.size === 0 || rangeStartTs === Infinity) {
             return;
         }
 
-        const checkIns = records
-            .filter(r => r.check_in)
-            .map(r => new Date(r.check_in).getTime());
-        const checkOuts = records
-            .filter(r => r.check_out)
-            .map(r => new Date(r.check_out).getTime());
-
-        if (checkIns.length === 0) {
-            this.data.leaves = [];
-            return;
-        }
-
-        const rangeStart = new Date(Math.min(...checkIns));
-        const rangeEnd = checkOuts.length > 0 ? new Date(Math.max(...checkOuts)) : new Date();
+        const rangeStart = new Date(rangeStartTs);
+        const rangeEnd = rangeEndTs > -Infinity ? new Date(rangeEndTs) : new Date();
 
         const toOdooDatetime = (d) => {
             const pad = (n) => String(n).padStart(2, '0');
@@ -66,7 +75,7 @@ patch(GanttModel.prototype, {
             const leaves = await this.orm.searchRead(
                 'hr.leave',
                 [
-                    ['employee_id', 'in', employeeIds],
+                    ['employee_id', 'in', [...employeeIds]],
                     ['state', '=', 'validate'],
                     ['date_from', '<=', toOdooDatetime(rangeEnd)],
                     ['date_to', '>=', toOdooDatetime(rangeStart)],
@@ -100,10 +109,35 @@ patch(GanttModel.prototype, {
             }
 
             this.data.leaves = leaves;
+            this.data.leavesByEmployee = this._indexLeavesByEmployee(leaves);
         } catch (error) {
             console.error("[attendance_gantt_patch] Error fetching leaves:", error);
             this.data.leaves = [];
+            this.data.leavesByEmployee = new Map();
         }
+    },
+
+    /**
+     * Group leaves per employee with their bounds parsed once, so tooltips and
+     * hover lookups only scan one employee's leaves.
+     */
+    _indexLeavesByEmployee(leaves) {
+        const leavesByEmployee = new Map();
+        for (const leave of leaves) {
+            if (!Array.isArray(leave.employee_id) || !leave.date_from || !leave.date_to) {
+                continue;
+            }
+            const employeeId = leave.employee_id[0];
+            if (!leavesByEmployee.has(employeeId)) {
+                leavesByEmployee.set(employeeId, []);
+            }
+            leavesByEmployee.get(employeeId).push({
+                start: new Date(leave.date_from).getTime(),
+                end: new Date(leave.date_to).getTime(),
+                leave,
+            });
+        }
+        return leavesByEmployee;
     },
 });
 
@@ -119,105 +153,56 @@ patch(GanttModel.prototype, {
 patch(GanttRenderer.prototype, {
     setup() {
         super.setup(...arguments);
-        this._leaveItemIds = [];
         this._leaveTooltipEl = null;
+        this._leaveTooltipTarget = null;
+        this._leaveMouseEvent = null;
+        this._leaveFrame = null;
 
         onWillUnmount(() => {
-            if (this._leaveTooltipEl) {
-                if (this.ganttRef.el) {
-                    this.ganttRef.el.removeEventListener('mousemove', this._leaveMouseMove);
-                    this.ganttRef.el.removeEventListener('mouseleave', this._leaveMouseLeave);
-                }
-                this._leaveTooltipEl.remove();
-                this._leaveTooltipEl = null;
-            }
+            this._teardownLeaveTooltip();
         });
     },
 
     renderGantt() {
         super.renderGantt(...arguments);
 
-        if (this.props.archInfo.modelName !== 'hr.attendance') {
-            return;
+        if (this.timeline && this.props.archInfo.modelName === 'hr.attendance') {
+            this._setupLeaveTooltip();
         }
-
-        this._addLeaveItems();
-        this._setupLeaveTooltip();
-    },
-
-    refreshGantt() {
-        super.refreshGantt(...arguments);
-
-        if (this.props.archInfo.modelName !== 'hr.attendance') {
-            return;
-        }
-
-        this._addLeaveItems();
     },
 
     /**
-     * Add leave periods as background items.
+     * Leave periods as background items. They are part of the initial DataSet
+     * (adding them one by one makes vis re-sort every item each time).
      * Background items fill the full row height and are never repositioned
      * by vis-timeline's layout engine.
      */
-    _addLeaveItems() {
-        if (!this.timeline) return;
+    _getExtraItems(data) {
+        const extraItems = super._getExtraItems(...arguments);
 
-        const leaves = this.props.model.data.leaves;
-        if (!leaves || leaves.length === 0) return;
+        if (this.props.archInfo.modelName !== 'hr.attendance' || !data.leavesByEmployee) {
+            return extraItems;
+        }
 
-        this._removeLeaveItems();
-
-        const groups = this.props.model.data.groups;
-        const items = this.timeline.itemsData;
-        if (!items) return;
-
-        this._leaveItemIds = [];
-
-        for (const leave of leaves) {
-            if (!leave.employee_id || !leave.date_from || !leave.date_to) continue;
-
-            const employeeId = leave.employee_id[0];
+        for (const [employeeId, entries] of data.leavesByEmployee) {
             const groupKey = `employee_${employeeId}`;
-
-            if (!groups || !groups[groupKey]) continue;
-
-            const bgId = `leave-bg-${leave.id}-${employeeId}`;
-            this._leaveItemIds.push(bgId);
-
-            const colorClass = `gantt-color-${leave._color || 0}`;
-
-            try {
-                items.add({
-                    id: bgId,
+            if (!data.groups[groupKey]) {
+                continue;
+            }
+            for (const { start, end, leave } of entries) {
+                extraItems.push({
+                    id: `leave-bg-${leave.id}-${employeeId}`,
                     group: groupKey,
-                    start: new Date(leave.date_from),
-                    end: new Date(leave.date_to),
+                    start: new Date(start),
+                    end: new Date(end),
                     type: 'background',
-                    className: `vis-leave-background ${colorClass}`,
+                    className: `vis-leave-background gantt-color-${leave._color || 0}`,
                     content: '',
                 });
-            } catch (e) {
-                // Item already exists — skip
             }
         }
-    },
 
-    _removeLeaveItems() {
-        if (!this.timeline || !this._leaveItemIds || this._leaveItemIds.length === 0) {
-            return;
-        }
-
-        try {
-            const items = this.timeline.itemsData;
-            if (items) {
-                for (const id of this._leaveItemIds) {
-                    try { items.remove(id); } catch (e) { /* ignore */ }
-                }
-            }
-        } catch (e) { /* ignore */ }
-
-        this._leaveItemIds = [];
+        return extraItems;
     },
 
     /**
@@ -226,103 +211,141 @@ patch(GanttRenderer.prototype, {
      * and time under the cursor, then matches against leave records.
      */
     _setupLeaveTooltip() {
-        // Only create once
-        if (this._leaveTooltipEl) return;
-
         const el = this.ganttRef.el;
-        if (!el || !this.timeline) return;
+        if (!el || el === this._leaveTooltipTarget) {
+            return;
+        }
 
-        // Create tooltip div on document.body to avoid overflow/z-index issues
-        const tip = document.createElement('div');
-        tip.style.cssText = [
-            'display: none',
-            'position: fixed',
-            'pointer-events: none',
-            'z-index: 9999',
-            'padding: 8px 12px',
-            'background: #ffffff',
-            'border: 1px solid #dee2e6',
-            'border-radius: 4px',
-            'box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15)',
-            'color: #212529',
-            'font-size: 12px',
-            'line-height: 1.5',
-            'max-width: 300px',
-            'white-space: pre-line',
-            'font-family: sans-serif',
-        ].join('; ') + ';';
-        document.body.appendChild(tip);
-        this._leaveTooltipEl = tip;
+        if (!this._leaveTooltipEl) {
+            // Create tooltip div on document.body to avoid overflow/z-index issues
+            const tip = document.createElement('div');
+            tip.style.cssText = [
+                'display: none',
+                'position: fixed',
+                'pointer-events: none',
+                'z-index: 9999',
+                'padding: 8px 12px',
+                'background: #ffffff',
+                'border: 1px solid #dee2e6',
+                'border-radius: 4px',
+                'box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15)',
+                'color: #212529',
+                'font-size: 12px',
+                'line-height: 1.5',
+                'max-width: 300px',
+                'white-space: pre-line',
+                'font-family: sans-serif',
+            ].join('; ') + ';';
+            document.body.appendChild(tip);
+            this._leaveTooltipEl = tip;
 
-        const formatDate = (d) => new Date(d).toLocaleDateString('pl-PL', {
-            day: '2-digit', month: '2-digit', year: 'numeric',
-        });
+            // mousemove fires far more often than the screen refreshes:
+            // only handle the latest event once per frame.
+            this._leaveMouseMove = (event) => {
+                this._leaveMouseEvent = event;
+                if (!this._leaveFrame) {
+                    this._leaveFrame = requestAnimationFrame(() => {
+                        this._leaveFrame = null;
+                        this._updateLeaveTooltip(this._leaveMouseEvent);
+                    });
+                }
+            };
 
-        this._leaveMouseMove = (event) => {
-            const leaves = this.props.model.data && this.props.model.data.leaves;
-            if (!leaves || leaves.length === 0) {
+            this._leaveMouseLeave = () => {
+                this._cancelLeaveFrame();
                 tip.style.display = 'none';
-                return;
-            }
+            };
+        }
 
-            let props;
-            try {
-                props = this.timeline.getEventProperties(event);
-            } catch (e) {
-                tip.style.display = 'none';
-                return;
-            }
+        // The container is re-created when the view goes empty and back
+        if (this._leaveTooltipTarget) {
+            this._leaveTooltipTarget.removeEventListener('mousemove', this._leaveMouseMove);
+            this._leaveTooltipTarget.removeEventListener('mouseleave', this._leaveMouseLeave);
+        }
+        el.addEventListener('mousemove', this._leaveMouseMove);
+        el.addEventListener('mouseleave', this._leaveMouseLeave);
+        this._leaveTooltipTarget = el;
+    },
 
-            // If hovering an attendance bar, let its own title tooltip show
-            if (props.item && this.items && this.items.some(i => i.id === props.item)) {
-                tip.style.display = 'none';
-                return;
-            }
-
-            if (!props.group || !props.time) {
-                tip.style.display = 'none';
-                return;
-            }
-
-            const groupKey = String(props.group);
-            if (!groupKey.startsWith('employee_')) {
-                tip.style.display = 'none';
-                return;
-            }
-
-            const employeeId = parseInt(groupKey.replace('employee_', ''), 10);
-            const mouseTime = props.time instanceof Date ? props.time : new Date(props.time);
-
-            const leave = leaves.find(l =>
-                Array.isArray(l.employee_id) &&
-                l.employee_id[0] === employeeId &&
-                mouseTime >= new Date(l.date_from) &&
-                mouseTime <= new Date(l.date_to)
-            );
-
-            if (leave) {
-                const leaveType = Array.isArray(leave.holiday_status_id)
-                    ? leave.holiday_status_id[1] : 'Urlop';
-                const duration = leave.duration_display || `${leave.number_of_days} d`;
-                tip.textContent =
-                    `${leaveType}\n` +
-                    `${leave.employee_id[1]}\n` +
-                    `${formatDate(leave.date_from)} \u2013 ${formatDate(leave.date_to)}\n` +
-                    `${duration}`;
-                tip.style.display = 'block';
-                tip.style.left = (event.clientX + 16) + 'px';
-                tip.style.top = (event.clientY + 16) + 'px';
-            } else {
-                tip.style.display = 'none';
-            }
-        };
-
-        this._leaveMouseLeave = () => {
+    _updateLeaveTooltip(event) {
+        const tip = this._leaveTooltipEl;
+        const hide = () => {
             tip.style.display = 'none';
         };
 
-        el.addEventListener('mousemove', this._leaveMouseMove);
-        el.addEventListener('mouseleave', this._leaveMouseLeave);
+        const data = this.props.model.data;
+        const leavesByEmployee = data && data.leavesByEmployee;
+        if (!this.timeline || !leavesByEmployee || leavesByEmployee.size === 0) {
+            hide();
+            return;
+        }
+
+        let props;
+        try {
+            props = this.timeline.getEventProperties(event);
+        } catch (e) {
+            hide();
+            return;
+        }
+
+        // If hovering an attendance bar, let its own title tooltip show
+        if (props.item && this.itemsById.has(props.item)) {
+            hide();
+            return;
+        }
+
+        if (!props.group || !props.time) {
+            hide();
+            return;
+        }
+
+        const groupKey = String(props.group);
+        if (!groupKey.startsWith('employee_')) {
+            hide();
+            return;
+        }
+
+        const employeeId = parseInt(groupKey.replace('employee_', ''), 10);
+        const mouseTime = (props.time instanceof Date ? props.time : new Date(props.time)).getTime();
+
+        const entry = (leavesByEmployee.get(employeeId) || []).find(
+            ({ start, end }) => mouseTime >= start && mouseTime <= end
+        );
+
+        if (entry) {
+            const { leave } = entry;
+            const { leaveType, duration } = formatLeave(leave);
+            tip.textContent =
+                `${leaveType}\n` +
+                `${leave.employee_id[1]}\n` +
+                `${formatDate(leave.date_from)} – ${formatDate(leave.date_to)}\n` +
+                `${duration}`;
+            tip.style.display = 'block';
+            tip.style.left = (event.clientX + 16) + 'px';
+            tip.style.top = (event.clientY + 16) + 'px';
+        } else {
+            hide();
+        }
+    },
+
+    _cancelLeaveFrame() {
+        if (this._leaveFrame) {
+            cancelAnimationFrame(this._leaveFrame);
+            this._leaveFrame = null;
+        }
+    },
+
+    _teardownLeaveTooltip() {
+        this._cancelLeaveFrame();
+        if (this._leaveTooltipTarget) {
+            this._leaveTooltipTarget.removeEventListener('mousemove', this._leaveMouseMove);
+            this._leaveTooltipTarget.removeEventListener('mouseleave', this._leaveMouseLeave);
+            this._leaveTooltipTarget = null;
+        }
+        if (this._leaveTooltipEl) {
+            this._leaveTooltipEl.remove();
+            this._leaveTooltipEl = null;
+        }
     },
 
     /**
@@ -337,40 +360,32 @@ patch(GanttRenderer.prototype, {
         }
 
         const record = task.record;
-        const leaves = this.props.model.data.leaves;
-        if (!leaves || leaves.length === 0 || !Array.isArray(record.employee_id)) {
+        const leavesByEmployee = this.props.model.data.leavesByEmployee;
+        if (!leavesByEmployee || leavesByEmployee.size === 0 || !Array.isArray(record.employee_id)) {
             return baseTitle;
         }
 
-        const empId = record.employee_id[0];
-        const checkIn = record.check_in ? new Date(record.check_in) : null;
-        if (!checkIn) return baseTitle;
+        if (!record.check_in) {
+            return baseTitle;
+        }
+        const checkIn = new Date(record.check_in).getTime();
 
-        const matchingLeaves = leaves.filter(leave => {
-            if (!Array.isArray(leave.employee_id) || leave.employee_id[0] !== empId) {
-                return false;
-            }
-            return checkIn >= new Date(leave.date_from) && checkIn <= new Date(leave.date_to);
-        });
+        const matchingLeaves = (leavesByEmployee.get(record.employee_id[0]) || []).filter(
+            ({ start, end }) => checkIn >= start && checkIn <= end
+        );
 
         if (matchingLeaves.length === 0) {
             return baseTitle;
         }
 
-        const formatDate = (d) => new Date(d).toLocaleDateString('pl-PL', {
-            day: '2-digit', month: '2-digit', year: 'numeric',
-        });
-
-        const separator = '\u2500'.repeat(22);
+        const separator = '─'.repeat(22);
 
         let leaveLines = '';
-        for (const leave of matchingLeaves) {
-            const leaveType = Array.isArray(leave.holiday_status_id)
-                ? leave.holiday_status_id[1] : 'Urlop';
-            const duration = leave.duration_display || `${leave.number_of_days} d`;
+        for (const { leave } of matchingLeaves) {
+            const { leaveType, duration } = formatLeave(leave);
             leaveLines +=
                 `${leaveType}\n` +
-                `${formatDate(leave.date_from)} \u2013 ${formatDate(leave.date_to)}\n` +
+                `${formatDate(leave.date_from)} – ${formatDate(leave.date_to)}\n` +
                 `${duration}\n`;
         }
 

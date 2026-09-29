@@ -4,7 +4,7 @@
     <t t-name="web_gantt.GanttRenderer" owl="1">
         <div class="o_gantt_renderer h-100">
             <t t-if="hasData">
-                <div class="o_gantt_container" t-ref="gantt" />
+                <div t-attf-class="o_gantt_container o_gantt_scale_{{ props.scale }}" t-ref="gantt" />
             </t>
             <t t-else="">
                 <div class="o_view_nocontent">

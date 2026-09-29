@@ -128,6 +128,8 @@ class HrAttendance(models.Model):
                 key = (att.employee_id.id, att.date)
                 attendances_by_day[key] |= att
 
+        # set lookup: `att in self` scans the ids tuple, quadratic on large reads
+        self_ids = set(self._ids)
         for (emp_id, date), attendances in attendances_by_day.items():
             total_worked = sum(att.worked_hours for att in attendances if att.check_out)
             has_open = any(not att.check_out for att in attendances)
@@ -154,7 +156,7 @@ class HrAttendance(models.Model):
                         color = 10
 
             for att in attendances:
-                if att in self:
+                if att.id in self_ids:
                     att.color = color
 
     @api.depends('overtime_hours')

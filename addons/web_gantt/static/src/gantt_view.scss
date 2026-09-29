@@ -101,9 +101,37 @@
                 }
             }
 
-            // White background on center panel - below custom times
+            // White background on center panel. The time axis grid lives in the
+            // vertical background panel underneath, so this hides it (day/year scales).
             .vis-panel.vis-center {
                 background-color: #ffffff;
+            }
+
+            .vis-panel.vis-background.vis-vertical {
+                background-color: #ffffff;
+            }
+
+            // Week/month: let the grid show through the center panel. vis draws one
+            // minor line per day and tags weekend days, which gives the day separators
+            // and weekend shading without any extra DOM or redraws.
+            &.o_gantt_scale_week,
+            &.o_gantt_scale_month {
+                .vis-panel.vis-center {
+                    background-color: transparent;
+                }
+
+                .vis-background .vis-grid.vis-vertical {
+                    &.vis-minor,
+                    &.vis-major {
+                        border-color: #dee2e6;
+                        border-style: solid;
+                    }
+                }
+
+                .vis-background .vis-grid.vis-saturday,
+                .vis-background .vis-grid.vis-sunday {
+                    background-color: #f1f3f5;
+                }
             }
 
             // Timeline items (attendance bars)
@@ -115,7 +143,8 @@
                 font-size: 12px;
                 font-weight: 600;
                 cursor: pointer;
-                transition: all 0.2s ease;
+                // Not `all`: vis moves items with transform/width on every pan
+                transition: box-shadow 0.2s ease, opacity 0.2s ease;
                 min-height: 32px;  // Make items taller and easier to click
                 pointer-events: auto !important;  // Ensure items are clickable
                 z-index: 10;  // Ensure items are above backgrounds
@@ -146,27 +175,6 @@
                 width: 2px;
             }
 
-            // Day separator lines (custom time markers)
-            .vis-custom-time {
-                background-color: #dee2e6;
-                width: 1px;
-                pointer-events: none;  // Don't interfere with item clicks
-
-                // Hide the draggable handle
-                .vis-custom-time-marker {
-                    display: none;
-                }
-            }
-
-            // Weekend background highlighting
-            .vis-item.vis-background.vis-weekend-background {
-                background-color: #f1f3f5 !important;
-                border: none !important;
-                opacity: 1 !important;
-                pointer-events: none !important;  // Don't block clicks on items
-                z-index: 1;  // Keep behind regular items
-            }
-
             // Grid background - ensure it doesn't block item clicks
             .vis-background {
                 pointer-events: none;  // Don't capture clicks
@@ -183,12 +191,6 @@
                             border-style: solid;
                         }
                     }
-                }
-
-                // Weekend highlighting
-                .vis-time-axis .vis-grid.vis-saturday,
-                .vis-time-axis .vis-grid.vis-sunday {
-                    background-color: #f8f9fa;
                 }
             }
 

@@ -4,6 +4,24 @@ import { KeepLast } from "@web/core/utils/concurrency";
 import { deserializeDate, deserializeDateTime } from "@web/core/l10n/dates";
 import { Domain } from "@web/core/domain";
 
+const SERVER_DATETIME_RE = /^(\d{4})-(\d{2})-(\d{2})(?: (\d{2}):(\d{2}):(\d{2}))?$/;
+
+/**
+ * Parse a server date/datetime string ("YYYY-MM-DD[ HH:MM:SS]", UTC) to a Date.
+ * Same instant as deserializeDateTime(value).toJSDate(), without the luxon overhead
+ * (this runs twice per record).
+ */
+export function parseServerDateTime(value) {
+    const match = SERVER_DATETIME_RE.exec(value);
+    if (!match) {
+        return null;
+    }
+    return new Date(Date.UTC(
+        +match[1], +match[2] - 1, +match[3],
+        +(match[4] || 0), +(match[5] || 0), +(match[6] || 0),
+    ));
+}
+
 export class GanttModel {
     constructor(orm, config, data) {
         this.orm = orm;
@@ -41,10 +59,6 @@ export class GanttModel {
 
         // Remove duplicates
         const uniqueFields = [...new Set(fields)];
-
-        console.log("[web_gantt] Loading data with fields:", uniqueFields);
-        console.log("[web_gantt] GroupBy:", groupBy);
-        console.log("[web_gantt] GroupBy fields extracted:", groupByFields);
 
         // Fetch records
         const result = await this.keepLast.add(
@@ -158,6 +172,10 @@ export class GanttModel {
         }
 
         if (typeof value === 'string') {
+            const parsed = parseServerDateTime(value);
+            if (parsed) {
+                return parsed;
+            }
             // Try datetime first, then date
             try {
                 return deserializeDateTime(value).toJSDate();
@@ -178,16 +196,12 @@ export class GanttModel {
      * Group tasks by a field
      */
     _groupTasks(tasks, groupBy, archInfo) {
-        console.log("[web_gantt] Grouping tasks. GroupBy:", groupBy, "Tasks count:", tasks.length);
-
         if (!groupBy || groupBy.length === 0) {
-            console.log("[web_gantt] No groupBy, returning all tasks in default group");
             return { "all": { label: "All Records", tasks } };
         }
 
         // Extract base field name (remove granularity like :month, :week)
         const groupField = groupBy[0].split(':')[0];
-        console.log("[web_gantt] Group field (base):", groupField);
         const groups = {};
 
         for (const task of tasks) {
@@ -195,7 +209,6 @@ export class GanttModel {
             let groupLabel = "Undefined";
 
             const record = task.record;
-            console.log("[web_gantt] Processing task:", task.recordId, "GroupField value:", record[groupField]);
 
             if (record[groupField] !== undefined && record[groupField] !== false) {
                 const value = record[groupField];
@@ -203,14 +216,10 @@ export class GanttModel {
                     // Many2one: [id, name]
                     groupKey = `employee_${value[0]}`;  // Prefix to ensure string key
                     groupLabel = value[1];
-                    console.log("[web_gantt] Many2one field. Key:", groupKey, "Label:", groupLabel);
                 } else {
                     groupKey = `group_${value}`;
                     groupLabel = value.toString();
-                    console.log("[web_gantt] Other field. Key:", groupKey, "Label:", groupLabel);
                 }
-            } else {
-                console.log("[web_gantt] Field is undefined/false for task:", task.recordId);
             }
 
             if (!groups[groupKey]) {
@@ -218,12 +227,10 @@ export class GanttModel {
                     label: groupLabel,
                     tasks: [],
                 };
-                console.log("[web_gantt] Created new group:", groupKey, "Label:", groupLabel);
             }
             groups[groupKey].tasks.push(task);
         }
 
-        console.log("[web_gantt] Final groups:", Object.keys(groups).map(k => ({key: k, label: groups[k].label, count: groups[k].tasks.length})));
         return groups;
     }
 
@@ -325,14 +332,8 @@ export class GanttModel {
                 const groupKey = `employee_${employee.id}`;
                 if (groups[groupKey]) {
                     groups[groupKey].attendanceState = employee.attendance_state;
-                    console.log("[web_gantt] Set attendanceState for", groupKey, "to", employee.attendance_state);
-                } else {
-                    console.warn("[web_gantt] Group not found for", groupKey);
                 }
             }
-
-            console.log("[web_gantt] Fetched employee states:", employees);
-            console.log("[web_gantt] Groups after setting states:", Object.keys(groups).map(k => ({key: k, label: groups[k].label, state: groups[k].attendanceState})));
         } catch (error) {
             console.error("[web_gantt] Error fetching employee states:", error);
         }

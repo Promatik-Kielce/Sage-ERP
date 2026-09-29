@@ -4,8 +4,6 @@ import { visitXML } from "@web/core/utils/xml";
 
 export class GanttArchParser {
     parse(arch, models, modelName) {
-        console.log("[web_gantt] ArchParser.parse called with:", { arch, models, modelName });
-
         let root;
         if (typeof arch === "string") {
             const xmlDoc = new DOMParser().parseFromString(arch, "text/xml");
@@ -24,15 +22,7 @@ export class GanttArchParser {
             throw new Error("Invalid gantt view architecture: no gantt element found");
         }
 
-        console.log("[web_gantt] Found gantt root element:", root);
-
         const defaultGroupBy = root.getAttribute("default_group_by");
-        console.log("[web_gantt] ArchParser - default_group_by attribute:", defaultGroupBy);
-
-        // Debug: log the edit attribute
-        const editAttr = root.getAttribute("edit");
-        console.log("[web_gantt] ArchParser - edit attribute raw value:", editAttr);
-        console.log("[web_gantt] ArchParser - edit !== 'false':", editAttr !== "false");
 
         const result = {
             // Required attributes
