@@ -669,11 +669,15 @@ class HrAttendance(models.Model):
             'url': self.env.company.attendance_kiosk_url + '?from_trial_mode=True'
         }
 
+    def _get_officer_employee_domain(self):
+        """Employees whose attendances an officer (without full access) manages."""
+        return Domain('parent_id.user_id', '=', self.env.user.id) | Domain('id', 'child_of', self.env.user.employee_ids.ids)
+
     def _read_group_employee_id(self, resources, domain):
         user_domain = Domain(self.env.context.get('user_domain') or Domain.TRUE)
         employee_domain = Domain('company_id', 'in', self.env.context.get('allowed_company_ids', []))
         if not self.env.user.has_group('hr_attendance.group_hr_attendance_user'):
-            employee_domain &= (Domain('parent_id.user_id', '=', self.env.user.id) | Domain('id', 'child_of', self.env.user.employee_ids.ids))
+            employee_domain &= self._get_officer_employee_domain()
         if user_domain.is_true():
             # Workaround to make it work only for list view.
             if 'gantt_start_date' in self.env.context:

@@ -19,10 +19,11 @@ class HrAttendance(http.Controller):
     def _get_user_attendance_data(employee, include_hours_balance=True):
         response = {}
         if employee:
-            # Get current project from active attendance (via stored active_timesheet_id field)
+            # Get current project from active attendance (via stored active_timesheet_id field,
+            # only present when hr_attendance_timesheet_project is installed)
             current_project = None
             last_att = employee.last_attendance_id
-            if last_att and not last_att.check_out and last_att.active_timesheet_id:
+            if last_att and not last_att.check_out and 'active_timesheet_id' in last_att._fields and last_att.active_timesheet_id:
                 current_project = last_att.active_timesheet_id.project_id
 
             response = {
@@ -61,9 +62,10 @@ class HrAttendance(http.Controller):
             # Derive attendance_state from stored check_out field instead of computed field
             is_checked_in = bool(current_attendance and not current_attendance.check_out)
 
-            # Get current project if available (via stored active_timesheet_id field)
+            # Get current project if available (via stored active_timesheet_id field,
+            # only present when hr_attendance_timesheet_project is installed)
             current_project = None
-            if is_checked_in and current_attendance and current_attendance.active_timesheet_id:
+            if is_checked_in and current_attendance and 'active_timesheet_id' in current_attendance._fields and current_attendance.active_timesheet_id:
                 current_project = current_attendance.active_timesheet_id.project_id
 
             # Return minimal data using STORED fields only - no expensive computed fields

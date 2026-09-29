@@ -36,6 +36,29 @@ class HrEmployee(models.Model):
         sanitize=False,
     )
 
+    x_is_managed_by_me = fields.Boolean(
+        string="Managed by Me",
+        compute="_compute_x_is_managed_by_me",
+        search="_search_x_is_managed_by_me",
+    )
+
+    @api.model
+    def _get_x_managed_employee_ids(self):
+        """Ids of employees for which the current user is an active manager (primary or not)."""
+        return self.env["hr.employee.manager.rel"].sudo().search([
+            ("manager_id.user_id", "=", self.env.uid),
+        ]).employee_id.ids
+
+    def _compute_x_is_managed_by_me(self):
+        managed_ids = set(self._get_x_managed_employee_ids())
+        for employee in self:
+            employee.x_is_managed_by_me = employee.id in managed_ids
+
+    def _search_x_is_managed_by_me(self, operator, value):
+        if operator not in ("in", "not in"):
+            return NotImplemented
+        return [("id", operator, self._get_x_managed_employee_ids())]
+
     @api.depends("manager_relation_ids.active", "manager_relation_ids.manager_id")
     def _compute_x_manager_ids(self):
         for employee in self:

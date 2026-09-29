@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Group rules are OR-ed: this extends hr_attendance_rule_attendance_manager_restrict
+         (primary manager via parent_id) to all managers from the Managers tab.
+         Matches the relation rows directly rather than the computed x_manager_ids, so the
+         rule never reads a not-yet-recomputed value. Rules run with active_test=False,
+         hence the explicit active condition. -->
+    <record id="hr_attendance_rule_multi_manager" model="ir.rule">
+        <field name="name">Attendance Officer: Attendances of employees managed as secondary manager</field>
+        <field name="model_id" ref="hr_attendance.model_hr_attendance"/>
+        <field name="domain_force">[('employee_id.manager_relation_ids', 'any', [('active', '=', True), ('manager_id.user_id', '=', user.id)])]</field>
+        <field name="groups" eval="[(4, ref('hr_attendance.group_hr_attendance_officer'))]"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="1"/>
+        <field name="perm_create" eval="1"/>
+        <field name="perm_unlink" eval="1"/>
+    </record>
+</odoo>
