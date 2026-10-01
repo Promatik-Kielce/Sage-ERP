@@ -188,6 +188,12 @@ msgid "Currently working on:"
 msgstr "Aktualnie pracujesz nad:"
 
 #. module: hr_attendance_timesheet_project
+#. odoo-python
+#: code:addons/hr_attendance_timesheet_project/models/account_analytic_line.py:0
+msgid "Date"
+msgstr "Data"
+
+#. module: hr_attendance_timesheet_project
 #: model:ir.model.fields,field_description:hr_attendance_timesheet_project.field_hr_employee__default_project_id
 msgid "Default Project"
 msgstr "Domyślny projekt"
@@ -196,6 +202,12 @@ msgstr "Domyślny projekt"
 #: model:ir.model.fields,help:hr_attendance_timesheet_project.field_hr_employee__default_project_id
 msgid "Default project for this employee if no last project is set"
 msgstr "Domyślny projekt dla tego pracownika, jeśli nie ustawiono ostatniego projektu"
+
+#. module: hr_attendance_timesheet_project
+#. odoo-python
+#: code:addons/hr_attendance_timesheet_project/models/account_analytic_line.py:0
+msgid "Description"
+msgstr "Opis"
 
 #. module: hr_attendance_timesheet_project
 #: model:ir.model.fields,help:hr_attendance_timesheet_project.field_hr_attendance__timesheet_hours_diff
@@ -249,6 +261,8 @@ msgid "Hour Summary"
 msgstr "Podsumowanie godzin"
 
 #. module: hr_attendance_timesheet_project
+#. odoo-python
+#: code:addons/hr_attendance_timesheet_project/models/account_analytic_line.py:0
 #: model_terms:ir.ui.view,arch_db:hr_attendance_timesheet_project.view_timesheet_tree_attendance
 msgid "Hours"
 msgstr "Godziny"
@@ -339,9 +353,21 @@ msgstr "Nie znaleziono projektów pasujących do '"
 
 #. module: hr_attendance_timesheet_project
 #. odoo-python
+#: code:addons/hr_attendance_timesheet_project/models/account_analytic_line.py:0
+msgid "Only Timesheets administrators can create, edit or delete timesheets that are not linked to an attendance."
+msgstr "Tylko administratorzy kart pracy mogą tworzyć, edytować i usuwać karty pracy, które nie są powiązane z obecnością."
+
+#. module: hr_attendance_timesheet_project
+#. odoo-python
 #: code:addons/hr_attendance_timesheet_project/wizard/attendance_change_project_wizard.py:0
 msgid "Please select a new project."
 msgstr "Wybierz nowy projekt."
+
+#. module: hr_attendance_timesheet_project
+#. odoo-python
+#: code:addons/hr_attendance_timesheet_project/models/account_analytic_line.py:0
+msgid "Project"
+msgstr "Projekt"
 
 #. module: hr_attendance_timesheet_project
 #: model_terms:ir.ui.view,arch_db:hr_attendance_timesheet_project.view_hr_employee_form_inherit
@@ -388,6 +414,12 @@ msgid "Sum of all timesheet hours for this attendance"
 msgstr "Suma wszystkich godzin z kart pracy dla tej obecności"
 
 #. module: hr_attendance_timesheet_project
+#. odoo-python
+#: code:addons/hr_attendance_timesheet_project/models/account_analytic_line.py:0
+msgid "Task"
+msgstr "Zadanie"
+
+#. module: hr_attendance_timesheet_project
 #: model:project.project,label_tasks:hr_attendance_timesheet_project.project_koszty_stale
 msgid "Tasks"
 msgstr "Zadania"
@@ -403,6 +435,18 @@ msgstr "Karta pracy uzupełniona automatycznie"
 #: code:addons/hr_attendance_timesheet_project/models/hr_attendance.py:0
 msgid "Timesheet Gap Detected"
 msgstr "Wykryto lukę w kartach pracy"
+
+#. module: hr_attendance_timesheet_project
+#. odoo-python
+#: code:addons/hr_attendance_timesheet_project/models/account_analytic_line.py:0
+msgid "Timesheet added"
+msgstr "Dodano kartę pracy"
+
+#. module: hr_attendance_timesheet_project
+#. odoo-python
+#: code:addons/hr_attendance_timesheet_project/models/account_analytic_line.py:0
+msgid "Timesheet changed"
+msgstr "Zmieniono kartę pracy"
 
 #. module: hr_attendance_timesheet_project
 #. odoo-python
@@ -456,6 +500,12 @@ msgstr ""
 #: model:ir.model.fields,help:hr_attendance_timesheet_project.field_hr_attendance__timesheet_ids
 msgid "Timesheet entries generated from this attendance"
 msgstr "Wpisy kart pracy wygenerowane z tej obecności"
+
+#. module: hr_attendance_timesheet_project
+#. odoo-python
+#: code:addons/hr_attendance_timesheet_project/models/account_analytic_line.py:0
+msgid "Timesheet removed"
+msgstr "Usunięto kartę pracy"
 
 #. module: hr_attendance_timesheet_project
 #: model:ir.model.fields,field_description:hr_attendance_timesheet_project.field_hr_attendance__timesheet_ids
@@ -544,6 +594,12 @@ msgstr "Nieznany"
 #: code:addons/hr_attendance_timesheet_project/models/hr_attendance.py:0
 msgid "Work on %s"
 msgstr "Praca nad %s"
+
+#. module: hr_attendance_timesheet_project
+#. odoo-python
+#: code:addons/hr_attendance_timesheet_project/models/account_analytic_line.py:0
+msgid "You cannot change the timesheets of %(employees)s: they belong to attendances you are not allowed to edit. Only the people who can edit an attendance can edit its timesheets."
+msgstr "Nie możesz zmieniać kart pracy pracowników: %(employees)s – należą one do obecności, których nie możesz edytować. Karty pracy obecności mogą edytować tylko osoby, które mogą edytować tę obecność."
 
 #. module: hr_attendance_timesheet_project
 #. odoo-python

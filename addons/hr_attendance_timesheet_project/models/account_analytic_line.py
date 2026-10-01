@@ -1,10 +1,20 @@
 # -*- coding: utf-8 -*-
 
+from collections import defaultdict
+
+from markupsafe import Markup
+
 from odoo import models, fields, api, _
-from odoo.exceptions import ValidationError
+from odoo.exceptions import AccessError, ValidationError
+from odoo.tools import format_date, format_duration
 
 # Import tolerance constant from hr_attendance extension
 from .hr_attendance import TIMESHEET_TOLERANCE_HOURS
+
+# Timesheet fields whose changes are logged in the chatter of the linked attendance
+ATTENDANCE_LOGGED_FIELDS = ('date', 'project_id', 'task_id', 'name', 'unit_amount')
+# Context keys disabling that log: ours marks the automatic check-in/check-out bookkeeping
+ATTENDANCE_NO_LOG_CONTEXT_KEYS = ('attendance_timesheet_no_log', 'tracking_disable', 'mail_notrack')
 
 
 class AccountAnalyticLine(models.Model):
@@ -37,7 +47,163 @@ class AccountAnalyticLine(models.Model):
                     # Also set user_id from employee
                     if attendance.employee_id.user_id and not vals.get('user_id'):
                         vals['user_id'] = attendance.employee_id.user_id.id
-        return super().create(vals_list)
+        lines = super().create(vals_list)
+        if not lines._attendance_log_disabled():
+            self._attendance_log_post(lines._attendance_log_line_entries(_("Timesheet added")))
+        return lines
+
+    def write(self, vals):
+        log = not self._attendance_log_disabled() and any(
+            fname in vals for fname in ATTENDANCE_LOGGED_FIELDS + ('attendance_id',)
+        )
+        before = self._attendance_log_snapshot() if log else {}
+
+        result = super().write(vals)
+
+        # _check_access() ran on the values before the write: check again when the
+        # attendance or the project changed, as it may move the line out of reach.
+        if 'attendance_id' in vals or 'project_id' in vals:
+            self.check_access('write')
+
+        if log:
+            self._attendance_log_changes(before)
+        return result
+
+    def unlink(self):
+        entries = {}
+        if not self._attendance_log_disabled():
+            entries = self._attendance_log_line_entries(_("Timesheet removed"))
+        result = super().unlink()
+        self._attendance_log_post(entries)
+        return result
+
+    # ------------------------------------------------------------
+    # Access rights
+    # ------------------------------------------------------------
+
+    def _check_access(self, operation):
+        """ Timesheets linked to an attendance can be created, changed and deleted by
+        exactly the users who can change that attendance. The other timesheets only by
+        Timesheets administrators.
+
+        This cannot be done with record rules: the rules of different groups are OR-ed,
+        so the project and hr_timesheet rules would still grant access. The rules in
+        security/timesheet_security.xml only give attendance editors a way in.
+        """
+        result = super()._check_access(operation)
+        if result or operation == 'read' or self.env.su:
+            return result
+
+        timesheets = self.sudo().browse([id_ for id_ in self._ids if id_]).filtered('project_id')
+        linked = timesheets.filtered('attendance_id')
+        writable_attendances = linked.attendance_id.with_env(self.env)._filtered_access('write')
+        forbidden = linked.filtered(lambda line: line.attendance_id not in writable_attendances)
+        if not self.env.user.has_group('hr_timesheet.group_timesheet_manager'):
+            forbidden |= timesheets - linked
+        if not forbidden:
+            return None
+        forbidden = forbidden.with_env(self.env)
+        return forbidden, forbidden._make_timesheet_access_error
+
+    def _make_timesheet_access_error(self):
+        linked = self.sudo().filtered('attendance_id')
+        if linked:
+            return AccessError(_(
+                "You cannot change the timesheets of %(employees)s: they belong to attendances "
+                "you are not allowed to edit. Only the people who can edit an attendance can "
+                "edit its timesheets.",
+                employees=", ".join(linked.attendance_id.employee_id.mapped('name')),
+            ))
+        return AccessError(_(
+            "Only Timesheets administrators can create, edit or delete timesheets "
+            "that are not linked to an attendance."
+        ))
+
+    def _check_can_write(self, values):
+        # Linked timesheets follow the rights on their attendance (see _check_access),
+        # not hr_timesheet's "own timesheets only" restriction.
+        unlinked = self.filtered(lambda line: not line.sudo().attendance_id)
+        return super(AccountAnalyticLine, unlinked)._check_can_write(values)
+
+    # ------------------------------------------------------------
+    # Log in the attendance chatter
+    # ------------------------------------------------------------
+
+    def _attendance_log_disabled(self):
+        return any(self.env.context.get(key) for key in ATTENDANCE_NO_LOG_CONTEXT_KEYS)
+
+    def _attendance_log_labels(self):
+        return {
+            'date': _("Date"),
+            'project_id': _("Project"),
+            'task_id': _("Task"),
+            'name': _("Description"),
+            'unit_amount': _("Hours"),
+        }
+
+    def _attendance_log_snapshot(self):
+        """ Return {line id: (attendance, {logged field: displayed value})}. """
+        return {
+            line.id: (line.attendance_id, {
+                'date': format_date(self.env, line.date) if line.date else '',
+                'project_id': line.project_id.display_name or '',
+                'task_id': line.task_id.display_name or '',
+                'name': line.name or '',
+                'unit_amount': format_duration(line.unit_amount),
+            })
+            for line in self.sudo()
+        }
+
+    def _attendance_log_entry(self, title, values, changes=()):
+        project = values['project_id']
+        if values['task_id']:
+            project = f"{project} / {values['task_id']}"
+        entry = Markup("%s: <b>%s</b> · %s · %s · %s") % (
+            title, project, values['date'], values['unit_amount'], values['name'],
+        )
+        if changes:
+            entry += Markup("<ul>%s</ul>") % Markup().join(
+                Markup("<li>%s: %s → %s</li>") % change for change in changes
+            )
+        return entry
+
+    def _attendance_log_line_entries(self, title):
+        """ Return {attendance: [one log line per timesheet of ``self`` linked to it]}. """
+        entries = defaultdict(list)
+        for attendance, values in self._attendance_log_snapshot().values():
+            if attendance:
+                entries[attendance].append(self._attendance_log_entry(title, values))
+        return entries
+
+    def _attendance_log_changes(self, before):
+        """ Log the changes made since the snapshot ``before``, compared on the values
+        written in database so that saves changing nothing visible are not logged. """
+        labels = self._attendance_log_labels()
+        entries = defaultdict(list)
+        for line_id, (attendance, values) in self._attendance_log_snapshot().items():
+            old_attendance, old_values = before[line_id]
+            if old_attendance != attendance:
+                if old_attendance:
+                    entries[old_attendance].append(self._attendance_log_entry(_("Timesheet removed"), old_values))
+                if attendance:
+                    entries[attendance].append(self._attendance_log_entry(_("Timesheet added"), values))
+                continue
+            if not attendance:
+                continue
+            changes = [
+                (labels[fname], old_values[fname], values[fname])
+                for fname in ATTENDANCE_LOGGED_FIELDS
+                if old_values[fname] != values[fname]
+            ]
+            if changes:
+                entries[attendance].append(self._attendance_log_entry(_("Timesheet changed"), values, changes))
+        self._attendance_log_post(entries)
+
+    def _attendance_log_post(self, entries):
+        """ Post one note per attendance, ``entries`` mapping attendances to log lines. """
+        for attendance, attendance_entries in entries.items():
+            if attendance.exists():
+                attendance._message_log(body=Markup("<br/>").join(attendance_entries))
 
     @api.constrains('employee_id', 'attendance_id')
     def _check_employee_matches_attendance(self):

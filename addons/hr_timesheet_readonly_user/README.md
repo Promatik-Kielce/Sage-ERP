@@ -16,6 +16,8 @@ This module restricts timesheet editing permissions to administrators only. Stan
   - Full access to all timesheets
   - Can create, edit, and delete any timesheet
 
+> With `hr_attendance_timesheet_project` installed, the edit rights come from that module instead: timesheets linked to an attendance can be edited only by the people who can edit the attendance. Timesheets without an attendance can be edited only by Timesheets administrators. Project administrators can view timesheets but not edit them.
+
 ## Installation
 
 1. Copy this module to your Odoo addons directory

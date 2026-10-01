@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Timesheets linked to an attendance can be changed by exactly the people who can
+         change that attendance, and timesheets without an attendance only by Timesheets
+         administrators. The decision is made in account.analytic.line._check_access(),
+         which asks hr.attendance for its own access rights: record rules of different
+         groups are OR-ed, so rules alone could not take away what the hr_timesheet and
+         project rules grant.
+
+         The ACLs and rules below only open the door for attendance editors who have no
+         Timesheets rights, and let them read the timesheets of the attendances they see. -->
+
+    <!-- Project administrators no longer write timesheets: they keep reading them through
+         the timesheet approver group implied by project.group_project_manager.
+         `active` is not part of project's CSV, so updating project keeps it disabled. -->
+    <record id="project.access_account_analytic_line_project" model="ir.model.access">
+        <field name="active" eval="False"/>
+    </record>
+
+    <!-- Same domain as hr_attendance.hr_attendance_rule_attendance_manager_restrict -->
+    <record id="timesheet_rule_attendance_officer" model="ir.rule">
+        <field name="name">Attendance Officer: timesheets of the attendances of managed employees</field>
+        <field name="model_id" ref="analytic.model_account_analytic_line"/>
+        <field name="domain_force">[('attendance_id', 'any', [
+            '|',
+            ('employee_id.user_id', '=', user.id),
+            '|',
+            ('employee_id', 'child_of', user.employee_ids.ids),
+            ('employee_id.parent_id.user_id', '=', user.id),
+        ])]</field>
+        <field name="groups" eval="[(4, ref('hr_attendance.group_hr_attendance_officer'))]"/>
+    </record>
+
+    <record id="timesheet_rule_attendance_user" model="ir.rule">
+        <field name="name">Attendance Officer (all): timesheets of all attendances</field>
+        <field name="model_id" ref="analytic.model_account_analytic_line"/>
+        <field name="domain_force">[('attendance_id', '!=', False)]</field>
+        <field name="groups" eval="[(4, ref('hr_attendance.group_hr_attendance_user'))]"/>
+    </record>
+</odoo>

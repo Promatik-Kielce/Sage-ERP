@@ -120,6 +120,11 @@ class HrBusinessTrip(models.Model):
             if rec.date_from and rec.date_to and rec.date_to < rec.date_from:
                 raise ValidationError(_("Date To cannot be earlier than Date From."))
 
+    def _trip_timesheets(self):
+        """Karty pracy generowane z delegacji to nie ręczne zmiany - nie są logowane
+        w czacie attendance."""
+        return self.env["account.analytic.line"].with_context(attendance_timesheet_no_log=True)
+
     def _unlink_trip_attendances(self):
         """Usuń tylko attendance wygenerowane przez delegację wraz z kartami pracy."""
         attendances = self.env["hr.attendance"].search([
@@ -127,7 +132,7 @@ class HrBusinessTrip(models.Model):
             ("is_business_trip", "=", True),
         ])
 
-        timesheets = self.env["account.analytic.line"].search([
+        timesheets = self._trip_timesheets().search([
             ("attendance_id", "in", attendances.ids),
         ])
         timesheets.unlink()
@@ -140,7 +145,7 @@ class HrBusinessTrip(models.Model):
             ("business_trip_id", "in", self.ids),
             ("is_business_trip", "=", True),
         ])
-        timesheets = self.env["account.analytic.line"].search([
+        timesheets = self._trip_timesheets().search([
             ("attendance_id", "in", attendances.ids),
         ])
         timesheets.unlink()
@@ -153,7 +158,7 @@ class HrBusinessTrip(models.Model):
         więc np. ręczny wpis 12:00-16:00 dostaje 4h. Metoda jest idempotentna -
         tworzy kartę pracy tylko gdy jeszcze nie istnieje.
         """
-        Timesheet = self.env["account.analytic.line"]
+        Timesheet = self._trip_timesheets()
         for rec in self:
             if not rec.project_id or not rec.employee_id:
                 continue
@@ -235,7 +240,7 @@ class HrBusinessTrip(models.Model):
         - dodaje brakujące.
         """
         Attendance = self.env["hr.attendance"]
-        Timesheet = self.env["account.analytic.line"]
+        Timesheet = self._trip_timesheets()
 
         for rec in self:
             if rec.state != "approved":

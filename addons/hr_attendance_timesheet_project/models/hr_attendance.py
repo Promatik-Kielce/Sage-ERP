@@ -219,7 +219,7 @@ class HrAttendance(models.Model):
         if not project:
             raise UserError(_("No default project found. Please configure a default project in Settings."))
 
-        timesheet = self.env['account.analytic.line'].create({
+        timesheet = self._routine_timesheets().create({
             'employee_id': self.employee_id.id,
             'user_id': self.employee_id.user_id.id if self.employee_id.user_id else self.env.user.id,
             'project_id': project.id,
@@ -258,7 +258,7 @@ class HrAttendance(models.Model):
         duration = end_time - timesheet_start
         hours = duration.total_seconds() / 3600.0
 
-        self.active_timesheet_id.write({
+        self._routine_timesheets(self.active_timesheet_id).write({
             'unit_amount': hours,
         })
 
@@ -298,7 +298,7 @@ class HrAttendance(models.Model):
         if self.active_timesheet_id:
             self._close_active_timesheet()
 
-        timesheet = self.env['account.analytic.line'].create({
+        timesheet = self._routine_timesheets().create({
             'employee_id': self.employee_id.id,
             'user_id': self.employee_id.user_id.id if self.employee_id.user_id else self.env.user.id,
             'project_id': new_project.id,
@@ -322,6 +322,13 @@ class HrAttendance(models.Model):
 
         return default_project
 
+    def _routine_timesheets(self, timesheets=None):
+        """Timesheets for the check-in / project switch / check-out bookkeeping, which is
+        not logged in the chatter (unlike the changes people make to the timesheets)."""
+        if timesheets is None:
+            timesheets = self.env['account.analytic.line']
+        return timesheets.with_context(attendance_timesheet_no_log=True)
+
     def _auto_fill_timesheet_gaps(self):
         self.ensure_one()
 
@@ -335,7 +342,7 @@ class HrAttendance(models.Model):
                 last_timesheet = self.timesheet_ids.sorted('create_date', reverse=True)[0]
                 new_amount = last_timesheet.unit_amount + gap_hours
                 if new_amount > 0:
-                    last_timesheet.write({'unit_amount': new_amount})
+                    self._routine_timesheets(last_timesheet).write({'unit_amount': new_amount})
             return
 
         if gap_hours > TIMESHEET_TOLERANCE_HOURS:
@@ -352,7 +359,7 @@ class HrAttendance(models.Model):
                     }
                 }
 
-            self.env['account.analytic.line'].create({
+            self._routine_timesheets().create({
                 'employee_id': self.employee_id.id,
                 'user_id': self.employee_id.user_id.id if self.employee_id.user_id else self.env.user.id,
                 'project_id': default_project.id,

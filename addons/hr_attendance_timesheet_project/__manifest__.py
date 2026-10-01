@@ -35,6 +35,7 @@ Workflow:
     ],
     'data': [
         'security/ir.model.access.csv',
+        'security/timesheet_security.xml',
         'data/default_project_data.xml',
         'views/hr_attendance_views.xml',
         'views/hr_employee_views.xml',

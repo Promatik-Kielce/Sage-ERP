@@ -14,6 +14,8 @@ This module integrates employee attendance (check-in/check-out) with project man
 - **Default Project**: Fallback to "0 - Koszty Stałe" project for general overhead
 - **Kiosk Mode Support**: Project selection available in kiosk mode
 - **Web Interface**: Full project management in web interface
+- **Attendance-Based Access**: Timesheets of an attendance can only be edited by the people who can edit that attendance
+- **Change History**: Manual changes to timesheets are logged in the chatter of their attendance
 
 ## Installation
 
@@ -98,6 +100,25 @@ Result: 3 timesheet entries for one attendance record:
 - Project A: 2 hours
 - Project B: 4 hours
 - Project C: 3 hours
+
+### Who Can Edit Timesheets
+
+| Timesheet | Create / edit / delete |
+|-----------|------------------------|
+| Linked to an attendance | Exactly the users who can edit that attendance: attendance officers for the employees they manage (including secondary managers, with `hr_attendance_timesheet_multi_manager`), and "Officer: Manage all attendances" for everyone. Project and Timesheets administrator rights do not count. |
+| Not linked to an attendance | Timesheets administrators only |
+
+- Project administrators can still see all timesheets, but no longer edit them.
+- Check-in, check-out and project switches (systray, kiosk) keep working for every employee.
+- The rule is enforced in `account.analytic.line._check_access()`, which asks `hr.attendance` for its own access rights.
+
+### Timesheet Change History
+
+Every manual change to a timesheet of an attendance is logged as a note in the attendance chatter, with its author:
+- **Timesheet added / removed**: project, date, hours and description of the entry
+- **Timesheet changed**: each changed field (date, project, task, description, hours) with its old and new value
+
+This includes the hours adjusted automatically when someone edits the check-in or check-out of a closed attendance. The routine bookkeeping is not logged: the timesheet opened at check-in, project switches, closing at check-out, and timesheets generated from business trips.
 
 ## Technical Details
 
